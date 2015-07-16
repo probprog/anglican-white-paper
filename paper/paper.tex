@@ -3,7 +3,7 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
-\usepackage{minted}
+\usepackage{listings}
 
 % For algorithms
 \usepackage{algorithm}
@@ -29,13 +29,70 @@
 
 \section{Introduction}
 
+Anglican is a probabilistic programming language integrated with
+Clojure.  There are several ways to build a programming language
+on top or besides another language.  The easiest to grasp is an
+interpreter --- a program that reads a program, in its entirety
+or line-by-line, and executes it by applying operational
+semantics of a certain kind to the language. \textsc{Basic} is
+famous for line-by-line interpreted implementations.
+
+Another approach is to write a compiler, either to a virtual
+architecture, so called p-code or byte-code, or to real
+hardware. Here, the whole program is translated from the
+`higher-level' source language to a `lower-level' object
+language, which can be directly executed, either by hardware or
+by an interpreter --- but the latter interpreter can be made
+simpler and more efficient  than an interpreter for the source
+language.
+
+On top of these two approaches are methods in which a new
+language is implemented `inside' another language of the same
+level of abstraction. Different languages provide different
+means for this; Lisp is notorious for the macro facility
+that allows to extend the language almost without
+restriction --- by writing \textit{macros}, one adds new
+constructs to the existing language. There are several uses of
+macros --- one is to extend the language \textit{syntax}, for
+example, by adding new control structures; another is to keep
+the existing syntax but alter the operational semantic --- the
+way programs are executed and compute their outputs.
+
+Anglican is implemented in just this way --- a macro facility
+provided by Clojure, a Lisp dialect, is used both to add to
+Clojure constructs that delimit probabilistic, rather than
+deterministic, code, and to alter the operational semantics of
+Clojure constructs inside probabilistic code fragments. Anglican
+claims its right to count as a separate language because of the
+ubiquitous probabilistic execution semantics rather than because
+of a different syntax, which is actually an advantage rather
+than a drawback --- Clojure programmers only need to know how to
+specify the boundaries of Anglican programs, but can use
+familiar Clojure syntax to write probabilistic code. 
+
+An implementation of Anglican must therefore address three issues:
+\begin{itemize}
+	\item the Clojure syntax to introduce probabilistic Anglican
+		code inside Clojure modules;
+	\item source-to-source transformation of Anglican programs
+		into Clojure, so that probabilistic execution becomes
+		possible;
+	\item algorithms which run Clojure code, obtained by
+		transforming Anglican programs, according to the
+		probabilistic operational semantics.
+\end{itemize}
+The following sections explain the way Anglican is implemented,
+from source-to-source transformation and syntactic wrappers to
+inference algorithms which accept Clojure functions built from
+anglican code as a parameter, and produce probabilistic outputs.
+
 \section{Design Outline}
 
 \section{Macro-based Compilation}
 
 \section{Inference Algorithms}
 
-\section{Runtime Library}
+\section{Definitions and Runtime Library}
 
 
 \bibliographystyle{alpha}
