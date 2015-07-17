@@ -1,22 +1,17 @@
 \documentclass[a4paper]{article}
 
+\usepackage{enumitem}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{amsfonts}
 \usepackage{graphicx}
-\usepackage{listings}
 
-% For algorithms
 \usepackage{algorithm}
 \usepackage{algorithmic}
+\usepackage{listings}
 
 \usepackage{hyperref}
 \usepackage{url}
-
-% Additional packages 
-\usepackage{amsfonts}
-%\usepackage{amsthm}
-\usepackage{float}
-\usepackage{enumitem}
 
 \title{Notes on Design and Implementation of Anglican}
 
@@ -25,6 +20,10 @@
 \maketitle
 
 \begin{abstract}
+	In these notes, are explain the rationale behind the
+	macro-compiled implementation of Anglican, outline
+	design choices, and describe important implementation
+	aspects.
 \end{abstract}
 
 \section{Introduction}
@@ -62,7 +61,7 @@ Anglican is implemented in just this way --- a macro facility
 provided by Clojure, a Lisp dialect, is used both to add to
 Clojure constructs that delimit probabilistic, rather than
 deterministic, code, and to alter the operational semantics of
-Clojure constructs inside probabilistic code fragments. Anglican
+Clojure expressions inside probabilistic code fragments. Anglican
 claims its right to count as a separate language because of the
 ubiquitous probabilistic execution semantics rather than because
 of a different syntax, which is actually an advantage rather
@@ -84,7 +83,7 @@ An implementation of Anglican must therefore address three issues:
 The following sections explain the way Anglican is implemented,
 from source-to-source transformation and syntactic wrappers to
 inference algorithms which accept Clojure functions built from
-anglican code as a parameter, and produce probabilistic outputs.
+Anglican code as a parameter, and produce probabilistic outputs.
 
 \section{Design Outline}
 
