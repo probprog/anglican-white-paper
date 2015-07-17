@@ -147,8 +147,9 @@ may include probabilistic forms \texttt{sample} and
 can be seamlessly called from inside Anglican queries, just like
 functions locally defined within the same query.
 
-
-
+Operational semantic of Anglican queries is different from that
+of Clojure code, therefore queries must be called through
+inference algorithms, rather than `directly'. 
 
 \section{Macro-based Compilation}
 
