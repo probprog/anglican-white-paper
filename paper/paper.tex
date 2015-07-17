@@ -87,6 +87,69 @@ Anglican code as a parameter, and produce probabilistic outputs.
 
 \section{Design Outline}
 
+A probabilistic program, or query, mostly runs deterministic
+code, except for certain checkpoints, in which probabilities are
+involved, and normal, linear execution of the program is
+disrupted. In Anglican and similar languages there are two
+types of such checkpoints:
+\begin{itemize}
+	\item drawing a value from a random source (\texttt{sample});
+	\item conditioning the posterior distribution by
+		conditioning a computed value on a random source
+		(\texttt{observe}).
+\end{itemize}
+
+Anglican can be mostly implemented as a regular programming
+language, except for the handling of these checkpoints.
+Depending on the \textit{inference algorithm}, \texttt{sample}
+and \texttt{observe} may result in implicit input/output
+operations and control changes. For example, \texttt{observe} in
+particle filtering inference algorithms is a non-deterministic
+control statement at which a particle can be either replicated
+or terminated. Similarly, in Metropolis-Hastings,
+\texttt{sample} is both an input and a non-deterministic control
+statement (with delayed effect), eventually affecting acceptance
+or rejection of a sample.
+
+Because of the checkpoints, Anglican programs must allow the
+inference algorithm to intervene, recording information and
+affecting control flow. This can be implemented through coroutines/
+cooperative multitasking, parallel execution/preemptive
+multitasking and shared memory, as well as through explicit
+maintenance of program continuations at checkpoints. Clojure is
+a functional language, and continuation-passing style (CPS)
+transformation is a well-developed technique in the area of
+functional languages. Implementing a variant of CPS
+transformation seemed to be the most flexible and lightweight
+option --- any other form of concurrency would put a higher burden
+on the underlying runtime (JVM) and the operating system.
+Consequently, Anglican has been implemented as a CPS-transformed
+computation with access to continuations in probabilistic
+checkpoints. Anglican `compiler', represented by a set of
+functions in the \texttt{anglican.trap} namespace, accepts a
+Clojure subset and transforms it into a variant of CPS
+representation, which allows inference algorithms to intervene
+in the execution flow at probabilistic checkpoints.
+
+Anglican is intended to co-exist with Clojure and be a part of
+the source of a Clojure program. To facilitate this, Anglican
+programs, or queries, are wrapped by macros (defined in the
+\texttt{anglican.emit} namespace), which call the CPS
+transformations and define Clojure objects suitable for passing
+as arguments to inference algorithms (\texttt{defquery},
+\texttt{query}). In addition to defining entire queries,
+Anglican promotes modularization of inference algorithm through
+definition of \textit{probabilistic functions} using
+\texttt{defm} and \texttt{fm} (Anglican counterparts of Clojure
+\texttt{defn} and \texttt{fn}), which are written in Anglican,
+may include probabilistic forms \texttt{sample} and
+\texttt{observe} (as well \texttt{predict} for the output), and
+can be seamlessly called from inside Anglican queries, just like
+functions locally defined within the same query.
+
+
+
+
 \section{Macro-based Compilation}
 
 \section{Inference Algorithms}
