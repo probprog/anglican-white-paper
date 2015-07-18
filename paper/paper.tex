@@ -149,7 +149,17 @@ functions locally defined within the same query.
 
 Operational semantic of Anglican queries is different from that
 of Clojure code, therefore queries must be called through
-inference algorithms, rather than `directly'. 
+inference algorithms, rather than `directly'.  The
+\texttt{anglican.inference} namespace supplies the
+\texttt{infer} multimethod, which accepts an Anglican query and
+returns a lazy sequence of weighted samples from the
+distribution defined by the query. Inference algorithms must
+provide an implementation for \texttt{infer}, as well as
+override some of the methods of the \textit{checkpoint}
+multimethod, called to handle \texttt{sample} and
+\texttt{observe} in an algorithmic-specific manner, as well
+as on termination of a probabilistic program.
+
 
 \section{Macro-based Compilation}
 
