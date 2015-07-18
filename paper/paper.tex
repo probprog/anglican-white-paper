@@ -153,13 +153,25 @@ inference algorithms, rather than `directly'.  The
 \texttt{anglican.inference} namespace supplies the
 \texttt{infer} multimethod, which accepts an Anglican query and
 returns a lazy sequence of weighted samples from the
-distribution defined by the query. Inference algorithms must
+distribution defined by the query.  When inference
+is performed on an Anglican query, the query is run by a
+particular inference algorithm. Inference algorithms must
 provide an implementation for \texttt{infer}, as well as
 override some of the methods of the \textit{checkpoint}
 multimethod, called to handle \texttt{sample} and
 \texttt{observe} in an algorithmic-specific manner, as well
 as on termination of a probabilistic program.
 
+Finally, Anglican queries use `primitive', or commonly known
+and used, distributions, to draw random samples and condition
+observations. Many primitive distributions are provided by the
+\texttt{anglican.runtime} namespace, and additional
+distributions can be defined by the user by implementing the
+\texttt{distribution} protocol. The \texttt{defdist} macro
+provides a convenient syntax for defining primitive distributions.
+
+Compilation, invocation, and runtime support of anglican queries
+are discussed in detail in the following sections.
 
 \section{Macro-based Compilation}
 
