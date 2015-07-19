@@ -141,11 +141,12 @@ as arguments to inference algorithms (\texttt{defquery},
 Anglican promotes modularization of inference algorithms through
 definition of \textit{probabilistic functions} using
 \texttt{defm} and \texttt{fm} (Anglican counterparts of Clojure
-\texttt{defn} and \texttt{fn}), which are written in Anglican,
-may include probabilistic forms \texttt{sample} and
-\texttt{observe} (as well \texttt{predict} for the output), and
-can be seamlessly called from inside Anglican queries, just like
-functions locally defined within the same query.
+\texttt{defn} and \texttt{fn}). Probabilistic functions are
+written in Anglican, may include probabilistic forms
+\texttt{sample} and \texttt{observe} (as well \texttt{predict}
+for the output), and can be seamlessly called from inside
+Anglican queries, just like functions locally defined within the
+same query.
 
 Operational semantic of Anglican queries is different from that
 of Clojure code, therefore queries must be called through
@@ -157,7 +158,7 @@ distribution defined by the query.  When inference
 is performed on an Anglican query, the query is run by a
 particular inference algorithm. Inference algorithms must
 provide an implementation for \texttt{infer}, as well as
-override some of the methods of the \textit{checkpoint}
+override some of the methods of the \texttt{checkpoint}
 multimethod, called to handle \texttt{sample} and
 \texttt{observe} in an algorithmic-specific manner, as well
 as on termination of a probabilistic program.
