@@ -54,8 +54,8 @@ restriction --- by writing \textit{macros}, one adds new
 constructs to the existing language. There are several uses of
 macros --- one is to extend the language \textit{syntax}, for
 example, by adding new control structures; another is to keep
-the existing syntax but alter the operational semantic --- the
-way programs are executed and compute their outputs.
+the existing syntax but alter the \textit{operational semantics}
+--- the way programs are executed and compute their outputs.
 
 Anglican is implemented in just this way --- a macro facility
 provided by Clojure, a Lisp dialect, is used both to extend
@@ -148,7 +148,7 @@ for the output), and can be seamlessly called from inside
 Anglican queries, just like functions locally defined within the
 same query.
 
-Operational semantic of Anglican queries is different from that
+Operational semantics of Anglican queries is different from that
 of Clojure code, therefore queries must be called through
 inference algorithms, rather than `directly'.  The
 \texttt{anglican.inference} namespace supplies the
