@@ -58,16 +58,16 @@ the existing syntax but alter the operational semantic --- the
 way programs are executed and compute their outputs.
 
 Anglican is implemented in just this way --- a macro facility
-provided by Clojure, a Lisp dialect, is used both to add to
-Clojure constructs that delimit probabilistic, rather than
-deterministic, code, and to alter the operational semantics of
-Clojure expressions inside probabilistic code fragments. Anglican
-claims its right to count as a separate language because of the
-ubiquitous probabilistic execution semantics rather than because
-of a different syntax, which is actually an advantage rather
-than a drawback --- Clojure programmers only need to know how to
-specify the boundaries of Anglican programs, but can use
-familiar Clojure syntax to write probabilistic code. 
+provided by Clojure, a Lisp dialect, is used both to extend
+Clojure with constructs that delimit probabilistic code, and to
+alter the operational semantics of Clojure expressions inside
+probabilistic code fragments. Anglican claims its right to count
+as a separate language because of the ubiquitous probabilistic
+execution semantics rather than because of a different syntax,
+which is actually an advantage rather than a drawback ---
+Clojure programmers only need to know how to specify the
+boundaries of Anglican programs, but can use familiar Clojure
+syntax to write probabilistic code. 
 
 An implementation of Anglican must therefore address three issues:
 \begin{itemize}
