@@ -176,6 +176,90 @@ are discussed in detail in further sections.
 
 \section{Macro-based Compilation}
 
+Compilation of Anglican into Clojure relies on the Clojure
+\textit{macro} facility. However, the compilation algorithm is
+implemented as a library of \textit{functions} in namespace
+\texttt{anglican.trap}, which are invoked by macros. Namespace
+\texttt{anglican.trap-test} contains many transformation tests,
+which both help assure proper functioning of the transformation
+functions, and serve as illustrative examples of individual
+transformations, such as of functions, flow control, and
+probabilistic contstructs.
+
+The CPS transformation is organized in top-down manner. The
+top-level function is  \texttt{cps-of-expression}, which
+receives an expression and a continuation, and returns the
+expression in the CPS form, with the computed result passed to
+the continuation. A continuation accepts \texttt{two arguments}:
+\begin{itemize}
+	\item the computed value;
+	\item the internal state, bound to the local variable
+		\texttt{\$state} in every lexical scope.
+\end{itemize}
+The state (\texttt{\$state}) is threaded through the computation
+and contains data used by inference algorithm. \texttt{\$state}
+is a Clojure hash map, and the map entries are
+algorithm-dependent. Except for transformation of
+\texttt{mem}, the memoization form, CPS transformation routines
+are not aware of contents of \texttt{\$state}, do not access or
+modify it directly, but rather just thread the state unmodified
+through the computation. Algorithm-specific handlers of
+checkpoints corresponding to the probabilistic forms
+(\texttt{sample}, \texttt{observe}) modify the
+state and reinject a new state into the computation.
+
+\subsection{Expression Kinds}
+
+There are three different kinds of inputs to CPS transformation:
+\begin{itemize}
+	\item literals, which are passed as an argument to the
+		continuation unmodified;
+	\item value expressions (e.g. the \texttt{fn} form) 
+		(called \textit{opaque}
+		expressions in the code) which must be transformed to
+		CPS, but the transformed object is passed to the
+		continuation as a whole, opaquely;
+	\item general expressions (let's call them
+		\textit{transparent}), through which the continuation is
+		threaded in an expression-specific way, and can be
+		called in multiple locations of the CPS-transformed
+		code, such as in all branches of an \texttt{if}
+		statement.
+\end{itemize}
+
+\subsection{Literals}
+
+Literals are the same in Anglican and Clojure. They are 
+left unmodified. Literals are a subset of opaque expressions,
+and are identified by test \texttt{simple?} called from
+\texttt{opaque?}.  However, The Clojure syntax has a peculiarity
+of using the syntax of compound literals (vectors, hash maps,
+and sets) for data constructors. Hence, compound literals must
+be traversed recursively, and if there is a nested non-literal
+component, transformed into a call to the corresponding data
+constructor. Functions \texttt{cps-of-vector},
+\texttt{cps-of-hash-map}, \texttt{cps-of-set}, called from
+\texttt{cps-of-expression}, transform Clojure constructor syntax
+(\texttt{[...]}, \texttt{\{...\}}, \texttt{\#\{...\}}) into the
+corresponding calls.
+
+\subsection{Opaque Expressions}
+
+Opaque, or value, expressions, have a different shape in the
+original and the CPS form. However, their CPS form follows the
+pattern \texttt{(continuation transformed-expression)}, and thus
+the transformation does not depend on the continuation, and
+can be accomplished without passing the continuation as a
+transformation argument. Primitive (non-CPS) procedures used in
+Anglican code, \texttt{(fn ...)} forms, and \text{(mem ...)}
+forms are opaque and transformed by
+\texttt{primitive-procedure-cps}, \texttt{fn-cps}, and
+\texttt{mem-cps}, correspondingly.
+
+\subsection{General Expressions}
+
+
+
 \section{Inference Algorithms}
 
 \section{Definitions and Runtime Library}
