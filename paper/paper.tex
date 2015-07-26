@@ -258,6 +258,21 @@ forms are opaque and transformed by
 
 \subsection{General Expressions}
 
+The most general form of CPS transformation receives an
+expression and a continuation, and returns the expression
+in CPS form with the continuation potentially called in multiple
+tail positions. General expressions can be somewhat voluntarily
+divided into several groups:
+\begin{itemize}
+	\item binding forms --- \texttt{let} and
+		\texttt{loop/recur};
+	\item flow control --- \texttt{if}, \texttt{when},
+		\texttt{cond}, \texttt{case}, \texttt{and}, \texttt{or} and \texttt{do};
+	\item function applications and \texttt{apply};
+	\item probabilistic forms --- \texttt{predict},
+		\texttt{observe}, \texttt{sample}, \texttt{store}, and \texttt{retrieve}.
+\end{itemize}
+
 
 
 \section{Inference Algorithms}
