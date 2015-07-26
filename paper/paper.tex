@@ -227,7 +227,7 @@ There are three different kinds of inputs to CPS transformation:
 		statement.
 \end{itemize}
 
-\subsection{Literals}
+\subsubsection{Literals}
 
 Literals are the same in Anglican and Clojure. They are 
 left unmodified. Literals are a subset of opaque expressions,
@@ -243,7 +243,7 @@ constructor. Functions \texttt{cps-of-vector},
 (\texttt{[...]}, \texttt{\{...\}}, \texttt{\#\{...\}}) into the
 corresponding calls.
 
-\subsection{Opaque Expressions}
+\subsubsection{Opaque Expressions}
 
 Opaque, or value, expressions, have a different shape in the
 original and the CPS form. However, their CPS form follows the
@@ -256,7 +256,7 @@ forms are opaque and transformed by
 \texttt{primitive-procedure-cps}, \texttt{fn-cps}, and
 \texttt{mem-cps}, correspondingly.
 
-\subsection{General Expressions}
+\subsubsection{General Expressions}
 
 The most general form of CPS transformation receives an
 expression and a continuation, and returns the expression
@@ -272,8 +272,20 @@ divided into several groups:
 	\item probabilistic forms --- \texttt{predict},
 		\texttt{observe}, \texttt{sample}, \texttt{store}, and \texttt{retrieve}.
 \end{itemize}
+Functions that transform general expressions accept the
+expression and the continuation as parameters, and are
+consistently named \texttt{cps-of-}\textit{form}, for example,
+\texttt{cps-of-do}, \texttt{cps-of-store}.
 
+\subsection{Implementation Highlights}
 
+\subsubsection{Continuations}
+
+\subsubsection{Primitive Procedures}
+
+\subsubsection{Probabilistic forms}
+
+\subsubsection{Stochastic memoization}
 
 \section{Inference Algorithms}
 
