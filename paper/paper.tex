@@ -309,7 +309,7 @@ call directly, the transformer always wraps the call into a
 \textit{thunk}, or parameterless function. The thunk is returned
 and called by the trampoline (Clojure provides function
 \texttt{trampoline} for this purpose) --- this way the
-computation continues but the stack is collapsed on every
+computation continues, but the stack is collapsed on every
 continuation call. Function \texttt{continue} implements the
 wrapping.
 
