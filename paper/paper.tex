@@ -13,6 +13,8 @@
 \usepackage{hyperref}
 \usepackage{url}
 
+\input{anglican}
+
 \title{Notes on Design and Implementation of Anglican}
 
 \begin{document}
@@ -280,6 +282,64 @@ consistently named \texttt{cps-of-}\textit{form}, for example,
 \subsection{Implementation Highlights}
 
 \subsubsection{Continuations}
+
+Continuations are functions that are called in tail positions
+with the computed value and state as their arguments --- in CPS
+there is always a function call in every tail position and never
+a value. Continuations are passed to CPS transformers, and when
+transformers are called recursively, the continuations are
+generated on the fly. 
+
+There are two critical issues related to generation of
+continuations:
+\begin{itemize}
+	\item unbounded \textit{stack growth} in recursive code;
+	\item code size \textit{explosion} when a non-atomic
+		continuation is symbolically substituted in multiple
+		locations.
+\end{itemize}
+		
+In implementations of functional programming languages stack
+growth is avoided through \textit{tail call optimization} (TCO).
+However, Clojure does not support a general form of TCO, and
+CPS-transformed code that creates deeply nested calls will
+easily exhaust the stack. Anglican employs a workaround called
+\textit{trampolining} --- instead of inserting a continuation
+call directly, the transformer always wraps the call into a
+\textit{thunk}, or parameterless function. The thunk is returned
+and called by the trampoline (Clojure provides function
+\texttt{trampoline} for this purpose) --- this way the
+computation continues but the stack is collapsed on every
+continuation call. Function \texttt{continue} implements the
+wrapping.
+
+To realize the potential danger of code size explosion, consider
+CPS transformation of code
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
+(if (adult? person)
+  (if (male? person)
+	 (choose-beer)
+	 (choose_wine))
+  (choose-juice))
+\end{lstlisting}
+with continuation 
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
+(fn [choice _]
+  (case (kind choice)
+    :beer (beer-jar choice)
+    :wine (wine-glass choice)
+    :juice (juice-bottle choice)))
+\end{lstlisting}
+The code of continuation, represented by an \texttt{fn} form, will be
+repeated three times. In general, CPS code can grow extremely
+large if symbolic continuations are inserted repeatedly.
+
+To circumvent this inefficiency, CPS transformers for
+expressions with multiple continuation points (\texttt{if} and
+derivatives, \texttt{and}, \texttt{or}, and \texttt{case}) bind
+the continuation to a fresh symbol if it is not yet a symbol.
+Macro \texttt{defn-with-named-cont} establishes the binding
+automatically.
 
 \subsubsection{Primitive Procedures}
 
