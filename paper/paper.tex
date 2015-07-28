@@ -16,13 +16,14 @@
 \input{anglican}
 
 \title{Notes on Design and Implementation of Anglican}
+\author{David Tolpin\\dtolpin@robots.ox.ac.uk}
 
 \begin{document}
 
 \maketitle
 
 \begin{abstract}
-	In these notes, are explain the rationale behind the
+	In these notes, I explain the rationale behind the
 	macro-compiled implementation of Anglican, outline
 	design choices, and describe important implementation
 	aspects.
@@ -313,7 +314,7 @@ computation continues, but the stack is collapsed on every
 continuation call. Function \texttt{continue} implements the
 wrapping.
 
-To realize the potential danger of code size explosion, consider
+To realize potential danger of code size explosion, consider
 CPS transformation of code
 \begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
 (if (adult? person)
