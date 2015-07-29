@@ -384,7 +384,49 @@ The Anglican compiler takes care of the shading by rebinding
 
 \subsubsection{Probabilistic forms}
 
-\subsubsection{Stochastic memoization}
+There are two proper probabilistic forms turning Anglican into a
+probabilistic programming language --- \texttt{sample} and
+\texttt{observe}. Their purpose is to interrupt deterministic
+computation and transfer control to the inference algorithm.
+Practically, this is achieved through returning
+\textit{checkpoints} --- Clojure records of the corresponding
+types (\texttt{anglican.trap.sample} or
+\texttt{anglican.trap.observe}). The records contain fields
+specific to each form, as well as the continuation; calling the
+continuation resumes the computation. Checkpoints expose the
+program state to the inference algorithm, and the updated state
+is re-injected into the computation when the continuation is
+called. 
+
+In addition to checkpoints, there are a few other special forms
+--- \texttt{predict}, \texttt{store}, \texttt{retrieve},
+\texttt{mem} --- which modify program state. These forms are
+translated into expressions involving calls of functions from the
+\texttt{anglican.state} namespace. The \texttt{mem} form, which
+implements stochastic memoization, deserves a more detailed
+explanation.
+
+\textit{Memoization} is often implemented on top of a mutable
+dictionary, where the key is the argument list and the value is
+the return value. There are no mutable data structures in a
+probabilistic program, and \texttt{mem}'s memory is stored in a
+nested dictionary in the program state (function
+\texttt{mem-cps}).  Each memoized function receives a unique
+automatically generated identifier. Each time a memoized
+function is called, one of two continuations is chosen,
+depending on whether the same function (a function with the same
+identifier) was previously called in the same run of the
+probabilistic program with the same arguments. If the memoized
+result is available, the continuation of the memoized function
+call is immediately called with the stored result. Otherwise,
+the argument of \texttt{mem} is called with a continuation that
+first creates an updated state with the memoized result, and
+then calls the `outer' continuation with the result and the
+updated state. 
+
+Memoized results are not shared among multiple runs of a
+probabilistic program, which is intended. Otherwise, it would be
+impossible to memoize functions with random results.
 
 \section{Inference Algorithms}
 
