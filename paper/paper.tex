@@ -408,11 +408,11 @@ explanation.
 
 \textit{Memoization} is often implemented on top of a mutable
 dictionary, where the key is the argument list and the value is
-the return value. There are no mutable data structures in a
-probabilistic program, and \texttt{mem}'s memory is stored in a
-nested dictionary in the program state (function
-\texttt{mem-cps}).  Each memoized function receives a unique
-automatically generated identifier. Each time a memoized
+the returned value. However, there are no mutable data
+structures in a probabilistic program, hence \texttt{mem}'s
+memory is stored as a nested dictionary in the program state
+(function \texttt{mem-cps}).  Each memoized function receives a
+unique automatically generated identifier. Each time a memoized
 function is called, one of two continuations is chosen,
 depending on whether the same function (a function with the same
 identifier) was previously called in the same run of the
