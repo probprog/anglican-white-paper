@@ -1,6 +1,7 @@
 \documentclass[a4paper]{article}
 
 \usepackage{enumitem}
+\usepackage[lighttt]{lmodern}
 \usepackage{amsmath}
 \usepackage{amssymb} \usepackage{amsfonts} \usepackage{graphicx}
 
@@ -314,15 +315,15 @@ wrapping.
 
 To realize potential danger of code size explosion, consider
 CPS transformation of code
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily, showstringspaces=false]
 (if (adult? person)
   (if (male? person)
      (choose-beer)
-     (choose_wine))
+     (choose-wine))
   (choose-juice))
 \end{lstlisting}
 with continuation 
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily, showstringspaces=false]
 (fn [choice _]
   (case (kind choice)
     :beer (beer-jar choice)
@@ -372,7 +373,7 @@ names and namespaces, correspondingly. Of course, local bindings
 can shade global primitive function names. For example,
 \texttt{first} is a Clojure function inside the let block in the
 following example:
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily, showstringspaces=false]
 (let [first (fn [[x & y]] x)]
   (first '[1 2 3]))
 \end{lstlisting}
@@ -435,6 +436,8 @@ multimethod accepts an algorithm identifier, a query --- the
 probabilistic program in which to perform the inference, an
 initial value for the query, and optional algorithm parameters.
 
+\subsection{The \texttt{infer} multimethod}
+
 The sole purpose of the algorithm identifier is method dispatch
 --- conventionally, the identifier is a keyword related to the
 algorithm name (\texttt{:lmh} for Lightweight
@@ -443,9 +446,9 @@ etc.). The second parameter is a query as defined by
 \texttt{query} or \texttt{defquery} forms. If needed, the query
 can be defined anonymously, right in the argument list of a call
 to \texttt{infer}:
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
-    (let [x 1]
-      (infer :pgibbs (query (predict x)) nil))
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily, showstringspaces=false]
+(let [x 1]
+  (infer :pgibbs (query (predict x)) nil))
 \end{lstlisting}
 A query is executed by calling the initial continuation of the
 query, which accepts a value and a state. The state is supplied
@@ -455,19 +458,48 @@ parameters, in which case the value can be simply \texttt{nil}.
 When a query is defined with a binding for the initial value,
 the value becomes available inside the query. The value is
 destructured in case of a structured binding, for example:
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
-    (defquery my-query [mean sd]
-       (predict (sample (normal mean sd))))
+\begin{lstlisting}[frame=single, language=Anglican, basicstyle=\ttfamily, showstringspaces=false]
+(defquery my-query [mean sd]
+  (predict (sample (normal mean sd))))
 
-    (define samples (infer :lmh my-query [1.0 3.0]))
+(def samples (infer :lmh my-query [1.0 3.0]))
 \end{lstlisting}
 Finally, an indefinite number of auxiliary arguments can be
 passed to \texttt{infer}. By convention, the arguments should be
 keyword arguments, and are interpreted in the algorithm-specific
 manner.
 
-\section{Definitions and Runtime Library}
+\subsection{Internals of an inference algorithm}
 
+The simplest inference algorithm is \textit{importance
+sampling}:
+\begin{lstlisting}[frame=single, language=Anglican, basicstyle=\ttfamily, showstringspaces=false]
+(derive ::algorithm :anglican.inference/algorithm)
+
+(defmethod infer :importance [_ prog value & {}]
+  (letfn [(sample-seq []
+            (lazy-seq
+              (cons
+                (:state (exec ::algorithm prog value
+                              initial-state))
+                (sample-seq))))]
+    (sample-seq)))
+\end{lstlisting}
+\texttt{anglican.importance/infer} just calls
+\texttt{anglican.inference/exec} and relies on default
+implementations of checkpoint handlers. A different inference
+algorithm would provide its own implementations of
+\texttt{checkpoint} for \texttt{sample}, \texttt{observe}, or
+both, as well as invoke \texttt{exec} from an elaborated
+conditional control flow. LMH (\texttt{anglican.lmh}) and SMC
+(\texttt{anglican.smc}) are examples of inference algorithms
+where either \texttt{observe} (SMC) or \texttt{sample} (LMH)
+handler is overridden. In addition, SMC runs multiple particles
+(program instances) simultaneously, while LMH runs re-runs
+programs from an intermediate continuation rather than from the
+beginning.
+
+\section{Definitions and Runtime Library}
 
 \bibliographystyle{alpha}
 \bibliography{refs}
