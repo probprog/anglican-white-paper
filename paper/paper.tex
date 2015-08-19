@@ -501,6 +501,53 @@ beginning.
 
 \section{Definitions and Runtime Library}
 
+A Clojure namespace that includes a definition of an Anglican
+program imports (`requires') two essential namespaces:
+\texttt{anglican.emit} and \texttt{anglican.runtime}. The former
+provides macros for defining Anglican programs
+(\texttt{defquery}, \texttt{query}) and functions
+(\texttt{defm}, \texttt{fm}, \texttt{mem}), as well as Anglican
+bootstrap definitions that must be included with every program
+--- first of all, CPS implementations of higher-order functions.
+\texttt{anglican.emit} can be viewed as the Anglican
+\textit{compiler tool}, which helps transform Anglican code into
+Clojure before any inference is performed.
+
+\texttt{anglican.runtime} is the Anglican runtime library. For
+convenience, it exposes common mathematical functions
+(\texttt{abs}, \texttt{floor}, \texttt{sin}, \texttt{log},
+\texttt{exp}, etc.), but most importantly, it provides
+definitions of common distributions. Each distribution object
+implements the \texttt{anglican.runtime/distribution} protocol,
+with two methods: \texttt{sample} and \texttt{observe}. The
+names of the methods coincide with Anglican special forms
+\texttt{sample} and \texttt{observe}, but they are by no means
+the same. The \texttt{sample} \textit{method} returns a random sample,
+the \texttt{observe} \textit{method} returns the log probability
+of the value. The methods can be, and sometimes are called from
+handlers of the corresponding checkpoints, but do not have to
+be. For example, in LMH either the \texttt{sample} or
+the \texttt{observe} \textit{method} is called for a
+\texttt{sample} checkpoint, depending on whether the value is
+drawn or re-used. 
+
+Macro \texttt{defdist} should be used to define distributions.
+\texttt{defdist} takes care of defining a separate record type
+for every distribution so that multimethods can be dispatched on
+distribution types when needed, e.g. for custom proposals.
+
+Similar to distributions, \textit{random processes}, related to
+so called `exchangeable random procedures', are defined using
+macro \texttt{defproc} and implement the
+\texttt{anglican.runtime/random-process} protocol. The protocol
+has twho methods --- \texttt{produce}, which returns a
+distribution object, and \texttt{absorb}, which returns a new
+random process object obtained by absorbing a value drawn from
+the process. While distributions are random and non-functional,
+random processes are deterministic and functional, hence
+\texttt{produce} and \texttt{absorb} are called directly and do
+not have corresponding special forms in Anglican.
+
 \bibliographystyle{alpha}
 \bibliography{refs}
 
