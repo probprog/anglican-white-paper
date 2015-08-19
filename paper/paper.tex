@@ -2,9 +2,7 @@
 
 \usepackage{enumitem}
 \usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsfonts}
-\usepackage{graphicx}
+\usepackage{amssymb} \usepackage{amsfonts} \usepackage{graphicx}
 
 \usepackage{algorithm}
 \usepackage{algorithmic}
@@ -23,10 +21,10 @@
 \maketitle
 
 \begin{abstract}
-	In these notes, I explain the rationale behind the
-	macro-compiled implementation of Anglican, outline
-	design choices, and describe important implementation
-	aspects.
+    In these notes, I explain the rationale behind the
+    macro-compiled implementation of Anglican, outline
+    design choices, and describe important implementation
+    aspects.
 \end{abstract}
 
 \section{Introduction}
@@ -74,14 +72,14 @@ syntax to write probabilistic code.
 
 An implementation of Anglican must therefore address three issues:
 \begin{itemize}
-	\item the Clojure syntax to introduce probabilistic Anglican
-		code inside Clojure modules;
-	\item source-to-source transformation of Anglican programs
-		into Clojure, so that probabilistic execution becomes
-		possible;
-	\item algorithms which run Clojure code, obtained by
-		transforming Anglican programs, according to the
-		probabilistic operational semantics.
+    \item the Clojure syntax to introduce probabilistic Anglican
+        code inside Clojure modules;
+    \item source-to-source transformation of Anglican programs
+        into Clojure, so that probabilistic execution becomes
+        possible;
+    \item algorithms which run Clojure code, obtained by
+        transforming Anglican programs, according to the
+        probabilistic operational semantics.
 \end{itemize}
 The following sections explain the way Anglican is implemented,
 from source-to-source transformation and syntactic wrappers to
@@ -96,10 +94,10 @@ involved, and normal, linear execution of the program is
 disrupted. In Anglican and similar languages there are two
 types of such checkpoints:
 \begin{itemize}
-	\item drawing a value from a random source (\texttt{sample});
-	\item conditioning the posterior distribution by
-		conditioning a computed value on a random source
-		(\texttt{observe}).
+    \item drawing a value from a random source (\texttt{sample});
+    \item conditioning the posterior distribution by
+        conditioning a computed value on a random source
+        (\texttt{observe}).
 \end{itemize}
 
 Anglican can be mostly implemented as a regular programming
@@ -195,9 +193,9 @@ receives an expression and a continuation, and returns the
 expression in the CPS form, with the computed result passed to
 the continuation. A continuation accepts \texttt{two arguments}:
 \begin{itemize}
-	\item the computed value;
-	\item the internal state, bound to the local variable
-		\texttt{\$state} in every lexical scope.
+    \item the computed value;
+    \item the internal state, bound to the local variable
+        \texttt{\$state} in every lexical scope.
 \end{itemize}
 The state (\texttt{\$state}) is threaded through the computation
 and contains data used by inference algorithm. \texttt{\$state}
@@ -215,19 +213,19 @@ state and reinject a new state into the computation.
 
 There are three different kinds of inputs to CPS transformation:
 \begin{itemize}
-	\item literals, which are passed as an argument to the
-		continuation unmodified;
-	\item value expressions (e.g. the \texttt{fn} form) 
-		(called \textit{opaque}
-		expressions in the code) which must be transformed to
-		CPS, but the transformed object is passed to the
-		continuation as a whole, opaquely;
-	\item general expressions (let's call them
-		\textit{transparent}), through which the continuation is
-		threaded in an expression-specific way, and can be
-		called in multiple locations of the CPS-transformed
-		code, such as in all branches of an \texttt{if}
-		statement.
+    \item literals, which are passed as an argument to the
+        continuation unmodified;
+    \item value expressions (e.g. the \texttt{fn} form) 
+        (called \textit{opaque}
+        expressions in the code) which must be transformed to
+        CPS, but the transformed object is passed to the
+        continuation as a whole, opaquely;
+    \item general expressions (let's call them
+        \textit{transparent}), through which the continuation is
+        threaded in an expression-specific way, and can be
+        called in multiple locations of the CPS-transformed
+        code, such as in all branches of an \texttt{if}
+        statement.
 \end{itemize}
 
 \subsubsection{Literals}
@@ -267,13 +265,13 @@ in CPS form with the continuation potentially called in multiple
 tail positions. General expressions can be somewhat voluntarily
 divided into several groups:
 \begin{itemize}
-	\item binding forms --- \texttt{let} and
-		\texttt{loop/recur};
-	\item flow control --- \texttt{if}, \texttt{when},
-		\texttt{cond}, \texttt{case}, \texttt{and}, \texttt{or} and \texttt{do};
-	\item function applications and \texttt{apply};
-	\item probabilistic forms --- \texttt{predict},
-		\texttt{observe}, \texttt{sample}, \texttt{store}, and \texttt{retrieve}.
+    \item binding forms --- \texttt{let} and
+        \texttt{loop/recur};
+    \item flow control --- \texttt{if}, \texttt{when},
+        \texttt{cond}, \texttt{case}, \texttt{and}, \texttt{or} and \texttt{do};
+    \item function applications and \texttt{apply};
+    \item probabilistic forms --- \texttt{predict},
+        \texttt{observe}, \texttt{sample}, \texttt{store}, and \texttt{retrieve}.
 \end{itemize}
 Functions that transform general expressions accept the
 expression and the continuation as parameters, and are
@@ -294,12 +292,12 @@ generated on the fly.
 There are two critical issues related to generation of
 continuations:
 \begin{itemize}
-	\item unbounded \textit{stack growth} in recursive code;
-	\item code size \textit{explosion} when a non-atomic
-		continuation is symbolically substituted in multiple
-		locations.
+    \item unbounded \textit{stack growth} in recursive code;
+    \item code size \textit{explosion} when a non-atomic
+        continuation is symbolically substituted in multiple
+        locations.
 \end{itemize}
-		
+        
 In implementations of functional programming languages stack
 growth is avoided through \textit{tail call optimization} (TCO).
 However, Clojure does not support a general form of TCO, and
@@ -319,8 +317,8 @@ CPS transformation of code
 \begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
 (if (adult? person)
   (if (male? person)
-	 (choose-beer)
-	 (choose_wine))
+     (choose-beer)
+     (choose_wine))
   (choose-juice))
 \end{lstlisting}
 with continuation 
@@ -430,6 +428,43 @@ probabilistic program, which is intended. Otherwise, it would be
 impossible to memoize functions with random results.
 
 \section{Inference Algorithms}
+
+An inference algorithm is an implementation of \texttt{infer}
+multimethod from \texttt{anglican.inference} namespace. The
+multimethod accepts an algorithm identifier, a query --- the
+probabilistic program in which to perform the inference, an
+initial value for the query, and optional algorithm parameters.
+
+The sole purpose of the algorithm identifier is method dispatch
+--- conventionally, the identifier is a keyword related to the
+algorithm name (\texttt{:lmh} for Lightweight
+Metropolis-Hasting, \texttt{:pcascade} for Particle Cascade
+etc.). The second parameter is a query as defined by
+\texttt{query} or \texttt{defquery} forms. If needed, the query
+can be defined anonymously, right in the argument list of a call
+to \texttt{infer}:
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
+    (let [x 1]
+      (infer :pgibbs (query (predict x)) nil))
+\end{lstlisting}
+A query is executed by calling the initial continuation of the
+query, which accepts a value and a state. The state is supplied
+by the inference algorithm, however the value is provided as a
+parameter of \texttt{infer}. A query does not have to have any
+parameters, in which case the value can be simply \texttt{nil}.
+When a query is defined with a binding for the initial value,
+the value becomes available inside the query. The value is
+destructured in case of a structured binding, for example:
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\scriptsize\ttfamily, showstringspaces=false]
+    (defquery my-query [mean sd]
+       (predict (sample (normal mean sd))))
+
+    (define samples (infer :lmh my-query [1.0 3.0]))
+\end{lstlisting}
+Finally, an indefinite number of auxiliary arguments can be
+passed to \texttt{infer}. By convention, the arguments should be
+keyword arguments, and are interpreted in the algorithm-specific
+manner.
 
 \section{Definitions and Runtime Library}
 
