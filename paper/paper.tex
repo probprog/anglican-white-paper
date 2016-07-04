@@ -9,7 +9,11 @@
 
 \usepackage{algorithm}
 \usepackage{algorithmic}
-\usepackage{listings}
+\usepackage[lighttt]{lmodern}
+\ttfamily
+\DeclareFontShape{OT1}{lmtt}{m}{it}
+     {<->sub*lmtt/m/sl}{}
+	 \usepackage{listings}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -144,23 +148,27 @@ produces a sequence of return values, or \textit{predicts}. Anglican
 shares a common syntax with Clojure; Clojure functions can be called
 from Anglican code and vice versa. A simple program in Anglican can
 look like the following code:
-
-%\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
-%(defquery models
-%  "chooses a distribution which describes the data"
-%  (let [;; Model -- randomly choose a distribution and parameters
-%        dist (sample (categorical [[uniform-discrete 1]
-%                                   [uniform-continuous 1]
-%                                   [normal 1] 
-%                                   [gamma 1]]))
-%        a (sample (gamma 1 1)) b (sample (gamma 1 1))
-%        d (dist a b)]
-%    ;; Data  --- samples from the unknown distribution
-%    (observe d 1) (observe d 2) (observe d 4) (observe d 7)
-%    ;; Output --- predicted distribution type and parameters
-%    (predict :d (type d))
-%    (predict :a a) (predict :b b)))
-%\end{lstlisting}
+\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+(defquery models
+  "chooses a distribution
+   which describes the data"
+  (let [;; Model - randomly choose distribution
+	    dist (sample (categorical
+                       [[uniform-continuous 1]
+                        [normal 1] 
+                        [gamma 1]]))
+        a (sample (gamma 1 1))
+        b (sample (gamma 1 1))
+        d (dist a b)]
+    ;; Data - samples from the distribution
+    (observe d 1)
+    (observe d 2)
+    (observe d 4)
+    (observe d 7)
+    ;; Output --- predicted distribution
+    (predict :d (type d))
+    (predict :a a) (predict :b b)))
+\end{lstlisting}
 
 Internally, an Anglican query is represented by a computation in
 \textit{continuation passing style} (CPS), and inference algorithms
