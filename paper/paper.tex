@@ -9,11 +9,12 @@
 
 \usepackage{algorithm}
 \usepackage{algorithmic}
+\usepackage{listings}
 \usepackage[lighttt]{lmodern}
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
      {<->sub*lmtt/m/sl}{}
-	 \usepackage{listings}
+\lstdefinestyle{default}{frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -148,7 +149,7 @@ produces a sequence of return values, or \textit{predicts}. Anglican
 shares a common syntax with Clojure; Clojure functions can be called
 from Anglican code and vice versa. A simple program in Anglican can
 look like the following code:
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+\begin{lstlisting}[style=default]
 (defquery models
   "chooses a distribution
    which describes the data"
@@ -414,7 +415,7 @@ wrapping.
 
 To realize potential danger of code size explosion, consider
 CPS transformation of code
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+\begin{lstlisting}[style=default]
 (if (adult? person)
   (if (male? person)
      (choose-beer)
@@ -422,7 +423,7 @@ CPS transformation of code
   (choose-juice))
 \end{lstlisting}
 with continuation 
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+\begin{lstlisting}[style=default]
 (fn [choice _]
   (case (kind choice)
     :beer (beer-jar choice)
@@ -472,7 +473,7 @@ names and namespaces, correspondingly. Of course, local bindings
 can shade global primitive function names. For example,
 \texttt{first} is a Clojure function inside the let block in the
 following example:
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+\begin{lstlisting}[style=default]
 (let [first (fn [[x & y]] x)]
   (first '[1 2 3]))
 \end{lstlisting}
@@ -545,7 +546,7 @@ etc.). The second parameter is a query as defined by
 \texttt{query} or \texttt{defquery} forms. If needed, the query
 can be defined anonymously, right in the argument list of a call
 to \texttt{infer}:
-\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+\begin{lstlisting}[style=default]
 (let [x 1]
   (infer :pgibbs (query (predict x)) nil))
 \end{lstlisting}
@@ -557,7 +558,7 @@ parameters, in which case the value can be simply \texttt{nil}.
 When a query is defined with a binding for the initial value,
 the value becomes available inside the query. The value is
 destructured in case of a structured binding, for example:
-\begin{lstlisting}[frame=single, language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+\begin{lstlisting}[style=default]
 (defquery my-query [mean sd]
   (predict (sample (normal mean sd))))
 
@@ -572,7 +573,7 @@ manner.
 
 The simplest inference algorithm is \textit{importance
 sampling}:
-\begin{lstlisting}[frame=single, language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+\begin{lstlisting}[style=default]
 (derive ::algorithm
         :anglican.inference/algorithm)
 (defmethod infer :importance [_ prog value & {}]
