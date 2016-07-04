@@ -28,6 +28,11 @@
 \maketitle
 
 \begin{abstract}
+    Anglican is a probabilistic programming system designed to interoperate
+    with Clojure and other JVM languages. We describe the implementation of
+    Anglican and illustrate how its design facilitates both explorative and
+    industrial use of probabilistic programming.
+
     In these notes, I explain the rationale behind the
     macro-compiled implementation of Anglican, outline
     design choices, and describe important implementation
@@ -35,6 +40,43 @@
 \end{abstract}
 
 \section{Introduction}
+For data science practitioners, statistical inference is typically
+but one step in a more elaborate analysis workflow. The first stage
+of this work involves data acquisition, pre-processing and cleaning.
+This is often followed by several iterations of exploratory model
+design and testing of inference algorithms. Once a sufficiently
+robust statistical model and corresponding inference algorithm have
+been identified, analysis results must be post-processed, visualized,
+and in some cases integrated into a wider production system.
+
+Probabilistic programming systems \cite{GMR+08,MSP14,WVM14,GS15}
+represent generative models as programs written in a specialized
+language that provides syntax for the definition and conditioning of
+random variables. The code for such models is generally concise,
+modular, and easy to modify or extend. Typically inference can be
+performed for any probabilistic program using one or more generic
+inference techniques provided by the system backend, such as
+Metropolis-Hastings \cite{WSG11,MSP14,YHG14}, Hamiltonian Monte Carlo
+\cite{SDT04}, expectation propagation \cite{MWG+10}, and extensions
+of Sequential Monte Carlo \cite{WVM14,MYM+15,PWD+14} methods.
+Although these generic techniques are not always as statistically
+efficient as techniques that take advantage of model-specific
+optimizations, probabilistic programming makes it easier to optimize
+models for a specific application in a manner that is efficient in
+terms of the dimensionality of its latent variables.
+
+While probabilistic programming systems shorten the iteration cycle in
+exploratory model design, they typically lack basic functionality needed for
+data I/O, pre-processing, and analysis and visualization of inference results.
+In this demonstration, we describe the implementation of
+Anglican~(\url{http://www.robots.ox.ac.uk/~fwood/anglican/}), a probabilistic
+programming language that tightly integrates with
+Clojure~(\url{http://clojure.org/}), a general-purpose programming language
+that runs on the Java Virtual Machine (JVM). Both languages share a common
+syntax, and can be invoked from each other. This allows Anglican programs to
+make use of a rich set of libraries written in both Clojure and Java.
+Conversely Anglican allows intuitive and compact specification of models for
+which inference may be performed as part of a larger Clojure project.
 
 Anglican is a probabilistic programming language integrated with
 Clojure.  There are several ways to build a programming language
@@ -94,6 +136,49 @@ inference algorithms which accept Clojure functions built from
 Anglican code as a parameter, and produce probabilistic outputs.
 
 \section{Design Outline}
+
+
+An Anglican program, or \textit{query}, is compiled into a Clojure
+function. When inference is performed with a provided algorithm, this
+produces a sequence of return values, or \textit{predicts}. Anglican
+shares a common syntax with Clojure; Clojure functions can be called
+from Anglican code and vice versa. A simple program in Anglican can
+look like the following code:
+
+%\begin{lstlisting}[frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false]
+%(defquery models
+%  "chooses a distribution which describes the data"
+%  (let [;; Model -- randomly choose a distribution and parameters
+%        dist (sample (categorical [[uniform-discrete 1]
+%                                   [uniform-continuous 1]
+%                                   [normal 1] 
+%                                   [gamma 1]]))
+%        a (sample (gamma 1 1)) b (sample (gamma 1 1))
+%        d (dist a b)]
+%    ;; Data  --- samples from the unknown distribution
+%    (observe d 1) (observe d 2) (observe d 4) (observe d 7)
+%    ;; Output --- predicted distribution type and parameters
+%    (predict :d (type d))
+%    (predict :a a) (predict :b b)))
+%\end{lstlisting}
+
+Internally, an Anglican query is represented by a computation in
+\textit{continuation passing style} (CPS), and inference algorithms
+exploit the CPS structure of the code to intercept probabilistic
+operations in an algorithm-specific way. Among the available
+inference algorithms there are Particle Cascade~\cite{PWD+14},
+Lightweight Metropolis-Hastings~\cite{WSG11}, Iterative Conditional
+Sequential Monte-Carlo (Particle Gibbs)~\cite{WVM14}, and others.
+Inference on Anglican queries generates a lazy sequence of
+samples, which can be processed asynchronously in Clojure
+code for analysis, integration, and decision making.
+
+Clojure (and Anglican) run on the JVM and get access to a wide choice of Java
+libraries for data processing, networking, presentation, and imaging.
+Conversely, Anglican queries can be called from Java and other JVM languages.
+Programs involving Anglican queries can be deployed as JVM
+\textit{jars}, and run without modification on any platform for 
+which JVM is available.
 
 A probabilistic program, or query, mostly runs deterministic
 code, except for certain checkpoints, in which probabilities are
