@@ -74,9 +74,9 @@ While probabilistic programming systems shorten the iteration cycle in
 exploratory model design, they typically lack basic functionality needed for
 data I/O, pre-processing, and analysis and visualization of inference results.
 In this demonstration, we describe the implementation of
-Anglican~(\cite{TMW15}), a probabilistic
+Anglican~(\cite{TMW15, Anglican}), a probabilistic
 programming language that tightly integrates with
-Clojure~(\url{http://clojure.org/}), a general-purpose programming language
+Clojure~\cite{H08,Clojure}, a general-purpose programming language
 that runs on the Java Virtual Machine (JVM). Both languages share a common
 syntax, and can be invoked from each other. This allows Anglican programs to
 make use of a rich set of libraries written in both Clojure and Java.
@@ -275,6 +275,10 @@ observations. Many primitive distributions are provided by the
 distributions can be defined by the user by implementing the
 \texttt{distribution} protocol. The \texttt{defdist} macro
 provides a convenient syntax for defining primitive distributions.
+
+\section{Anglican Syntax}
+
+\cite{SDF+10, PC94, H08}
 
 \section{Macro-based Compilation}
 
