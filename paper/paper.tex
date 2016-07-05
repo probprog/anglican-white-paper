@@ -74,7 +74,7 @@ While probabilistic programming systems shorten the iteration cycle in
 exploratory model design, they typically lack basic functionality needed for
 data I/O, pre-processing, and analysis and visualization of inference results.
 In this demonstration, we describe the implementation of
-Anglican~(\url{http://www.robots.ox.ac.uk/~fwood/anglican/}), a probabilistic
+Anglican~(\cite{TMW15}), a probabilistic
 programming language that tightly integrates with
 Clojure~(\url{http://clojure.org/}), a general-purpose programming language
 that runs on the Java Virtual Machine (JVM). Both languages share a common
@@ -83,8 +83,7 @@ make use of a rich set of libraries written in both Clojure and Java.
 Conversely Anglican allows intuitive and compact specification of models for
 which inference may be performed as part of a larger Clojure project.
 
-Anglican is a probabilistic programming language integrated with
-Clojure.  There are several ways to build a programming language
+There are several ways to build a programming language
 on top or besides another language.  The easiest to grasp is an
 interpreter --- a program that reads a program, in its entirety
 or line-by-line, and executes it by applying operational
@@ -135,38 +134,40 @@ An implementation of Anglican must therefore address three issues:
         transforming Anglican programs, according to the
         probabilistic operational semantics.
 \end{itemize}
-The following sections explain the way Anglican is implemented,
-from source-to-source transformation and syntactic wrappers to
-inference algorithms which accept Clojure functions built from
-Anglican code as a parameter, and produce probabilistic outputs.
+
+Anglican language syntax, compilation, invocation, and runtime
+support of Anglican queries are discussed in detail in further
+sections.
 
 \section{Design Outline}
 
-
 An Anglican program, or \textit{query}, is compiled into a Clojure
 function. When inference is performed with a provided algorithm, this
-produces a sequence of return values, or \textit{predicts}. Anglican
+produces a sequence of output values, or \textit{predicts}. Anglican
 shares a common syntax with Clojure; Clojure functions can be called
 from Anglican code and vice versa. A simple program in Anglican can
 look like the following code:
 \begin{lstlisting}[style=default]
-(defquery models
+(defquery models data
   "chooses a distribution
    which describes the data"
-  (let [;; Model - randomly choose distribution
-	    dist (sample (categorical
-                       [[uniform-continuous 1]
-                        [normal 1] 
-                        [gamma 1]]))
+  (let [;; Guessing a distribution
+        dist (sample (categorical
+                       [[uniform-continuous 0 1]
+                        [normal 0.5 1] 
+                        [gamma 1 1]]))
         a (sample (gamma 1 1))
         b (sample (gamma 1 1))
         d (dist a b)]
-    ;; Data - samples from the distribution
-    (observe d 1)
-    (observe d 2)
-    (observe d 4)
-    (observe d 7)
-    ;; Output --- predicted distribution
+
+    ;; Observing samples from the distribution
+    (loop [data data]
+      (when (seq data)
+        (let [[x & data] data]
+          (observe d x))
+        (recur data)))
+
+    ;; Predicting the distribution
     (predict :d (type d))
     (predict :a a) (predict :b b)))
 \end{lstlisting}
@@ -174,7 +175,9 @@ look like the following code:
 Internally, an Anglican query is represented by a computation in
 \textit{continuation passing style} (CPS), and inference algorithms
 exploit the CPS structure of the code to intercept probabilistic
-operations in an algorithm-specific way. Among the available
+operations in an algorithm-specific way\footnote{\cite{GS15}
+also describe a CPS-based implementation of a probabilistic
+programming language.}. Among the available
 inference algorithms there are Particle Cascade~\cite{PWD+14},
 Lightweight Metropolis-Hastings~\cite{WSG11}, Iterative Conditional
 Sequential Monte-Carlo (Particle Gibbs)~\cite{WVM14}, and others.
@@ -206,9 +209,9 @@ language, except for the handling of these checkpoints.
 Depending on the \textit{inference algorithm}, \texttt{sample}
 and \texttt{observe} may result in implicit input/output
 operations and control changes. For example, \texttt{observe} in
-particle filtering inference algorithms is a non-deterministic
+particle filtering inference algorithms \cite{WVM14} a non-deterministic
 control statement at which a particle can be either replicated
-or terminated. Similarly, in Metropolis-Hastings,
+or terminated. Similarly, in Metropolis-Hastings \cite{WSG11},
 \texttt{sample} is both an input and a non-deterministic control
 statement (with delayed effect), eventually affecting acceptance
 or rejection of a sample.
@@ -272,9 +275,6 @@ observations. Many primitive distributions are provided by the
 distributions can be defined by the user by implementing the
 \texttt{distribution} protocol. The \texttt{defdist} macro
 provides a convenient syntax for defining primitive distributions.
-
-Compilation, invocation, and runtime support of Anglican queries
-are discussed in detail in further sections.
 
 \section{Macro-based Compilation}
 
@@ -471,7 +471,7 @@ bound variables \texttt{*primitive-procedures*} and
 \texttt{*primitive-namespace*} contain the initial lists of
 names and namespaces, correspondingly. Of course, local bindings
 can shade global primitive function names. For example,
-\texttt{first} is a Clojure function inside the let block in the
+\texttt{first} is an Anglican function inside the let block in the
 following example:
 \begin{lstlisting}[style=default]
 (let [first (fn [[x & y]] x)]
