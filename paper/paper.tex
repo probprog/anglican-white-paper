@@ -308,7 +308,7 @@ behaviour and hard-to-catch errors.
 
 All of Clojure's core library except for higher-order functions
 (functions that accept other functions as arguments) is
-available in Anglican. Higher order functions cannot be reused
+available in Anglican. Higher-order functions cannot be reused
 from Clojure, they have to be re-implemented to accept
 functional arguments in CPS form. The following higher-order
 functions are implemented: \texttt{map}, \texttt{reduce},
@@ -320,13 +320,7 @@ functions are implemented: \texttt{map}, \texttt{reduce},
 Compilation of Anglican into Clojure relies on the Clojure
 \textit{macro} facility. However, the compilation algorithm is
 implemented as a library of \textit{functions} in namespace
-\texttt{anglican.trap}, which are invoked by macros. Namespace
-\texttt{anglican.trap-test} contains many transformation tests,
-which both help assure proper functioning of the transformation
-functions, and serve as illustrative examples of individual
-transformations, such as of functions, flow control, and
-probabilistic constructs.
-
+\texttt{anglican.trap}, which are invoked by macros.
 The CPS transformation is organized in top-down manner. The
 top-level function is  \texttt{cps-of-expression}, which
 receives an expression and a continuation, and returns the
@@ -371,9 +365,8 @@ There are three different kinds of inputs to CPS transformation:
 \subsubsection{Literals}
 
 Literals are the same in Anglican and Clojure. They are 
-left unmodified. Literals are a subset of opaque expressions,
-and are identified by test \texttt{simple?} called from
-\texttt{opaque?}.  However, the Clojure syntax has a peculiarity
+left unmodified; literals are a subset of opaque expressions.
+However, the Clojure syntax has a peculiarity
 of using the syntax of compound literals (vectors, hash maps,
 and sets) for data constructors. Hence, compound literals must
 be traversed recursively, and if there is a nested non-literal
@@ -659,15 +652,15 @@ convenience, it exposes common mathematical functions
 \texttt{exp}, etc.), but most importantly, it provides
 definitions of common distributions. Each distribution object
 implements the \texttt{anglican.runtime/{\linebreak[0]}distribution} protocol,
-with two methods: \texttt{sample} and \texttt{observe}. The
-names of the methods coincide with Anglican special forms
-\texttt{sample} and \texttt{observe}, but they are by no means
-the same. The \texttt{sample} \textit{method} returns a random sample,
-the \texttt{observe} \textit{method} returns the log probability
-of the value. The methods can be, and sometimes are called from
+with two methods: \texttt{sample} and \texttt{log-prob}.
+The \texttt{sample} \textit{method} returns a random sample and
+roughly corresponds to the \texttt{sample} checkpoint,
+the \texttt{log-prob} \textit{method} returns the log probability
+of the value and roughly corresponds to the \texttt{observe}
+checkpoint. The methods can be, and sometimes are called from
 handlers of the corresponding checkpoints, but do not have to
 be. For example, in LMH either the \texttt{sample} or
-the \texttt{observe} \textit{method} is called for a
+the \texttt{log-prob} \textit{method} is called for a
 \texttt{sample} checkpoint, depending on whether the value is
 drawn or re-used. 
 
