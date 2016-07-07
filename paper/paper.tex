@@ -279,9 +279,41 @@ distributions can be defined by the user by implementing the
 \texttt{distribution} protocol. The \texttt{defdist} macro
 provides a convenient syntax for defining primitive distributions.
 
-\section{Anglican Syntax}
+\section{Language}
 
-\cite{SDF+10, PC94, H08}
+The Anglican language is a subset of Clojure\footnote{It would be
+possible to support almost full Clojure by expanding all macros
+in the Anglican source code, however in Clojure, unlike in
+Scheme~\cite{SDF+10}, or Common Lisp~\cite{PC94}, the result
+of macro-expansion of derived special forms is not well
+specified and implementation specific.}.  Within \texttt{defquery},
+\texttt{let}, \texttt{if}, \texttt{when}, \texttt{cond},
+\texttt{case}, \texttt{and}, \texttt{or}, \texttt{fn} forms are
+supported (others may be in the future but are not now). 
+In \texttt{let} bindings and \texttt{fn} argument lists,
+vector destructuring (but not hash map destructuring) is
+supported. Compound literals for vectors, hash maps, and
+sets are supported just like in Clojure.
+
+\subsection{\texttt{recur}}
+
+Anglican is stackless, therefore \texttt{recur} is
+unnecessary, no recursive call can lead to stack overflow;
+Recursive calls to functions should be used instead. However,
+\texttt{loop}/\texttt{recur} is provided for convenience as a way to express
+loops. \texttt{recur} outside of \texttt{loop} will lead to unpredictable
+behaviour and hard-to-catch errors.
+
+\subsection{Core library}
+
+All of Clojure's core library except for higher-order functions
+(functions that accept other functions as arguments) is
+available in Anglican. Higher order functions cannot be reused
+from Clojure, they have to be re-implemented to accept
+functional arguments in CPS form. The following higher-order
+functions are implemented: \texttt{map}, \texttt{reduce},
+\texttt{filter}, \texttt{some}, \texttt{repeatedly},
+\texttt{comp}, \texttt{partial}.
 
 \section{Macro-based Compilation}
 
@@ -341,7 +373,7 @@ There are three different kinds of inputs to CPS transformation:
 Literals are the same in Anglican and Clojure. They are 
 left unmodified. Literals are a subset of opaque expressions,
 and are identified by test \texttt{simple?} called from
-\texttt{opaque?}.  However, The Clojure syntax has a peculiarity
+\texttt{opaque?}.  However, the Clojure syntax has a peculiarity
 of using the syntax of compound literals (vectors, hash maps,
 and sets) for data constructors. Hence, compound literals must
 be traversed recursively, and if there is a nested non-literal
