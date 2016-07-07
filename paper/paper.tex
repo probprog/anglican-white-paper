@@ -34,14 +34,20 @@
 
 \begin{abstract}
     Anglican is a probabilistic programming system designed to interoperate
-    with Clojure and other JVM languages. We describe the implementation of
-    Anglican and illustrate how its design facilitates both explorative and
-    industrial use of probabilistic programming.
+    with Clojure and other JVM languages. We introduce the
+	programming language Anglican, outline our design choices,
+	and discuss in depth the implementation of the Anglican language
+	and runtime, including macro-based compilation, extended
+	CPS-based evaluation model, and functional representations for
+	probabilistic paradigms, such as distribution,
+	random processes, and inference algorithms.
 
-    In these notes, I explain the rationale behind the
-    macro-compiled implementation of Anglican, outline
-    design choices, and describe important implementation
-    aspects.
+	We show that a probabilistic functional language can be
+	implemented efficiently and integrated tightly with a
+	conventional functional language with only moderate
+	computational overhead. We also demonstrate how advanced
+	probabilistic modeling concepts are mapped naturally
+	to a functional representation.
 \end{abstract}
 
 \section{Introduction}
@@ -654,6 +660,26 @@ the process. While distributions are random and non-functional,
 random processes are deterministic and functional, hence
 \texttt{produce} and \texttt{absorb} are called directly and do
 not have corresponding special forms in Anglican.
+
+\section{Summary}
+
+In this paper, we presented design and implementation internals
+of the Probabilistic Programming System Anglican. Implementing
+a language is an interesting endeavour, in particular when the
+language implements a new paradigm, in this case probabilistic
+programming. Functional programming is a natural complement of
+probabilistic programming --- the latter allows both concise and
+expressive specification of probabilistic generative models and
+efficient implementation of inference algorithm.
+
+Implementing a probabilistic language on top and in tight
+integration with a functional language, Clojure, both helped
+us to accomplish an ambitious goal in a short time span, and
+provided important insights on structure and semantics of
+probabilistic concepts incorporated in Anglican. Efficiency
+and expressive power of Anglican owe to adherence to the
+functional approach as much as to rich inference opportunities
+by the Anglican environment.
 
 \acks
 
