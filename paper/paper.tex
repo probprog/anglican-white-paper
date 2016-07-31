@@ -26,7 +26,7 @@
 \setlength{\pdfpagewidth}{\paperwidth}
 
 \title{Design and Implementation of Probabilistic Programming Language Anglican}
-\authorinfo{David Tolpin \and Jan Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
+\authorinfo{David Tolpin \and Jan Willem van de Meent \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and fwood@robots.ox.ac.uk}
 
 \begin{document}
 
@@ -201,8 +201,11 @@ which JVM is available.
 A probabilistic program, or query, mostly runs deterministic
 code, except for certain checkpoints, in which probabilities are
 involved, and normal, linear execution of the program is
-disrupted. In Anglican and similar languages there are two types of such checkpoints:
-\begin{itemize} \item drawing a value from a random source (\texttt{sample});
+disrupted. In Anglican and similar languages there are two types
+of such checkpoints:
+
+\begin{itemize}
+	\item drawing a value from a random source (\texttt{sample});
     \item conditioning a computed value on a random source
         (\texttt{observe}).
 \end{itemize}
@@ -331,10 +334,28 @@ the continuation. A continuation accepts \textit{two} arguments:
     \item the internal state, bound to the local variable
         \texttt{\$state} in every lexical scope.
 \end{itemize}
+The CPS transformation of constant \texttt{1} with continutation
+\texttt{cont} thus takes the following form:
+\begin{lstlisting}[style=default]
+=> (cps-of-expression 1 'cont)
+(cont 1 $state)
+\end{lstlisting}
+
 The state (\texttt{\$state}) is threaded through the computation
 and contains data used by inference algorithm. \texttt{\$state}
-is a Clojure hash map, and the map entries are
-algorithm-dependent. Except for transformation of
+is a Clojure hash map:
+\begin{lstlisting}[style=default]
+(def initial-state
+  "initial program state"
+  {:log-weight 0.0
+   :predicts []
+   :result nil
+   ::mem {}
+   ::store nil
+   ... })
+\end{lstlisting}
+The full list of map entries depends on the inference
+algorithm. Except for transformation of
 \texttt{mem}, the memoization form, CPS transformation routines
 are not aware of contents of \texttt{\$state}, do not access or
 modify it directly, but rather just thread the state unmodified
@@ -375,7 +396,15 @@ constructor. Functions \texttt{cps-of-vector},
 \texttt{cps-of-hash-map}, \texttt{cps-of-set}, called from
 \texttt{cps-of-expression}, transform Clojure constructor syntax
 (\texttt{[...]}, \texttt{\{...\}}, \texttt{\#\{...\}}) into the
-corresponding calls.
+corresponding calls:
+\begin{lstlisting}[style=default]
+=> (cps-of-vector [0 1 2] 'cont)
+(cont (vector 0 1 2) $state)
+=> (cps-of-hash-map {:a 1 :b 2} 'cont)
+(cont (hash-map :a 1, :b 2) $state)
+=> (cps-of-set #{0 1} 'cont)
+(cont (set (list 0 1)) $state)
+\end{lstlisting}
 
 \subsubsection{Opaque Expressions}
 
@@ -387,8 +416,20 @@ can be accomplished without passing the continuation as a
 transformation argument. Primitive (non-CPS) procedures used in
 Anglican code, \texttt{(fn ...)} forms, and \text{(mem ...)}
 forms are opaque and transformed by
-\texttt{primitive-}\linebreak[0]\texttt{procedure-}\linebreak[0]\texttt{cps}, \texttt{fn-cps}, and
-\texttt{mem-cps}, correspondingly.
+\texttt{primitive-}\linebreak[0]\texttt{procedure-}\linebreak[0]\texttt{cps},
+\texttt{fn-cps}, and \texttt{mem-cps}, correspondingly: a
+slightly simplified CPS form of expression
+\begin{lstlisting}[style=default]
+(fn [x y]
+  (+ x y))
+\end{lstlisting}
+would be
+\begin{lstlisting}[style=default]
+(fn [cont $state x y] 
+  (cont (+ x y) $state))
+\end{lstlisting}
+In the actual code an automatically generated fresh symbol is
+used instead of \texttt{cont}.
 
 \subsubsection{General Expressions}
 
@@ -431,6 +472,8 @@ continuations:
         locations.
 \end{itemize}
         
+\paragraph{Trampolining}
+
 In implementations of functional programming languages stack
 growth is avoided through \textit{tail call optimization} (TCO).
 However, Clojure does not support a general form of TCO, and
@@ -443,7 +486,24 @@ and called by the trampoline (Clojure provides function
 \texttt{trampoline} for this purpose) --- this way the
 computation continues, but the stack is collapsed on every
 continuation call. Function \texttt{continue} implements the
-wrapping.
+wrapping and is invoked on every continuation call:
+\begin{lstlisting}[style=default]
+=> (continue 'cont 'value 'state)
+(fn [] (cont value state))
+\end{lstlisting}
+Correspondingly, the full, wrapped CPS form of
+\begin{lstlisting}[style=default]
+(fn [x y] (+ x y))
+\end{lstlisting}
+becomes
+\begin{lstlisting}[style=default]
+(fn [cont $state x y] 
+  (fn [] 
+    (cont (+ x y) $state)))
+\end{lstlisting}
+When the CPS-transformed function is called, it returns a
+\textit{thunk} (a parameterless function) which is then
+re-invoked through the trampoline, with the stack collapsed.
 
 To realize potential danger of code size explosion, consider
 CPS transformation of code
