@@ -332,7 +332,7 @@ the continuation. A continuation accepts \textit{two} arguments:
     \item the internal state, bound to the local variable
         \texttt{\$state} in every lexical scope.
 \end{itemize}
-The CPS transformation of constant \texttt{1} with continutation
+The CPS transformation of constant \texttt{1} with continuation
 \texttt{cont} thus takes the following form:
 \begin{lstlisting}[style=default]
 => (cps-of-expression 1 'cont)
