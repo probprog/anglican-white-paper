@@ -631,7 +631,7 @@ updated state:
 \begin{lstlisting}[style=default]
 => (mem-cps '(foo))
 (let [M (gensym "M")]
-  (fn mem [C $state & P]
+  (fn mem23623 [C $state & P]
     (if (in-mem? $state M P)
       ;; previously memoized result
       (fn []
@@ -741,7 +741,7 @@ convenience, it exposes common mathematical functions
 (\texttt{abs}, \texttt{floor}, \texttt{sin}, \texttt{log},
 \texttt{exp}, etc.), but most importantly, it provides
 definitions of common distributions. Each distribution object
-implements the \texttt{anglican.runtime/{\linebreak[0]}distribution} protocol,
+implements the \texttt{anglican.{\linebreak[0]}runtime/{\linebreak[0]}distribution} protocol,
 with two methods: \texttt{sample*} and \texttt{observe*}.
 The \texttt{sample*} \textit{method} returns a random sample and
 roughly corresponds to the \texttt{sample} checkpoint,
@@ -757,7 +757,19 @@ drawn or re-used.
 Macro \texttt{defdist} should be used to define distributions.
 \texttt{defdist} takes care of defining a separate record type
 for every distribution so that multimethods can be dispatched on
-distribution types when needed, e.g. for custom proposals.
+distribution types when needed, e.g. for custom proposals. The
+Bernoulli distribution could be defined as follows:
+\begin{lstlisting}[style=default]
+(defdist bernoulli
+  "Bernoulli distribution"
+  [p]
+  (sample* [this] (if (< (rand) p) 1 0))
+  (observe* [this value]
+    (Math/log (case value
+                1 p
+                0 (- 1. p)
+                0.))))
+\end{lstlisting}
 
 Similar to distributions, \textit{random processes}, related to
 so called `exchangeable random procedures'\footnote{However, random sequences
@@ -768,10 +780,36 @@ macro \texttt{defproc} and implement the
 has two methods --- \texttt{produce}, which returns a
 distribution object, and \texttt{absorb}, which returns a new
 random process object obtained by absorbing a value drawn from
-the process. While distributions are random and non-functional,
+the process. Here is a definition of the Poisson process:
+\begin{lstlisting}[style=default]
+(defproc PP
+  "Poisson point process"
+  [rate] [dist (exponential rate)]
+  (produce [this] dist)
+  (absorb [this value] this))
+\end{lstlisting}
+While distributions are random and non-functional,
 random processes are deterministic and functional, hence
 \texttt{produce} and \texttt{absorb} are called directly and do
-not have corresponding special forms in Anglican.
+not have corresponding special forms in Anglican: 
+\begin{itemize}
+    \item Values produced by the process are sampled from the distribution
+        returned by \texttt{produce}.
+    \item When a value is observed from the distribution, a new
+        process, with the observed value absorbed, is returned
+        by \texttt{absorb}.
+\end{itemize}
+A common pattern of programming with processes is Anglican is
+recursively computing a new process based on the observed value:
+\begin{lstlisting}[style=default]
+(loop [process (HawkesPointProcess)
+       [value & values] values]
+  (let [dist (produce process)]
+    (observe dist value)
+    (recur (absorb process value) values)))
+\end{lstlisting}
+Unlike conventional implementations of random processes,
+Anglican's random processes do not have mutable state.
 
 \section{Summary}
 
