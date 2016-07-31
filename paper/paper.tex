@@ -588,14 +588,20 @@ probabilistic programming language --- \texttt{sample} and
 \texttt{observe}. Their purpose is to interrupt deterministic
 computation and transfer control to the inference algorithm.
 Practically, this is achieved through returning
-\textit{checkpoints} --- Clojure records of the corresponding
+\textbf{checkpoints} --- Clojure records of the corresponding
 types (\texttt{anglican.trap.sample} or
 \texttt{anglican.trap.observe}). The records contain fields
 specific to each form, as well as the continuation; calling the
 continuation resumes the computation. Checkpoints expose the
 program state to the inference algorithm, and the updated state
 is re-injected into the computation when the continuation is
-called. 
+called: 
+\begin{lstlisting}[style=default]
+=> (cps-of-expression '(sample dist) 'cont)
+(->sample dist cont $state)
+=> (cps-of-expression '(observe dist val) 'cont)
+(->observe dist val cont $state)
+\end{lstlisting}
 
 In addition to checkpoints, there are a few other special forms
 --- \texttt{predict}, \texttt{store}, \texttt{retrieve},
@@ -605,7 +611,7 @@ translated into expressions involving calls of functions from the
 implements stochastic memoization, deserves a more detailed
 explanation.
 
-\textit{Memoization} is often implemented on top of a mutable
+\textbf{Memoization} is often implemented on top of a mutable
 dictionary, where the key is the argument list and the value is
 the returned value. However, there are no mutable data
 structures in a probabilistic program, hence \texttt{mem}'s
@@ -618,10 +624,27 @@ identifier) was previously called in the same run of the
 probabilistic program with the same arguments. If the memoized
 result is available, the continuation of the memoized function
 call is immediately called with the stored result. Otherwise,
-the argument of \texttt{mem} is called with a continuation that
+the argument of \texttt{mem} is called with a continuation which
 first creates an updated state with the memoized result, and
 then calls the `outer' continuation with the result and the
-updated state. 
+updated state:
+\begin{lstlisting}[style=default]
+=> (mem-cps '(foo))
+(let [M (gensym "M")]
+  (fn mem [C $state & P]
+    (if (in-mem? $state M P)
+      ;; previously memoized result
+      (fn []
+        (C (get-mem $state M P) $state))
+      ;; new computation
+      (clojure.core/apply
+        foo
+        ;; memoize result in continuation
+        (fn [V $state]
+          (fn [] (C V (set-mem $state M P V))))
+        $state
+        P)))))
+\end{lstlisting}
 
 Memoized results are not shared among multiple runs of a
 probabilistic program, which is intended. Otherwise, it would be
@@ -719,15 +742,15 @@ convenience, it exposes common mathematical functions
 \texttt{exp}, etc.), but most importantly, it provides
 definitions of common distributions. Each distribution object
 implements the \texttt{anglican.runtime/{\linebreak[0]}distribution} protocol,
-with two methods: \texttt{sample} and \texttt{log-prob}.
-The \texttt{sample} \textit{method} returns a random sample and
+with two methods: \texttt{sample*} and \texttt{observe*}.
+The \texttt{sample*} \textit{method} returns a random sample and
 roughly corresponds to the \texttt{sample} checkpoint,
-the \texttt{log-prob} \textit{method} returns the log probability
+the \texttt{observe*} \textit{method} returns the log probability
 of the value and roughly corresponds to the \texttt{observe}
 checkpoint. The methods can be, and sometimes are called from
 handlers of the corresponding checkpoints, but do not have to
-be. For example, in LMH either the \texttt{sample} or
-the \texttt{log-prob} \textit{method} is called for a
+be. For example, in LMH either the \texttt{sample*} or
+the \texttt{observe*} \textit{method} is called for a
 \texttt{sample} checkpoint, depending on whether the value is
 drawn or re-used. 
 
