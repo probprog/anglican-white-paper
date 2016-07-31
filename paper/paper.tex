@@ -387,8 +387,8 @@ can be accomplished without passing the continuation as a
 transformation argument. Primitive (non-CPS) procedures used in
 Anglican code, \texttt{(fn ...)} forms, and \text{(mem ...)}
 forms are opaque and transformed by
-\texttt{primitive-}\linebreak[0]\texttt{procedure-}\linebreak[0]\texttt{cps}, \texttt{fn-cps}, and
-\texttt{mem-cps}, correspondingly.
+\texttt{primitive-}\linebreak[0]\texttt{procedure-}\linebreak[0]\texttt{cps},
+\texttt{fn-cps}, and \texttt{mem-cps}, correspondingly.
 
 \subsubsection{General Expressions}
 
@@ -500,7 +500,7 @@ namespaces in which all functions are primitive, and recognize
 primitive functions by name --- if a function name is not in the
 list, the function is an Anglican function. Global dynamically
 bound variables \texttt{*primitive-procedures*} and
-\texttt{*primitive-namespace*} contain the initial lists of
+\texttt{*primitive-namespaces*} contain the initial lists of
 names and namespaces, correspondingly. Of course, local bindings
 can shade global primitive function names. For example,
 \texttt{first} is an Anglican function inside the let block in the
@@ -652,15 +652,15 @@ convenience, it exposes common mathematical functions
 \texttt{exp}, etc.), but most importantly, it provides
 definitions of common distributions. Each distribution object
 implements the \texttt{anglican.runtime/{\linebreak[0]}distribution} protocol,
-with two methods: \texttt{sample} and \texttt{log-prob}.
-The \texttt{sample} \textit{method} returns a random sample and
+with two methods: \texttt{sample*} and \texttt{observe*}.
+The \texttt{sample*} \textit{method} returns a random sample and
 roughly corresponds to the \texttt{sample} checkpoint,
-the \texttt{log-prob} \textit{method} returns the log probability
+the \texttt{observe*} \textit{method} returns the log probability
 of the value and roughly corresponds to the \texttt{observe}
 checkpoint. The methods can be, and sometimes are called from
 handlers of the corresponding checkpoints, but do not have to
-be. For example, in LMH either the \texttt{sample} or
-the \texttt{log-prob} \textit{method} is called for a
+be. For example, in LMH either the \texttt{sample*} or
+the \texttt{observe*} \textit{method} is called for a
 \texttt{sample} checkpoint, depending on whether the value is
 drawn or re-used. 
 
