@@ -12,7 +12,7 @@
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
      {<->sub*lmtt/m/sl}{}
-\lstdefinestyle{default}{frame=single,language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false}
+\lstdefinestyle{default}{language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -470,7 +470,7 @@ continuations:
         locations.
 \end{itemize}
         
-\paragraph{Trampolining}
+\paragraph{Managing stack size}
 
 In implementations of functional programming languages stack
 growth is avoided through \textit{tail call optimization} (TCO).
@@ -503,6 +503,8 @@ When the CPS-transformed function is called, it returns a
 \textit{thunk} (a parameterless function) which is then
 re-invoked through the trampoline, with the stack collapsed.
 
+\paragraph{Avoiding exponential code growth}
+
 To realize potential danger of code size explosion, consider
 CPS transformation of code
 \begin{lstlisting}[style=default]
@@ -520,7 +522,7 @@ with continuation
     :wine (wine-glass choice)
     :juice (juice-bottle choice)))
 \end{lstlisting}
-The code of the continuation, represented by an \texttt{fn}
+The code of the continuation, represented by the \texttt{fn}
 form, will be repeated three times. In general, CPS code can
 grow extremely large if symbolic continuations are inserted
 repeatedly.
@@ -529,8 +531,15 @@ To circumvent this inefficiency, CPS transformers for
 expressions with multiple continuation points (\texttt{if} and
 derivatives, \texttt{and}, \texttt{or}, and \texttt{case}) bind
 the continuation to a fresh symbol if it is not yet a symbol.
-Macro \texttt{defn-with-named-cont} establishes the binding
-automatically.
+Macro \texttt{defn-with-{\linebreak[0]}named-{\linebreak[0]}cont}
+establishes the binding automatically:
+\begin{lstlisting}[style=default]
+=> (cps-of-if '(c t f) '(fn [x] (* 2 x)))
+(let [cont (fn [x] (* 2 x))]
+  (if c
+      (fn [] (cont t $state))
+      (fn [] (cont f $state))))
+\end{lstlisting}
 
 \subsubsection{Primitive Procedures}
 
