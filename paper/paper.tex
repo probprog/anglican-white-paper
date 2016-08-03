@@ -23,6 +23,11 @@
 \setlength{\pdfpageheight}{\paperheight}
 \setlength{\pdfpagewidth}{\paperwidth}
 
+\newcommand*{\dt}[1]{{ \bf [}{\bf DT:} {\it #1}{\bf ]}}
+\newcommand*{\fw}[1]{{ \bf [}{\bf FW:} {\it #1}{\bf ]}}
+\newcommand*{\hy}[1]{{ \bf [}{\bf HY:} {\it #1}{\bf ]}}
+\newcommand*{\jw}[1]{{ \bf [}{\bf JW:} {\it #1}{\bf ]}}
+
 \title{Design and Implementation of Probabilistic Programming Language Anglican}
 \authorinfo{David Tolpin \and Jan Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
 
@@ -50,11 +55,11 @@
 
 \section{Introduction}
 For data science practitioners, statistical inference is typically
-but one step in a more elaborate analysis workflow. The first stage
+just one step in a more elaborate analysis workflow. The first stage
 of this work involves data acquisition, pre-processing and cleaning.
 This is often followed by several iterations of exploratory model
 design and testing of inference algorithms. Once a sufficiently
-robust statistical model and corresponding inference algorithm have
+robust statistical model and a corresponding inference algorithm have
 been identified, analysis results must be post-processed, visualized,
 and in some cases integrated into a wider production system.
 
@@ -73,6 +78,9 @@ efficient as techniques that take advantage of model-specific
 optimizations, probabilistic programming makes it easier to optimize
 models for a specific application in a manner that is efficient in
 terms of the dimensionality of its latent variables.
+
+\hy{Minor point. I got slightly confused by the last sentence. What does
+``efficient in terms of the dimensionality ..'' mean?}
 
 While probabilistic programming systems shorten the iteration cycle in
 exploratory model design, they typically lack basic functionality needed for
