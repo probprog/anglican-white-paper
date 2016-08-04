@@ -189,12 +189,12 @@ look like the following code:
     (predict :b b)
     (predict :d d)))
 \end{lstlisting}
-This query defines a probability distribution on predicted
+This query defines a probability distribution on three predicted
 variables, $\texttt{d} \in \{\texttt{normal},\texttt{gamma}\}$
 for a distribution type, and $\texttt{a}$ and $\texttt{b}$ for
 positive parameters for the type. Samples from this distribution 
-can be obtained by running one of Anglican's inference algorithms
-on the query.
+can be obtained by running the query under one of Anglican's 
+inference algorithms.
 
 Internally, an Anglican query is represented by a computation in
 \textit{continuation passing style} (CPS)~\cite{AJ89}, and inference algorithms
@@ -267,11 +267,13 @@ Anglican is intended to co-exist with Clojure and be a part of
 the source of a Clojure program. To facilitate this, Anglican
 programs, or queries, are wrapped by macros (defined in the
 \texttt{anglican.emit} namespace), which call the CPS
-transformations and define Clojure objects suitable for passing
+transformations and define Clojure values
+%Clojure objects
+suitable for passing
 as arguments to inference algorithms (\texttt{defquery},
 \texttt{query}). In addition to defining entire queries,
 Anglican promotes modularization of inference algorithms through
-definition of \textit{probabilistic functions} using
+the definitions of \textit{probabilistic functions} using
 \texttt{defm} and \texttt{fm} (Anglican counterparts of Clojure
 \texttt{defn} and \texttt{fn}). Probabilistic functions are
 written in Anglican, may include probabilistic forms
@@ -283,25 +285,35 @@ same query.
 Operational semantics of Anglican queries is different from that
 of Clojure code, therefore queries must be called through
 inference algorithms, rather than `directly'.  The
-\texttt{anglican.inference} namespace supplies the
-\texttt{infer} multimethod, which accepts an Anglican query and
+\texttt{anglican.inference} namespace declares the polymorphic
+function \texttt{infer} using Clojure's multimethod mechanism.
+This function accepts an Anglican query and
 returns a lazy sequence of weighted samples from the
 distribution defined by the query.  When inference
 is performed on an Anglican query, the query is run by a
 particular inference algorithm. Inference algorithms must
 provide an implementation for \texttt{infer}, as well as
-override some of the methods of the \texttt{checkpoint}
-multimethod, called to handle \texttt{sample} and
-\texttt{observe} in an algorithmic-specific manner, as well
-as on termination of a probabilistic program.
+override the polymorphic function \texttt{checkpoint} (defined
+as a multimethod) so as to handle \texttt{sample} and
+\texttt{observe} in an algorithm-specific manner, as well
+as to construct an appropriate result on the 
+termination of a probabilistic program.
 
 Finally, Anglican queries use `primitive', or commonly known
 and used, distributions, to draw random samples and condition
 observations. Many primitive distributions are provided by the
-\texttt{anglican.runtime} namespace, and additional
-distributions can be defined by the user by implementing the
-\texttt{distribution} protocol. The \texttt{defdist} macro
+\texttt{anglican.runtime} namespace, and an additional
+distribution can be defined by the user by implementing a
+particular set of functions for the distribution 
+(via Clojure's protocol mechanism). The \texttt{defdist} macro
 provides a convenient syntax for defining primitive distributions.
+
+\hy{I think that the concepts like multimethod and protocol
+are specific to Clojure, and they are not well-known among PL
+people. I tried to rephase the text so that people can follow
+it even when they don't know these concepts. I didn't know
+``form'' before, but using it is perhaps ok because it is a
+standard terminology for Lisp programmers.}
 
 \section{Language}
 
