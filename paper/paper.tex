@@ -336,7 +336,7 @@ Clojure's pattern matching mechanism for vector data type
 literals for vectors, hash maps, and
 sets are supported just like in Clojure.
 
-\subsection{Tail recursion}
+\subsection{Tail Call}
 
 Clojure provides special constructs \texttt{loop} and \texttt{recur}
 for writing tail-recursive programs. Such constructs are not necessary
@@ -347,7 +347,7 @@ In Anglican, recursive calls to functions should be used instead of
 for convenience as a way to express loops. \texttt{recur} outside of \texttt{loop} 
 will lead to unpredictable behaviour and hard-to-catch errors.
 
-\subsection{Core library}
+\subsection{Core Library}
 
 All of Clojure's core library except for higher-order functions
 (functions that accept other functions as arguments) is
