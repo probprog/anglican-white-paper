@@ -166,14 +166,12 @@ shares a common syntax with Clojure; Clojure functions can be called
 from Anglican code and vice versa. A simple program in Anglican can
 look like the following code:
 \begin{lstlisting}[style=default]
-(defquery models data
-  "chooses a distribution
-   which describes the data"
+(defquery model data
+  "chooses a distribution which describes the data"
   (let [;; Guessing a distribution
         dist (sample (categorical
-                       [[uniform-continuous 0 1]
-                        [normal 0.5 1] 
-                        [gamma 1 1]]))
+                       [[normal 0.5] 
+                        [gamma 0.5]]))
         a (sample (gamma 1 1))
         b (sample (gamma 1 1))
         d (dist a b)]
@@ -185,10 +183,17 @@ look like the following code:
           (observe d x))
         (recur data)))
 
-    ;; Predicting the distribution
-    (predict :d (type d))
-    (predict :a a) (predict :b b)))
+    ;; Predicting a, b and the distribution
+    (predict :a a) 
+    (predict :b b)
+    (predict :d d)))
 \end{lstlisting}
+This query defines a probability distribution on predicted
+variables, $\texttt{d} \in \{\texttt{normal},\texttt{gamma}\}$
+for a distribution type, and $\texttt{a}$ and $\texttt{b}$ for
+positive parameters for the type. Samples from this distribution 
+can be obtained by running one of Anglican's inference algorithms
+on the query.
 
 Internally, an Anglican query is represented by a computation in
 \textit{continuation passing style} (CPS)~\cite{AJ89}, and inference algorithms
