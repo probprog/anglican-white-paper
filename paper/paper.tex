@@ -167,7 +167,8 @@ from Anglican code and vice versa. A simple program in Anglican can
 look like the following code:
 \begin{lstlisting}[style=default]
 (defquery model data
-  "chooses a distribution which describes the data"
+  "chooses a distribution 
+   which describes the data"
   (let [;; Guessing a distribution
         dist (sample (categorical
                        [[normal 0.5] 
@@ -208,7 +209,7 @@ Inference on Anglican queries generates a lazy sequence of
 samples, which can be processed asynchronously in Clojure
 code for analysis, integration, and decision making.
 
-Clojure (and Anglican) run on the JVM and get access to a wide choice of Java
+Clojure (and Anglican) runs on the JVM and gets access to a wide choice of Java
 libraries for data processing, networking, presentation, and imaging.
 Conversely, Anglican queries can be called from Java and other JVM languages.
 Programs involving Anglican queries can be deployed as JVM
@@ -232,12 +233,14 @@ language, except for the handling of these checkpoints.
 Depending on the \textit{inference algorithm}, \texttt{sample}
 and \texttt{observe} may result in implicit input/output
 operations and control changes. For example, \texttt{observe} in
-particle filtering inference algorithms \cite{WVM14} a non-deterministic
+particle filtering inference algorithms \cite{WVM14} is a non-deterministic
 control statement at which a particle can be either replicated
 or terminated. Similarly, in Metropolis-Hastings \cite{WSG11},
 \texttt{sample} is both an input and a non-deterministic control
 statement (with delayed effect), eventually affecting acceptance
 or rejection of a sample.
+
+\hy{What do you mean by input in ``both an input..''?}
 
 Because of the checkpoints, Anglican programs must allow the
 inference algorithm to step in, recording information and
