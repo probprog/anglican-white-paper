@@ -23,10 +23,14 @@
 \setlength{\pdfpageheight}{\paperheight}
 \setlength{\pdfpagewidth}{\paperwidth}
 
-\newcommand*{\dt}[1]{{ \bf [}{\bf DT:} {\it #1}{\bf ]}}
-\newcommand*{\fw}[1]{{ \bf [}{\bf FW:} {\it #1}{\bf ]}}
-\newcommand*{\hy}[1]{{ \bf [}{\bf HY:} {\it #1}{\bf ]}}
-\newcommand*{\jw}[1]{{ \bf [}{\bf JW:} {\it #1}{\bf ]}}
+\newcommand*{\dt}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf DT:} 
+        {\rm #1}\end{minipage}}}
+\newcommand*{\fw}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf FW:} 
+        {\rm #1}\end{minipage}}}
+\newcommand*{\hy}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf HY:} 
+        {\rm #1}\end{minipage}}}
+\newcommand*{\jw}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf JW:} 
+        {\rm #1}\end{minipage}}}
 
 \title{Design and Implementation of Probabilistic Programming Language Anglican}
 \authorinfo{David Tolpin \and Jan Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
@@ -372,13 +376,11 @@ CPS transformation be modified in order to handle these constructs?
 The use of state can be one answer for the second question.
 The second most interesting part is about the use of trampolining
 the mix with Clojure code.
-
 Second, the section assumes that a reader is already familiar 
 with Clojure or something specific to probabilistic programming. For 
 instance, it might be that a reader  has never heard about
 Clojure records and stochastic memoization. Then, she or he
 would have difficulties in following this section. 
-
 What should we do? One option is not to do anything. Another is
 to take care of the second point. That is, we make the section
 easily followed by someone who does not know Clojure. The third
