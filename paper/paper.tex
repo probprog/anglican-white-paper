@@ -360,6 +360,30 @@ will lead to unpredictable behaviour and hard-to-catch errors.
 
 \section{Macro-based Compilation}
 
+\hy{I found this section confusing in the following sense. First,
+it does not highlight the most interesting aspects of the compilation
+of Anglican. It gives a good overview on how the compilation is
+implemented, but a reader might want to see something unique and
+interesting about Anglican. To me, the most interesting part of the
+compilation is the treatment of probabilistic constructs in Anglican's
+CPS transformation. How are sample,
+observe and stochastic memoization compiled? How should the standard
+CPS transformation be modified in order to handle these constructs?
+The use of state can be one answer for the second question.
+The second most interesting part is about the use of trampolining
+the mix with Clojure code.
+
+Second, the section assumes that a reader is already familiar 
+with Clojure or something specific to probabilistic programming. For 
+instance, it might be that a reader  has never heard about
+Clojure records and stochastic memoization. Then, she or he
+would have difficulties in following this section. 
+
+What should we do? One option is not to do anything. Another is
+to take care of the second point. That is, we make the section
+easily followed by someone who does not know Clojure. The third
+is to restructure the section and to take care of my first criticism.}
+
 Compilation of Anglican into Clojure relies on the Clojure
 \textit{macro} facility. However, the compilation algorithm is
 implemented as a library of \textit{functions} in namespace
