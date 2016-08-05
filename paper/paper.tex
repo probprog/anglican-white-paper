@@ -298,8 +298,8 @@ particular inference algorithm. Inference algorithms must
 provide an implementation for \texttt{infer}, as well as
 override the polymorphic function \texttt{checkpoint} (defined
 as a multimethod) so as to handle \texttt{sample} and
-\texttt{observe} in an algorithm-specific manner, as well
-as to construct an appropriate result on the 
+\texttt{observe} in an algorithm-specific manner and
+to construct an appropriate result on the 
 termination of a probabilistic program.
 
 Finally, Anglican queries use `primitive', or commonly known
@@ -329,23 +329,12 @@ specified and implementation specific.}.  Anglican queries
 are defined within \texttt{defquery} as shown in the previous section,
 using \texttt{if}, \texttt{when}, \texttt{cond}, \texttt{case}, 
 \texttt{let}, \texttt{and}, \texttt{or}, \texttt{fn} forms;
-other forms of Clojure may be in the future but are not now. 
+other forms of Clojure may be supported in the future but are not now. 
 In \texttt{let} bindings and \texttt{fn} argument lists,
 Clojure's pattern matching mechanism for vector data type
 (called vector destructuring) is supported. Also, compound 
 literals for vectors, hash maps, and
 sets are supported just like in Clojure.
-
-\subsection{Tail Call}
-
-Clojure provides special constructs \texttt{loop} and \texttt{recur}
-for writing tail-recursive programs. Such constructs are not necessary
-in Anglican, because Anglican programs are CPS-converted and do not
-use stacks; no recursive call in Anglican can lead to stack overflow.
-In Anglican, recursive calls to functions should be used instead of
-\texttt{recur}. However, \texttt{loop}/\texttt{recur} is provided in Anglican
-for convenience as a way to express loops. \texttt{recur} outside of \texttt{loop} 
-will lead to unpredictable behaviour and hard-to-catch errors.
 
 \subsection{Core Library}
 
@@ -357,6 +346,17 @@ functional arguments in CPS form. The following higher-order
 functions are implemented: \texttt{map}, \texttt{reduce},
 \texttt{filter}, \texttt{some}, \texttt{repeatedly},
 \texttt{comp}, \texttt{partial}.
+
+\subsection{Tail Call}
+
+Clojure provides special forms \texttt{loop} and \texttt{recur}
+for writing tail-recursive programs. Such forms are not necessary
+in Anglican, because Anglican programs are CPS-converted and do not
+use stacks. For instance, no recursive call in Anglican can lead to stack overflow.
+In fact, in Anglican, it is recommended to use recursive calls to functions instead of
+\texttt{recur}. However, \texttt{loop}/\texttt{recur} is provided in Anglican
+for convenience as a way to express loops. \texttt{recur} outside of \texttt{loop} 
+will lead to unpredictable behaviour and hard-to-catch errors.
 
 \section{Macro-based Compilation}
 
