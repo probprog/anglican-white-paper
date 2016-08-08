@@ -742,20 +742,28 @@ to \texttt{infer}:
 \end{lstlisting}
 A query is executed by calling the initial continuation of the
 query, which accepts a value and a state. The state is supplied
-by the inference algorithm, however the value is provided as a
+by the inference algorithm, while the value is provided as a
 parameter of \texttt{infer}. A query does not have to have any
 parameters, in which case the value can be simply \texttt{nil}.
 When a query is defined with a binding for the initial value,
-the value becomes available inside the query. The value is
-destructured in case of a structured binding, for example:
+the value becomes available inside the query. A query may
+accept multiple parameters as components of a Clojure vector,
+in which case the initial value is given as a vector and its
+components get bound to the corresponding parameters of the
+query (via destructuring).
+%The value is destructured via pattern match in case of a structured binding. 
+For example,
 \begin{lstlisting}[style=default]
 (defquery my-query [mean sd]
   (predict (sample (normal mean sd))))
 
 (def samples (infer :lmh my-query [1.0 3.0]))
 \end{lstlisting}
-Finally, an indefinite number of auxiliary arguments can be
-passed to \texttt{infer}. By convention, the arguments should be
+Finally, any number of auxiliary arguments can be
+passed to \texttt{infer}. 
+%Finally, an indefinite number of auxiliary arguments can be
+%passed to \texttt{infer}. 
+By convention, the arguments should be
 keyword arguments, and are interpreted in the algorithm-specific
 manner.
 
