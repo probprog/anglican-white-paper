@@ -292,7 +292,7 @@ same query.
 Operational semantics of Anglican queries is different from that
 of Clojure code, therefore queries must be called through
 inference algorithms, rather than `directly'.  The
-\texttt{anglican.inference} namespace declares the polymorphic
+\texttt{anglican.inference} namespace declares the (ad-hoc) polymorphic
 function \texttt{infer} using Clojure's multimethod mechanism.
 This function accepts an Anglican query and
 returns a lazy sequence of weighted samples from the
@@ -720,22 +720,27 @@ impossible to memoize functions with random results.
 
 \section{Inference Algorithms}
 
-An inference algorithm is an implementation of \texttt{infer}
-multimethod from \texttt{anglican.inference} namespace. The
-multimethod accepts an algorithm identifier, a query --- the
+An inference algorithm is an implementation of the (ad-hoc) 
+polymorphic function \texttt{infer} declared as Clojure's multimethod
+in the \texttt{anglican.inference} namespace. The
+function accepts an algorithm identifier, a query --- the
 probabilistic program in which to perform the inference, an
 initial value for the query, and optional algorithm parameters.
 
-\subsection{The \texttt{infer} multimethod}
+\subsection{The \texttt{infer} function}
 
-The sole purpose of the algorithm identifier is method dispatch
---- conventionally, the identifier is a keyword related to the
+The sole purpose of the algorithm identifier of \texttt{infer} is to invoke
+an appropriate overloading or implementation of the function --- conventionally, 
+the identifier is a keyword related to the
 algorithm name (\texttt{:lmh} for Lightweight
 Metropolis-Hasting, \texttt{:pcascade} for Particle Cascade
 etc.). The second parameter is a query as defined by
-\texttt{query} or \texttt{defquery} forms. If needed, the query
-can be defined anonymously, right in the argument list of a call
-to \texttt{infer}:
+the \texttt{defquery} form or its anonymous version \texttt{query}. For instance,
+the following Clojure code invokes \texttt{infer} on an Anglican query
+defined anonymously via the \texttt{query} form:
+%If needed, the query
+%can be defined anonymously, right in the argument list of a call
+%to \texttt{infer}:
 \begin{lstlisting}[style=default]
 (let [x 1]
   (infer :pgibbs (query (predict x)) nil))
@@ -747,10 +752,12 @@ parameter of \texttt{infer}. A query does not have to have any
 parameters, in which case the value can be simply \texttt{nil}.
 When a query is defined with a binding for the initial value,
 the value becomes available inside the query. A query may
-accept multiple parameters as components of a Clojure vector,
-in which case the initial value is given as a vector and its
-components get bound to the corresponding parameters of the
-query (via destructuring).
+accept multiple parameters using Clojure's structured binding.
+For instance, it may take multiple parameters as components 
+of an input vector. In this case, the initial value is given
+as a structured value, such as a vector, and the components
+of this value gets pattern matched to the corresponding
+parameters of the query via the destructuring mechanism of Clojure:
 %The value is destructured via pattern match in case of a structured binding. 
 For example,
 \begin{lstlisting}[style=default]
