@@ -1,5 +1,6 @@
 \documentclass[preprint]{sigplanconf}
 
+\usepackage[color]{changebar}
 \usepackage{enumitem}
 \usepackage[lighttt]{lmodern}
 \usepackage{amsmath}
@@ -23,6 +24,8 @@
 \setlength{\pdfpageheight}{\paperheight}
 \setlength{\pdfpagewidth}{\paperwidth}
 
+% Authors: comment using these commands
+
 \newcommand*{\dt}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf DT:} 
         {\rm #1}\end{minipage}}}
 \newcommand*{\fw}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf FW:} 
@@ -31,6 +34,12 @@
         {\rm #1}\end{minipage}}}
 \newcommand*{\jw}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf JW:} 
         {\rm #1}\end{minipage}}}
+
+
+% Authors: use changebars to mark changed regions
+% \cbstart
+% ...
+% \cbend
 
 \title{Design and Implementation of Probabilistic Programming Language Anglican}
 \authorinfo{David Tolpin \and Jan Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
@@ -82,6 +91,7 @@ efficient as techniques that take advantage of model-specific
 optimizations, probabilistic programming makes it easier to optimize
 models for a specific application in a manner that is efficient in
 terms of the dimensionality of its latent variables.
+\cbend
 
 \hy{Minor point. I got slightly confused by the last sentence. What does
 ``efficient in terms of the dimensionality ..'' mean?}
