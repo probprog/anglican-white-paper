@@ -757,7 +757,7 @@ For instance, it may take multiple parameters as components
 of an input vector. In this case, the initial value is given
 as a structured value, such as a vector, and the components
 of this value gets pattern matched to the corresponding
-parameters of the query via the destructuring mechanism of Clojure:
+parameters of the query via the destructuring mechanism of Clojure.
 %The value is destructured via pattern match in case of a structured binding. 
 For example,
 \begin{lstlisting}[style=default]
@@ -801,9 +801,29 @@ conditional control flow. LMH (\texttt{anglican.lmh}) and SMC
 (\texttt{anglican.smc}) are examples of inference algorithms
 where either \texttt{observe} (SMC) or \texttt{sample} (LMH)
 handler is overridden. In addition, SMC runs multiple particles
-(program instances) simultaneously, while LMH runs re-runs
+(program instances) simultaneously, while LMH re-runs
 programs from an intermediate continuation rather than from the
 beginning.
+
+\hy{This subsection is also not quite self-contained. Someone
+who is not familiar with Clojure or Anglican codebase is likely
+to get lost. On the other hand, it is a good overview or guide
+for those who want to study the implemenation of Anglican. One
+way to address this presentation issue while keeping the benefits
+of the current text is to include some extended examples. For instance,
+in the beginning of the paper, we might include several
+Anglican examples. Then, we show that how these examples get
+cps-transformed. Next, we present the implementation of inference
+algorithms in Anglican using semi pseudo code; this is not quite
+an implementation in Clojure but gives a good sketch on how
+various functions are implemented in each inference algorithm.
+Finally, we show how these algorithms work on cps-tranformed 
+examples.}
+
+\hy{I rewrote various parts so as to avoid the word multimethod.
+My strategy was to use the phrases, such as (ad-hoc) polymophic
+function and overloading. All of my rephrasing should be
+double-checked.}
 
 \section{Definitions and Runtime Library}
 
