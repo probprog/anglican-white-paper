@@ -15,7 +15,6 @@ PDFLATEX=pdflatex -shell-escape
 paper.pdf: paper.tex \
 	refs.bib
 
-
 clean:
 	rm -f *.aux *.log *.bbl *.blg 
 

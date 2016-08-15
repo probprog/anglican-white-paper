@@ -36,6 +36,7 @@
         {\rm #1}\end{minipage}}}
 
 
+\cbcolor{red}
 % Authors: use changebars to mark changed regions
 % \cbstart
 % ...
@@ -165,16 +166,30 @@ An implementation of Anglican must therefore address three issues:
         transforming Anglican programs, according to the
         probabilistic operational semantics.
 \end{itemize}
+\cbstart
+Execution of probabilistic programs by inference algorithms is
+different from execution of deterministic programs.  A
+probabilistic program is executed multiple times, often hundreds
+of thousands or even millions of times for a single inference
+task. Random choices may affect which parts of the program code
+are executed and how often. Many inference algorithms require
+re-running the program multiple times partially, from a certain
+point on.  Different executions may employ different random
+choices, however for efficient inference a correspondence
+between random choices in different executions should be
+maintained. These are just some of the challenges which were
+faced and solved during development of Anglican.
+\cbend
 
 Anglican language syntax, compilation, invocation, and runtime
 support of Anglican queries are discussed in detail in further
 sections.
 
-\hy{Great introduction. It very nicely explains why Anglican
-is born and how it is implemented. If I act as a really picky
-reviewer or a reader, I would also expect the instroduction
-to help me grasp in a high level what new insights or scientific problems 
-this development of Anglican have resulted in or solved so far.} 
+% \hy{Great introduction. It very nicely explains why Anglican
+% is born and how it is implemented. If I act as a really picky
+% reviewer or a reader, I would also expect the introduction
+% to help me grasp in a high level what new insights or scientific problems 
+% this development of Anglican have resulted in or solved so far.} 
 
 \section{Design Outline}
 
@@ -255,11 +270,15 @@ operations and control changes. For example, \texttt{observe} in
 particle filtering inference algorithms \cite{WVM14} is a non-deterministic
 control statement at which a particle can be either replicated
 or terminated. Similarly, in Metropolis-Hastings \cite{WSG11},
-\texttt{sample} is both an input and a non-deterministic control
-statement (with delayed effect), eventually affecting acceptance
-or rejection of a sample.
+\texttt{sample} is both an input
+\cbstart
+statement which `reads' values from a random source,
+\cbend
+and a non-deterministic control statement
+(with delayed effect), eventually affecting acceptance or
+rejection of a sample.
 
-\hy{What do you mean by input in ``both an input..''?}
+%\hy{What do you mean by input in ``both an input..''?}
 
 Because of the checkpoints, Anglican programs must allow the
 inference algorithm to step in, recording information and
