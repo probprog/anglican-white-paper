@@ -30,8 +30,9 @@
         {\rm #1}\end{minipage}}}
 \newcommand*{\fw}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf FW:} 
         {\rm #1}\end{minipage}}}
-\newcommand*{\hy}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf HY:} 
-        {\rm #1}\end{minipage}}}
+\newcommand*{\hy}[1]{}
+% {\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf HY:} 
+%        {\rm #1}\end{minipage}}}
 \newcommand*{\jw}[1]{\smallskip\noindent\fbox{\begin{minipage}{\linewidth}{\bf JW:} 
         {\rm #1}\end{minipage}}}
 
@@ -52,19 +53,19 @@
 \begin{abstract}
     Anglican is a probabilistic programming system designed to interoperate
     with Clojure and other JVM languages. We introduce the
-	programming language Anglican, outline our design choices,
-	and discuss in depth the implementation of the Anglican language
-	and runtime, including macro-based compilation, extended
-	CPS-based evaluation model, and functional representations for
-	probabilistic paradigms, such as a distribution,
-	a random process, and an inference algorithm.
+    programming language Anglican, outline our design choices,
+    and discuss in depth the implementation of the Anglican language
+    and runtime, including macro-based compilation, extended
+    CPS-based evaluation model, and functional representations for
+    probabilistic paradigms, such as a distribution,
+    a random process, and an inference algorithm.
 
-	We show that a probabilistic functional language can be
-	implemented efficiently and integrated tightly with a
-	conventional functional language with only moderate
-	computational overhead. We also demonstrate how advanced
-	probabilistic modeling concepts are mapped naturally
-	to the functional foundation.
+    We show that a probabilistic functional language can be
+    implemented efficiently and integrated tightly with a
+    conventional functional language with only moderate
+    computational overhead. We also demonstrate how advanced
+    probabilistic modeling concepts are mapped naturally
+    to the functional foundation.
 \end{abstract}
 
 \section{Introduction}
@@ -185,11 +186,11 @@ Anglican language syntax, compilation, invocation, and runtime
 support of Anglican queries are discussed in detail in further
 sections.
 
-% \hy{Great introduction. It very nicely explains why Anglican
-% is born and how it is implemented. If I act as a really picky
-% reviewer or a reader, I would also expect the introduction
-% to help me grasp in a high level what new insights or scientific problems 
-% this development of Anglican have resulted in or solved so far.} 
+\hy{Great introduction. It very nicely explains why Anglican
+is born and how it is implemented. If I act as a really picky
+reviewer or a reader, I would also expect the introduction
+to help me grasp in a high level what new insights or scientific problems 
+this development of Anglican have resulted in or solved so far.} 
 
 \section{Design Outline}
 
@@ -257,7 +258,7 @@ disrupted. In Anglican and similar languages there are two types
 of such checkpoints:
 
 \begin{itemize}
-	\item drawing a value from a random source (\texttt{sample});
+    \item drawing a value from a random source (\texttt{sample});
     \item conditioning a computed value on a random source
         (\texttt{observe}).
 \end{itemize}
@@ -420,26 +421,38 @@ to take care of the second point. That is, we make the section
 easily followed by someone who does not know Clojure. The third
 is to restructure the section and to take care of my first criticism.}
 
-Compilation of Anglican into Clojure relies on the Clojure
-\textit{macro} facility. However, the compilation algorithm is
-implemented as a library of \textit{functions} in namespace
-\texttt{anglican.trap}, which are invoked by macros.
-The CPS transformation is organized in top-down manner. The
-top-level function is  \texttt{cps-of-expression}, which
-receives an expression and a continuation, and returns the
-expression in the CPS form, with the computed result passed to
-the continuation. A continuation accepts \textit{two} arguments:
+\cbstart
+Compilation of Anglican into Clojure is built around a variant of CPS
+transformation. In a basic CPS-transformed program, a
+continuation receives a single argument --- the computed value.
+In Anglican, there are two flows of computation going in
+parallel: values are computed by functional code, and,
+at the same time, the state of the probabilistic program,
+used by inference algorithms, is updated by 
+probabilistic forms. Because of that, in Anglican a continuation
+accepts  \textit{two} arguments:
 \begin{itemize}
     \item the computed value;
     \item the internal state, bound to the local variable
         \texttt{\$state} in every lexical scope.
 \end{itemize}
-The CPS transformation of constant \texttt{1} with continuation
-\texttt{cont} thus takes the following form:
+
+The compilation relies on the Clojure \textit{macro} facility,
+and implemented as a library of \textit{functions} in namespace
+\texttt{anglican.trap}, which are invoked by macros.  The CPS
+transformation is organized in top-down manner.  The top-level
+function is  \texttt{cps-of-expression}, which receives an
+expression and a continuation, and returns the expression in the
+CPS form.  For example, the CPS transformation of constant
+\texttt{1} with continuation \texttt{cont} thus takes the
+following form:
 \begin{lstlisting}[style=default]
 => (cps-of-expression 1 'cont)
 (cont 1 $state)
 \end{lstlisting}
+
+\subsection {The State}
+\cbend
 
 The state (\texttt{\$state}) is threaded through the computation
 and contains data used by inference algorithm. \texttt{\$state}
@@ -553,6 +566,16 @@ consistently named \texttt{cps-of-}\textit{form}, for example,
 \texttt{cps-of-do}, \texttt{cps-of-store}.
 
 \subsection{Implementation Highlights}
+
+\cbstart
+So far we described the basics of Anglican compilation to
+Clojure. The described approaches and techniques are important
+for grasping the language implementation but relatively well-known.
+In the rest of the section we focus on challenges we met and
+resolved while implementing Anglican, as well as on
+implementation of unique features of Anglican as a probabilistic
+programming language.
+\cbend
 
 \subsubsection{Continuations}
 
@@ -690,9 +713,11 @@ probabilistic programming language --- \texttt{sample} and
 \texttt{observe}. Their purpose is to interrupt deterministic
 computation and transfer control to the inference algorithm.
 Practically, this is achieved through returning
-\textbf{checkpoints} --- Clojure records of the corresponding
+\cbstart
+\textbf{checkpoints} --- Clojure values of the corresponding
 types (\texttt{anglican.trap.sample} or
-\texttt{anglican.trap.observe}). The records contain fields
+\texttt{anglican.trap.observe}). The types contain fields
+\cbend
 specific to each form, as well as the continuation; calling the
 continuation resumes the computation. Checkpoints expose the
 program state to the inference algorithm, and the updated state
@@ -710,10 +735,29 @@ In addition to checkpoints, there are a few other special forms
 \texttt{mem} --- which modify program state. These forms are
 translated into expressions involving calls of functions from the
 \texttt{anglican.state} namespace. The \texttt{mem} form, which
-implements stochastic memoization, deserves a more detailed
-explanation.
+implements memoization, deserves a more detailed explanation.
 
-\textbf{Memoization} is often implemented on top of a mutable
+\cbstart
+\paragraph{Memoization}
+The author of a probabilistic model might want to draw a
+feature of an entity randomly, but to retain the same drawn
+value for the same entity during a single run of the probabilistic
+program. For example, a person may have brown or green eyes
+with some probability, but the \textit{same} person will
+always have the same eye color. This can be achieved 
+memoized functions. In Anglican, one might write:
+\begin{lstlisting}[style=default]
+(let [eye-color (mem (fn [person] 
+                       (sample 
+                         (categorical
+                           ['brown 0.5]
+                           ['green 0.5]))))]
+  (if (not= (eye-color 'bill) (eye-color 'john))
+    (predict (eye-color 'bill))
+    (predict (eye-color 'john))))
+\end{lstlisting}
+\cbend
+Memoization is often implemented on top of a mutable
 dictionary, where the key is the argument list and the value is
 the returned value. However, there are no mutable data
 structures in a probabilistic program, hence \texttt{mem}'s
@@ -854,11 +898,6 @@ various functions are implemented in each inference algorithm.
 Finally, we show how these algorithms work on cps-tranformed 
 examples.}
 
-\hy{I rewrote various parts so as to avoid the word multimethod.
-My strategy was to use the phrases, such as (ad-hoc) polymophic
-function and overloading. All of my rephrasing should be
-double-checked.}
-
 \section{Definitions and Runtime Library}
 
 A Clojure namespace that includes a definition of an Anglican
@@ -892,7 +931,9 @@ the \texttt{observe*} \textit{method} is called for a
 drawn or re-used. 
 
 Macro \texttt{defdist} should be used to define distributions.
-\texttt{defdist} takes care of defining a separate record type
+\cbstart
+\texttt{defdist} takes care of defining a separate type
+\cbend
 for every distribution so that multimethods can be dispatched on
 distribution types when needed, e.g. for custom proposals. The
 Bernoulli distribution could be defined as follows:
