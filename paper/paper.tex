@@ -715,8 +715,9 @@ feature of an entity randomly, but to retain the same drawn
 value for the same entity during a single run of the probabilistic
 program. For example, a person may have brown or green eyes
 with some probability, but the \textit{same} person will
-always have the same eye color. This can be achieved 
-memoized functions. In Anglican, one might write:
+always have the same eye color. This can be achieved
+through the use of memoized functions. In Anglican, one
+might write:
 \begin{lstlisting}[style=default]
 (let [eye-color (mem (fn [person] 
                        (sample 
