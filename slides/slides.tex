@@ -29,11 +29,13 @@
 \titlepage
 \vfill
 \center
-Paper and slides: \url{https://bitbucket.org/probprog/anglican-white-paper}
+\url{https://bitbucket.org/probprog/anglican-white-paper}\\
+\url{https://bitbucket.org/probprog/anglican} \\
+\url{http://www.robots.ox.ac.uk/~fwood/anglican/index.html}
 
 \end{frame}
 
-\section{Why probabilistic programming?}
+\section{Motivation}
 
 \begin{frame}{Intuition}
     \textbf{Probabilistic program:}
@@ -71,76 +73,27 @@ Can be written in any language (extended by \texttt{sample} and \texttt{observe}
 \end{minted}
 \end{frame}
 
-\begin{frame}{Definition}
-
-A \textbf{probabilistic program} is a stateful deterministic
-computation $\mathcal{P}$:
-\pause
-\begin{itemize}
-\item Initially, $\mathcal{P}$ expects no arguments.
-    \pause
-\item On every call, $\mathcal{P}$ returns
+\begin{frame}{More examples}
     \begin{itemize}
-        \item a distribution $F$,
-        \item a distribution and a value $(G, y)$,
-        \item a value $z$, 
-        \item or $\bot$.
-    \end{itemize}
-    \pause
-\item Upon returning $F$, $\mathcal{P}$ expects $x\sim F$.
-    \pause
-\item Upon returning $\bot$, $\mathcal{P}$ terminates.
-\end{itemize}
-\pause
-A program is run by calling $\mathcal{P}$ repeatedly until termination.
-
-The probability of each \textbf{trace} is $\propto\prod_{i=1}^{\left|\pmb{x}\right|} p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j})$.
-\end{frame}
-
-\begin{frame}{Evolution of Compiler Development}
-    \begin{itemize} 
-        \item 1950s: Ask a programmer to implement an algorithm efficiently: They'll write it on their own in assembly.
-            \begin{itemize}
-                \item   No good compilers; problem-dependent optimizations that only human expert could see.
-            \end{itemize}
-            \pause
-        \item   1970s: Novice programmers use high-level languages and let compiler work out details, experts still write assembly.
-            \begin{itemize}
-                \item   Experts still write custom assembly when speed critical.
-            \end{itemize}
-            \pause
-        \item   2000s: On most problems, even experts can't write faster assembly than optimizing compilers.
-            \begin{itemize}
-                \item   can automatically profile (JIT).
-                \item   can take advantage of paralellization, complicated hardware, make appropriate choices w.r.t. caching.
-                \item   Compilers embody decades of compiler research
-            \end{itemize}
+        \item \textit{Intruder detection} --- 
+            given a log of \textbf{times} and \textbf{amounts} of
+            payments in a bank account, how likely that the baccount was
+            compromised?
+        \pause
+        \item \textit{Counterfactual reasoning} --- There are
+            \textbf{two routes} from Jerusalem to Tel Aviv:
+            1 and 443.  Based on traffic reports, I chose route
+            1 and was late. Would I arrive on time If I chose 443
+            instead?
+        \pause 
+        \item \textit{(Due to Stuart Russell)} If you observe that a
+            student GPA is exactly 4.0 in a model of
+            transcripts of students from the USA (GPA's from
+            0.0 to 4.0) and India (GPA's from 0.0 to
+            10.0) what is the probability that the student
+            is from India? 
     \end{itemize}
 \end{frame}
-
-\begin{frame}{Evolution of Inference}
-
-    \begin{itemize}
-\item           2010: Ask a grad student to implement inference efficiently: They'll write it on their own.
-    \begin{itemize}
-\item   No good automatic inference engines; problem-dependent optimizations that only human expert can see.
-    \end{itemize}
-    \pause
-\item   2015: Novice grad students use automatic inference engines and let compiler work out details, experts still write their own inference.
-    \begin{itemize}
-\item   Experts still write custom inference when speed critical.
-    \end{itemize}
-    \pause
-\item   2020: On most problems, even experts can't write faster inference than mature automatic inference engines.
-    \begin{itemize}
-\item   Can use paralellization, sophisticated hardware
-\item   Can automatically choose appropriate methods (meta-reasoning?).
-\item   Inference engines will embody 1 decade (!) of PP research.
-    \end{itemize}
-    \end{itemize}
-\end{frame}
-
-\section{Why functional?}
 
 \begin{frame}{Inference Objective}
 \begin{itemize}
@@ -165,8 +118,8 @@ The probability of each \textbf{trace} is $\propto\prod_{i=1}^{\left|\pmb{x}\rig
 \begin{frame}{Importance Sampling}
     \begin{algorithmic}
         \Loop
-            \State Run $\mathcal{P}$, computing weight $w=\prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j})$.
-            \State output $\pmb{z}, w$.
+            \State Run program, computing weight based on observations.
+            \State Output result and weight.
         \EndLoop
     \end{algorithmic}
     \begin{itemize}
@@ -180,41 +133,79 @@ The probability of each \textbf{trace} is $\propto\prod_{i=1}^{\left|\pmb{x}\rig
 
 \begin{frame}{Lightweight Metropolis-Hastings (LMH)}
 \begin{algorithmic}
-    \State {Run $\mathcal{P}$ once, remember $\pmb{x}, \pmb{z}$.}
+    \State Run program once, remembering random choices.
     \Loop
-         \State {Uniformly select $x_i$}.
-         \State {Propose a value for $x_i$.}
-         \State {Run $\mathcal{P}$, remember $\pmb{x'}, \pmb{z'}$}.
-         \State {Accept ($\pmb{x,z}=\pmb{x',z'}$) or reject with MH probability}.
-         \State {Output $\pmb{z}$.}
+         \State Uniformly select one random choice.
+         \State Propose a new value for the choice.
+         \State Re-run the program.
+         \State Accept or reject with MH probability.
+         \State Output result.
     \EndLoop
 \end{algorithmic}
 \vfill
 Can we do better?
 \begin{itemize}
-    \item Particle Markov Chain Monte Carlo
-    \item Variational Inference
+    \item Particle methods
+    \item Variational inference
     \item ...
-
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Challenges}
+\begin{frame}{Why functional?}
+    We want a functional language because an inference algorithm
+    controls the execution:
     \begin{itemize}
-        \item `Transformational compilation' --- limited languages, some less ugly than others.
-        \item Slow inference --- Markov Chain Monte Carlo is \textbf{always slow} (but there are Hybrid Monte Carlo, Variational Inference, ...)
-        \item How to learn persistently --- what is the learned model? Transfer learning?
-        \item Handling indeterminism (learning policies).
+        \item A program is run many (often many hundreds of
+            thousands) of times (with almost any algorithm).
+        \item A program must be partially re-executed multiple
+            times from different positions (particle methods).
+        \item We want to reason about the distribution defined
+            by the program.
     \end{itemize}
 \end{frame}
+
+\begin{frame}{Why Closure?}
+\begin{itemize}
+    \item Runs on JVM --- easy deployment and access to libraries.
+        \pause
+    \item A Lisp --- we (ab)use the macro facility.
+        \pause
+    \item Church (\url{https://en.wikipedia.org/wiki/Church_(programming_language)}) is derived from Scheme.
+\end{itemize}
+\pause
+Others use:
+    \begin{itemize}
+        \item Scheme --- (Church, Venture).
+        \item Scala --- Figaro.
+        \item Haskell --- Hakaru, Model-Bayes.
+        \item ...
+    \end{itemize}
+    \pause
+    As well as Python, C\#,  and other languages.
+\end{frame}
+
+\section{Design Outline}
+
+\subsection{Language}
+
+\subsection{Macro-based compilation}
+
+\subsection{Implementation Highlights}
+
+\subsection{Managing stack size}
+
+\subsection{Probabilistic forms}
+
+\subsection{Memoization}
+
+\section{Inference Algorithms}
+
+\section{Definitions and Runtime Library}
 
 \begin{frame}
     \LARGE
     \center
     Thank you!\\Questions?
 \end{frame}
-
-
-
 
 \end{document}
