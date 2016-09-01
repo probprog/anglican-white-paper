@@ -58,14 +58,12 @@ Can be written in any language (extended by \texttt{sample} and \texttt{observe}
       a (sample (gamma 1 1))
       b (sample (gamma 1 1))
       d (dist a b)]
-
   ;; Observing samples from the distribution
   (loop [data data]
     (when (seq data)
       (let [[x & data] data]
         (observe d x))
       (recur data)))
-
   ;; Predicting a, b and the distribution
   (predict :a a) 
   (predict :b b)
@@ -186,17 +184,22 @@ Others use:
 
 \section{Design Outline}
 
-\subsection{Language}
+\begin{frame}{Language}
+\end{frame}
 
-\subsection{Macro-based compilation}
+\begin{frame}{Macro-based compilation}
+\end{frame}
 
-\subsection{Implementation Highlights}
+\section{Implementation Highlights}
 
-\subsection{Managing stack size}
+\begin{frame}{Managing stack size}
+\end{frame}
 
-\subsection{Probabilistic forms}
+\begin{frame}{Probabilistic forms}
+\end{frame}
 
-\subsection{Memoization}
+\begin{frame}{Memoization}
+\end{frame}
 
 \section{Inference Algorithms}
 
