@@ -382,7 +382,52 @@ Memoization of random choice:
 
 \section{Inference Algorithms}
 
-\section{Definitions and Runtime Library}
+\begin{frame}[fragile]{Importance sampling}
+
+Importance sampling is the simplest:
+\begin{minted}[linenos, fontsize=\small]{clojure}
+(defmethod infer :importance [_ prog value & {}]
+  (letfn
+    [(sample-seq []
+       (lazy-seq
+         (cons
+           (:state (exec ::algorithm prog value
+                         initial-state))
+           (sample-seq))))]
+    (sample-seq)))
+\end{minted}
+Default checkpoint handlers are called:
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+(defmethod checkpoint [::algorithm anglican.trap.observe] [_ obs]
+  #((:cont obs) nil (add-log-weight (:state obs)
+                                    (observe* (:dist obs) (:value obs)))))
+
+(defmethod checkpoint [::algorithm anglican.trap.sample] [_ smp]
+  #((:cont smp) (sample* (:dist smp)) (:state smp)))
+\end{minted}
+\end{frame}
+
+\begin{frame}{Other inference algorithms}
+    \begin{itemize}
+        \item Implement \texttt{infer}.
+        \item Redefine one or both checkpoints.
+        \item An average implementation is $\approx 150$ lines of source
+            code.
+        \item A dozen different inference algorithms are in the
+            code base.
+        \item Half of them are really useful.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Recap}
+    \begin{itemize}
+        \item Anglican is integrated with Clojure.
+        \item Shares syntax but alters semantics.
+        \item Macro-compiled.
+        \item Efficient.
+        \item Makes implementing AND using inference easy.
+    \end{itemize}
+\end{frame}
 
 \begin{frame}
     \LARGE
