@@ -184,10 +184,82 @@ Others use:
 
 \section{Design Outline}
 
-\begin{frame}{Language}
+\begin{frame}{Anglican and Clojure}
+    On language on top of (or besides) another:
+    \begin{itemize}
+        \item Interpeter.
+        \item Source-to-source compiler.
+        \item Integrated language. $\checkmark$
+    \end{itemize}
+    \pause
+    \bigskip
+    Integrated language
+    \begin{itemize}
+        \item either extends the syntax of the host language;
+        \item or changes the semantics of the host language
+            constructs $\checkmark$.
+    \end{itemize}
+    \pause
+    \bigskip
+    Anglican is 
+    \begin{itemize}
+        \item Integrated with Clojure.
+        \item Shares syntax.
+        \item Alters operational semantics.
+    \end{itemize}
 \end{frame}
 
-\begin{frame}{Macro-based compilation}
+\begin{frame}{Anglican}
+    A subset of Clojure, wrapped inside \texttt{defquery}:
+    \begin{itemize}
+        \item \texttt{if}, \texttt{when}, \texttt{cond},
+            \texttt{case}, \texttt{let}, \texttt{and}, \texttt{or},
+            \texttt{fn}. 
+        \item Vector destructuring in bindings of \texttt{let} and \texttt{fn}.
+        \item Compound literals for vectors, hash maps, and sets.
+        \item \texttt{loop}/\texttt{recur} --- a convenience.
+    \end{itemize}
+    \bigskip
+    Core library:
+    \begin{itemize}
+        \item All of Clojure core library, except for
+            higher-order functions.
+        \item  \texttt{map}, \texttt{reduce},
+\texttt{filter}, \texttt{some}, \texttt{repeatedly},
+\texttt{comp}, \texttt{partial}.
+    \end{itemize}
+    \bigskip
+    Any Clojure function can be called from Anglican.
+\end{frame}
+
+\begin{frame}[fragile]{Macro-based compilation}
+    Anglican code macro-compiled into Clojure:
+    \begin{minipage}{0.48\textwidth}
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+(loop [data data]
+  (if (seq data)
+    (let [[x & data] data]
+      (observe (gamma a b) x)
+      (recur data))
+    (predict :a a)))
+\end{minted}
+    \end{minipage}
+    \begin{minipage}{0.44\textwidth}
+    \vspace{2em}
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+(fn loop [C23151 state data]
+   (if (seq data)
+     (let [[x & data] data]
+       (->observe 'O23153 (gamma a b) x
+         (fn do23152 [_ state]
+           (loop C23151 state data))
+         state))
+     (fn []
+       (C23151
+         nil
+         (add-predict state :a a)))))
+\end{minted}
+    \end{minipage}
 \end{frame}
 
 \section{Implementation Highlights}
