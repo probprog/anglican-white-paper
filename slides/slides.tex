@@ -185,7 +185,7 @@ Others use:
 \section{Design Outline}
 
 \begin{frame}{Anglican and Clojure}
-    On language on top of (or besides) another:
+    One language on top of (or besides) another:
     \begin{itemize}
         \item Interpeter.
         \item Source-to-source compiler.
@@ -264,13 +264,120 @@ Others use:
 
 \section{Implementation Highlights}
 
-\begin{frame}{Managing stack size}
+\begin{frame}[fragile]{Probabilistic forms}
+    Two \textbf{probabilistic} forms:
+    \begin{itemize}
+        \item \texttt{sample} --- draws a value from a
+            distribution;
+        \item \texttt{observe} --- conditions the \textit{a
+            posteriori} distribution by observing a value from a
+            distribution.
+    \end{itemize}
+    \bigskip
+    This is where the inference algorithm steps in:
+\begin{minted}[fontsize=\small]{clojure}
+=> (cps-of-expression '(sample dist) 'cont)
+(->sample dist cont $state)
+
+=> (cps-of-expression '(observe dist val) 'cont)
+(->observe dist val cont $state)
+\end{minted}
 \end{frame}
 
-\begin{frame}{Probabilistic forms}
+\begin{frame}[fragile]{Memoization}
+Memoization of random choice:
+\begin{itemize}
+    \item A person has a random eye color.
+    \item But the \textit{same} person has a fixed eye color.
+\end{itemize}
+\begin{minted}[linenos, fontsize=\small]{clojure}
+(let [eye-color (mem (fn [person] 
+                       (sample 
+                         (categorical
+                           ['brown 0.5]
+                           ['green 0.5]))))]
+  (if (not= (eye-color 'bill) (eye-color 'john))
+    (predict (eye-color 'bill))
+    (predict (eye-color 'john))))
+\end{minted}
 \end{frame}
 
-\begin{frame}{Memoization}
+\begin{frame}[fragile]{Compiling a memoized function}
+    \vspace{-2em}
+    \begin{minipage}{0.38\textwidth}
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+(mem (fn [person] ...))
+\end{minted}
+    \end{minipage}
+    \begin{minipage}{0.52\textwidth}
+    \vspace{2em}
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+(fn []
+ (cont
+  ;; every memoization gets a unique key  
+  (let [M23145 (gensym "M")]
+   (fn [C23144 $state & P23147]
+    (if (in-mem? $state M23145 P23147)
+     ;; previously memoized result
+     (fn []
+       (C23144
+         (get-mem $state M23145 P23147)
+         $state))
+     ;; new computation
+     (clojure.core/apply
+      (fn [C23150 $state person]
+        (fn [] (C23150 ... $state)))
+      ;; memoize result in state
+      (fn [V23146 $state]
+       (fn []
+        (C23144
+          V23146
+          (set-mem $state M23145 P23147 V23146))))
+      $state
+      P23147))))
+  $state))
+\end{minted}
+    \end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]{Managing stack size}
+    \begin{itemize}
+        \item Clojure does not support tail-call optimization (TCO).
+        \item Under CPS transformation the stack will explode.
+            \pause
+        \item Anglican uses \textit{trampolining}: every continuation
+            call is wrapped into a \textit{thunk}.
+    \end{itemize}
+
+    The thunk is returned ...
+
+    \begin{minipage}{0.48\textwidth}
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+    (fn [x y] (+ x y))
+\end{minted}
+    \end{minipage}
+    \begin{minipage}{0.48\textwidth}
+        \vspace{0.5em}
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+    (fn [cont $state x y] 
+      (fn []
+        (cont (+ x y) $state)))
+\end{minted}
+      \vspace{0.5em}
+    \end{minipage}
+
+    ... and  called by \texttt{trampoline}:
+
+\begin{minted}[linenos, fontsize=\small]{clojure}
+        (defn exec
+          [algorithm prog value state]
+          (loop [step (trampoline prog value state)]
+            (let [next (checkpoint algorithm step)]
+              (if (fn? next)
+                (recur (trampoline next))
+                next))))
+\end{minted}
+
 \end{frame}
 
 \section{Inference Algorithms}

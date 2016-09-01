@@ -752,7 +752,7 @@ updated state:
       ;; new computation
       (clojure.core/apply
         foo
-        ;; memoize result in continuation
+        ;; memoize result in state
         (fn [V $state]
           (fn [] (C V (set-mem $state M P V))))
         $state
