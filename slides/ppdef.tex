@@ -1,0 +1,20 @@
+\begin{frame}{Definition}
+
+A \textbf{probabilistic program} is a stateful deterministic
+computation $\mathcal{P}$:
+\begin{itemize}
+\item Initially, $\mathcal{P}$ expects no arguments.
+\item On every call, $\mathcal{P}$ returns
+    \begin{itemize}
+        \item a distribution $F$,
+        \item a distribution and a value $(G, y)$,
+        \item a value $z$, 
+        \item or $\bot$.
+    \end{itemize}
+\item Upon returning $F$, $\mathcal{P}$ expects $x\sim F$.
+\item Upon returning $\bot$, $\mathcal{P}$ terminates.
+\end{itemize}
+A program is run by calling $\mathcal{P}$ repeatedly until termination.
+
+The probability of each \textbf{trace} is $\propto\prod_{i=1}^{\left|\pmb{x}\right|} p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j})$.
+\end{frame}
