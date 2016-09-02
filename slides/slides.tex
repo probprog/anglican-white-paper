@@ -209,7 +209,33 @@ Others use:
     \end{itemize}
 \end{frame}
 
-\begin{frame}{Anglican}
+\begin{frame}{Design challenges and choices}
+\begin{itemize}
+    \item Anglican syntax: Clojure + probabilistic constructs.
+		\begin{itemize}
+			\item Subset of Clojure.
+			\item Special forms \texttt{sample} and \texttt{observe}.
+			\item Macros to delimit Anglican code within a Clojure program.
+		\end{itemize}
+		\pause
+		\bigskip
+    \item Source-to-source compilation of Anglican into Clojure.
+		\begin{itemize}
+			\item CPS Transformation, with some tricks.
+			\item Transparent use of Clojure functions from Anglican.
+		\end{itemize}
+		\pause
+		\bigskip
+    \item Inference algorithms.
+		\begin{itemize}
+            \item Required to run an Anglican program.
+			\item Step in at checkpoints (\texttt{sample} and \texttt{observe}).
+			\item Execute programs by calling continuations repeatedly.
+		\end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{The language}
     A subset of Clojure, wrapped inside \texttt{defquery}:
     \begin{itemize}
         \item \texttt{if}, \texttt{when}, \texttt{cond},
