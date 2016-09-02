@@ -160,6 +160,12 @@ Can we do better?
         \item We want to reason about the distribution defined
             by the program.
     \end{itemize}
+	\bigskip
+	We need
+	\begin{itemize}
+		\item First-class functions.
+		\item No side effects.
+	\end{itemize}
 \end{frame}
 
 \begin{frame}{Why Closure?}
@@ -197,7 +203,7 @@ Others use:
     \begin{itemize}
         \item either extends the syntax of the host language;
         \item or changes the semantics of the host language
-            constructs $\checkmark$.
+            constructs. $\checkmark$
     \end{itemize}
     \pause
     \bigskip
@@ -273,7 +279,7 @@ Others use:
     \begin{minipage}{0.44\textwidth}
     \vspace{2em}
 \begin{minted}[linenos, fontsize=\scriptsize]{clojure}
-(fn loop [C23151 $state data]
+((fn loop [C23151 $state data]
    (if (seq data)
      (let [[x & data] data]
        (->observe 'O23153 (gamma a b) x
@@ -284,6 +290,7 @@ Others use:
        (C23151
          nil
          (add-predict $state :a a)))))
+  cont $state data)
 \end{minted}
     \end{minipage}
 	\bigskip
