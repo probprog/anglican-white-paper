@@ -88,7 +88,7 @@ Can be written in any language (extended by \texttt{sample} and \texttt{observe}
             student GPA is exactly 4.0 in a model of
             transcripts of students from the USA (GPA's from
             0.0 to 4.0) and India (GPA's from 0.0 to
-            10.0) what is the probability that the student
+            10.0), what is the probability that the student
             is from India? 
     \end{itemize}
 \end{frame}
@@ -221,7 +221,7 @@ Others use:
 		\bigskip
     \item Source-to-source compilation of Anglican into Clojure.
 		\begin{itemize}
-			\item CPS Transformation, with some tricks.
+			\item CPS transformation, with some tricks.
 			\item Transparent use of Clojure functions from Anglican.
 		\end{itemize}
 		\pause
@@ -273,17 +273,17 @@ Others use:
     \begin{minipage}{0.44\textwidth}
     \vspace{2em}
 \begin{minted}[linenos, fontsize=\scriptsize]{clojure}
-(fn loop [C23151 state data]
+(fn loop [C23151 $state data]
    (if (seq data)
      (let [[x & data] data]
        (->observe 'O23153 (gamma a b) x
-         (fn do23152 [_ state]
-           (loop C23151 state data))
-         state))
+         (fn do23152 [_ $state]
+           (loop C23151 $state data))
+         $state))
      (fn []
        (C23151
          nil
-         (add-predict state :a a)))))
+         (add-predict $state :a a)))))
 \end{minted}
     \end{minipage}
 \end{frame}
@@ -308,6 +308,46 @@ Others use:
 => (cps-of-expression '(observe dist val) 'cont)
 (->observe dist val cont $state)
 \end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Managing stack size}
+    \begin{itemize}
+        \item Clojure does not support tail-call optimization (TCO).
+        \item Under CPS transformation the stack will explode.
+            \pause
+        \item Anglican uses \textit{trampolining}: every continuation
+            call is wrapped into a \textit{thunk}.
+    \end{itemize}
+
+    The thunk is returned ...
+
+    \begin{minipage}{0.48\textwidth}
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+    (fn [x y] (+ x y))
+\end{minted}
+    \end{minipage}
+    \begin{minipage}{0.48\textwidth}
+        \vspace{0.5em}
+\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
+    (fn [cont $state x y] 
+      (fn []
+        (cont (+ x y) $state)))
+\end{minted}
+      \vspace{0.5em}
+    \end{minipage}
+    \pause
+    ... and  called by \texttt{trampoline}:
+
+\begin{minted}[linenos, fontsize=\small]{clojure}
+        (defn exec
+          [algorithm prog value state]
+          (loop [step (trampoline prog value state)]
+            (let [next (checkpoint algorithm step)]
+              (if (fn? next)
+                (recur (trampoline next))
+                next))))
+\end{minted}
+
 \end{frame}
 
 \begin{frame}[fragile]{Memoization}
@@ -364,46 +404,6 @@ Memoization of random choice:
   $state))
 \end{minted}
     \end{minipage}
-\end{frame}
-
-\begin{frame}[fragile]{Managing stack size}
-    \begin{itemize}
-        \item Clojure does not support tail-call optimization (TCO).
-        \item Under CPS transformation the stack will explode.
-            \pause
-        \item Anglican uses \textit{trampolining}: every continuation
-            call is wrapped into a \textit{thunk}.
-    \end{itemize}
-
-    The thunk is returned ...
-
-    \begin{minipage}{0.48\textwidth}
-\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
-    (fn [x y] (+ x y))
-\end{minted}
-    \end{minipage}
-    \begin{minipage}{0.48\textwidth}
-        \vspace{0.5em}
-\begin{minted}[linenos, fontsize=\scriptsize]{clojure}
-    (fn [cont $state x y] 
-      (fn []
-        (cont (+ x y) $state)))
-\end{minted}
-      \vspace{0.5em}
-    \end{minipage}
-
-    ... and  called by \texttt{trampoline}:
-
-\begin{minted}[linenos, fontsize=\small]{clojure}
-        (defn exec
-          [algorithm prog value state]
-          (loop [step (trampoline prog value state)]
-            (let [next (checkpoint algorithm step)]
-              (if (fn? next)
-                (recur (trampoline next))
-                next))))
-\end{minted}
-
 \end{frame}
 
 \section{Inference Algorithms}
