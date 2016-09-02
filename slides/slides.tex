@@ -259,7 +259,7 @@ Others use:
 \end{frame}
 
 \begin{frame}[fragile]{Macro-based compilation}
-    Anglican code macro-compiled into Clojure:
+    Anglican code macro-compiled into Clojure, in CPS:
     \begin{minipage}{0.48\textwidth}
 \begin{minted}[linenos, fontsize=\scriptsize]{clojure}
 (loop [data data]
@@ -286,6 +286,14 @@ Others use:
          (add-predict $state :a a)))))
 \end{minted}
     \end{minipage}
+	\bigskip
+
+	A continuation accepts \textit{two} arguments:
+	\begin{itemize}
+		\item The computed value.
+		\item The internal state (\texttt{\$state}).
+	\end{itemize}
+	Functions accept continuation and state as two first arguments.
 \end{frame}
 
 \section{Implementation Highlights}
@@ -437,7 +445,7 @@ Default checkpoint handlers are called:
     \begin{itemize}
         \item Implement \texttt{infer}.
         \item Redefine one or both checkpoints.
-        \item An average implementation is $\approx 150$ lines of source
+        \item An average implementation is $\approx 150$ lines of Clojure
             code.
         \item A dozen different inference algorithms are in the
             code base.
