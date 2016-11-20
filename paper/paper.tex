@@ -853,7 +853,7 @@ beginning.
 \hy{This subsection is also not quite self-contained. Someone
 who is not familiar with Clojure or Anglican codebase is likely
 to get lost. On the other hand, it is a good overview or guide
-for those who want to study the implemenation of Anglican. One
+for those who want to study the implementation of Anglican. One
 way to address this presentation issue while keeping the benefits
 of the current text is to include some extended examples. For instance,
 in the beginning of the paper, we might include several
@@ -862,12 +862,109 @@ cps-transformed. Next, we present the implementation of inference
 algorithms in Anglican using semi pseudo code; this is not quite
 an implementation in Clojure but gives a good sketch on how
 various functions are implemented in each inference algorithm.
-Finally, we show how these algorithms work on cps-tranformed 
+Finally, we show how these algorithms work on cps-transformed 
 examples.}
 
-\subsection{Addressing}
+\subsection{Addressing of checkpoints}
 
-\cite{WSG11,PWD+14,TMP+15}
+Many inference algorithms memoize and reuse earlier computations
+at checkpoints: variants of Metropolis-Hastings reuse previously
+drawn values~\cite{WSG11}, as well as additional information
+used for adaptive sampling~\cite{TMP+15} at \texttt{sample}
+checkpoints, Asynchronous SMC (Particle Cascade) computes
+average particle weights at \texttt{observe}
+checkpoints~\cite{PWD+14}. Implementations of black-box
+variational inference~\cite{WW13,MPT+16} associate with random
+variables the learned parameters of variational posterior
+distribution.
+
+Checkpoints can be uniquely named at the compilation time;
+however, at runtime a checkpoint corresponding to a single code
+location may occur multiple time due to recurrent invocation of
+the function containing the checkpoint. Every unique occurrence
+of a checkpoint must receive a different address. An addressing
+scheme based on computing of stack addresses of checkpoints was
+described in the context of Lightweight
+Metropolis-Hastings~\cite{WSG11}.  This scheme has advantages
+over the naive scheme where dynamic occurrences of checkpoints
+are numbered sequentially, however it impacts the 
+performance of probabilistic programs because of the computation
+cost of computing the stack addresses:
+\begin{enumerate}
+    \item The address size is linear in stack depth.
+    \item Every function call must be augmented by symbolic
+        information required to compute stack addresses.
+\end{enumerate}
+In addition, the above scheme can still lead to inferior
+correspondence between checkpoints in different traces: in
+Anglican and other probabilistic languages where distributions
+are first-class objects checkpoints with incompatible arguments 
+can correspond to the same stack address. Consider the following
+program fragment:
+\begin{lstlisting}[style=default]
+(let [dist (if use-gamma
+               (gamma 2. 2.)
+               (normal 0. 1.))
+      x (sample dist)]
+  (predict x))
+\end{lstlisting}
+The \texttt{sample} checkpoint has the same stack address in
+different traces, however the random values should not be
+re-used between different distributions. Further on, in some
+algorithms, such as black-box variational inference, the role of 
+checkpoint addresses is semantic rather than heuristic ---
+appropriate correspondence must be established
+between checkpoints in different traces for the algorithm to
+work.
+
+To overcome the above problems, Anglican uses a different scheme
+which is almost as efficient as the scheme based on stack addresses for
+re-use of previously drawn values, produces addresses of constant size,
+and allows manual computation of checkpoint addresses at runtime
+when the default automatic scheme is insufficient. 
+
+
+\begin{verbatim}
+A simple heuristic gives the same acceptance rate as with interpreted Anglican on all examples,
+including Neil’s Locomotion, as follows:
+
+  a) each sample form has a unique id, generated at compile time. It does anyway, and this 
+      has almost zero cost.
+  b) address is a pair 
+        [id-of-sample-form number-of-previous-occurences]
+      the occurences are of the same form.
+  c) if a sequence of random choices with the same id is interrupted, the count is padded up 
+  by a small power of 2, for example 16.
+
+For example, if random choices
+
+(sample S1)
+(sample ‘S2 …
+(sample ‘S2 …
+(sample ‘S1 …
+(sample ‘S1 …
+(sample ‘S1 …
+(sample ‘S2 …
+
+are encountered in the trace, then the addresses are:
+
+[S1 1]
+[S2 1]
+[S2 2]
+[S1 16]
+[S1 17]
+[S1 18]
+[S2 16]
+
+This way, every occurence of random choice has a unique address, but small disturbances (like
+removal or addition of a single choice of a particular kind) do not derail the entire sequence.
+This aligns well with recursive patterns used in DPmem, for example.
+
+I have some thoughts about stopping early in addition to starting late, but will do it when there
+are less deadlines. Right now, the code runs MUCH MUCH faster, it should take roughly 10
+hours to produce the same amount of data for Neil’s Locomotion example which was produced
+during 14 DAYS of the holidays. 
+\end{verbatim}
 
 \section{Definitions and Runtime Library}
 
