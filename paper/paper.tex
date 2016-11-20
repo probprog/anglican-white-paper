@@ -891,7 +891,8 @@ are numbered sequentially, however it impacts the
 performance of probabilistic programs because of the computation
 cost of computing the stack addresses:
 \begin{enumerate}
-    \item The address size is linear in stack depth.
+    \item On every function call, a component is added to the
+        address, hence the address size is linear in stack depth.
     \item Every function call must be augmented by symbolic
         information required to compute stack addresses.
 \end{enumerate}
@@ -919,52 +920,58 @@ work.
 
 To overcome the above problems, Anglican uses a different scheme
 which is almost as efficient as the scheme based on stack addresses for
-re-use of previously drawn values, produces addresses of constant size,
+re-use of previously drawn values, as produces addresses of constant size,
 and allows manual computation of checkpoint addresses at runtime
-when the default automatic scheme is insufficient. 
+when the default automatic scheme is insufficient. According to
+the scheme:
+\begin{itemize}
+    \item A checkpoint may accept an auxiliary argument --- the
+        checkpoint identifier. If specified, the identifier is the first
+        argument of a checkpoint. For example \texttt{(sample
+        'x1  (normal 0 1)} defines a \texttt{sample} checkpoint
+        with identifier \texttt{x1}.
+    \item If the identifier is omitted, a unique identifier is
+        generated automatically as a fresh symbol.
+    \item At runtime, the address of a checkpoint invocation has
+        the form
+        \texttt{[}\textit{checkpoint-identifier
+        number-of-previous-occurrences}\texttt{]}, where the
+        occurrences are of a checkpoint with the same checkpoint
+        identifier.
+    \item If a sequence of invocations of the same checkpoint is
+        interrupted by a different checkpoint, the number of
+        previous occurrences is rounded up to a multiple of
+        an integer. For efficiency, a small power of 2 is used
+        such as $2^4 = 16$.
+\end{itemize}
 
-
-\begin{verbatim}
-A simple heuristic gives the same acceptance rate as with interpreted Anglican on all examples,
-including Neil’s Locomotion, as follows:
-
-  a) each sample form has a unique id, generated at compile time. It does anyway, and this 
-      has almost zero cost.
-  b) address is a pair 
-        [id-of-sample-form number-of-previous-occurences]
-      the occurences are of the same form.
-  c) if a sequence of random choices with the same id is interrupted, the count is padded up 
-  by a small power of 2, for example 16.
-
-For example, if random choices
-
-(sample S1)
-(sample ‘S2 …
-(sample ‘S2 …
-(sample ‘S1 …
-(sample ‘S1 …
-(sample ‘S1 …
-(sample ‘S2 …
-
+For example, if checkpoint invocations
+\begin{lstlisting}[style=default]
+    (sample 'C1 ...)
+    (sample 'C2 ...) 
+    (sample 'C2 ...) 
+    (sample 'C1 ...)
+    (sample 'C1 ...)
+    (sample 'C1 ...)
+    (sample 'C2 ...) 
+    (sample 'C3 ...) 
+\end{lstlisting}
 are encountered in the trace, then the addresses are:
-
-[S1 1]
-[S2 1]
-[S2 2]
-[S1 16]
-[S1 17]
-[S1 18]
-[S2 16]
-
-This way, every occurence of random choice has a unique address, but small disturbances (like
-removal or addition of a single choice of a particular kind) do not derail the entire sequence.
-This aligns well with recursive patterns used in DPmem, for example.
-
-I have some thoughts about stopping early in addition to starting late, but will do it when there
-are less deadlines. Right now, the code runs MUCH MUCH faster, it should take roughly 10
-hours to produce the same amount of data for Neil’s Locomotion example which was produced
-during 14 DAYS of the holidays. 
+\begin{verbatim}
+    [C1 0]
+    [C2 0]
+    [C2 1]
+    [C1 16]
+    [C1 17]
+    [C1 18]
+    [C2 16]
+    [C3 0]
 \end{verbatim}
+This way, each occurrence of a checkpoint has unique address,
+but small disturbances (like removal or addition of a single
+checkpoint with a particular identifier) are
+unlikely to derail the entire sequence.
+
 
 \section{Definitions and Runtime Library}
 
