@@ -1175,7 +1175,7 @@ visit:
      1.)
 \end{lstlisting}
 
-Then, we encode our observations, based on which we want to
+Then, we record our observations, based on which we want to
 solve the dilemma:
 
 \begin{lstlisting}[style=default]
@@ -1270,6 +1270,65 @@ well as probability distributions of average arrival times for
 both cases.
 
 \subsection{Inference}
+
+\begin{lstlisting}[style=default]
+(def samples (doquery :lmh deli nil))
+
+(def N 1000)
+(def predicts (map get-predicts (take N (drop N samples))))
+
+
+(def p-same+ (/ (count (filter :same-customer predicts)) (double N)))
+                            
+
+;; single customer                      
+(def time-to-arrive+ (map :time-to-arrive (filter :same-customer predicts)))
+(def mean-to-arrive+ (mean time-to-arrive+))
+(def sd-to-arrive+ (std time-to-arrive+))
+
+;; two customers
+(def times-to-arrive+ (map :times-to-arrive 
+                           (filter (complement :same-customer) predicts)))
+(def mean-1-to-arrive+ (mean (map first times-to-arrive+)))
+(def sd-1-to-arrive+ (std (map first times-to-arrive+)))
+(def mean-2-to-arrive+ (mean (map second times-to-arrive+)))
+(def sd-2-to-arrive+ (std (map second times-to-arrive+)))
+
+
+(def samples (doquery :bbvb deli nil))
+
+
+(clojure.pprint/pprint (anglican.bbvb/get-variational (nth samples N)))
+\end{lstlisting}
+
+\begin{figure}
+    \includegraphics[trim={12pt 0 0 0},scale=0.7]{same-customer-time.pdf}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[trim={12pt 0 0 0},scale=0.7]{different-customers-times.pdf}
+\end{figure}
+
+\begin{verbatim}
+{S28219
+ {(0 anglican.runtime.flip-distribution)
+  {:p 0.11671977016875924,
+   :dist
+   {:min 0.0,
+    :max 1.0}}},
+ S28209
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 10.99753360180663,
+   :sd 0.7290976433082352}},
+ S28217
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 12.668050292254202,
+   :sd 0.9446695174790353}},
+ S28215
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 9.104132559955836,
+   :sd 0.9479290526821788}}}
+\end{verbatim}
 
 \section{Summary}
 
