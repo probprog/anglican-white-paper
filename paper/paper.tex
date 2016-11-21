@@ -743,12 +743,32 @@ impossible to memoize functions with random results.
 
 \section{Inference Algorithms}
 
-An inference algorithm is an implementation of the (ad-hoc)
-polymorphic function \texttt{infer} declared as Clojure's multimethod
-in the \texttt{anglican.inference} namespace. The
-function accepts an algorithm identifier, a query --- the
-probabilistic program in which to perform the inference, an
-initial value for the query, and optional algorithm parameters.
+A probabilistic program in Anglican may look almost like a
+Clojure program, however the purpose of executing a
+probabilistic program is different from that of a `regular'
+program: instead of producing the result of a single execution,
+a probabilistic program computes, exactly or approximately, the
+distribution from which execution results are drawn.  Computing
+the distribution is facilitated by an inference algorithm.
+
+Probabilistic programming system Anglican provides a variety of
+approximate inference algorithms. Ideally, Anglican should
+automatically choose the most appropriate algorithm for each
+probabilistic program. In practice, selecting an inference
+algorithm, or a combination thereof, is still a challenging
+task, and program structure, intended use of the computation
+results, performance, approximation accuracy, and other factors
+must be taken into consideration. New algorithms are being
+developed and added to Anglican~\cite{TMP+15,MPT+16,RNL+2016},
+as a part of ongoing research.
+
+In the implementation of Anglican, inference algorithms are
+instantiations of the (ad-hoc) polymorphic function
+\texttt{infer} declared as Clojure's multimethod in the
+\texttt{anglican.{\linebreak[0]}inference} namespace. The function accepts an
+algorithm identifier, a query --- the probabilistic program in
+which to perform the inference, an initial value for the query,
+and optional algorithm parameters.
 
 \subsection{The \texttt{infer} function}
 
