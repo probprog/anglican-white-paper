@@ -1037,9 +1037,17 @@ the new invocation are simply ignored and new values are
 re-drawn.
 
 This way, each occurrence of a checkpoint has unique address,
-but small disturbances (like removal or addition of a single
-checkpoint with a particular identifier) are
-unlikely to derail the entire sequence.
+but small disturbances --- removal or addition of a single or just
+a few checkpoints --- are unlikely to derail the entire sequence.
+The probability of derailment depends on the padding. The
+padding can be safely, and without any impact on performance,
+set to rather large numbers. However, rounding up to a multiple
+of 16 proved to be appropriate for all practical purposes. 
+
+Function \texttt{checkpoint-id} in the
+\texttt{anglican.inference} namespace automates generation of
+checkpoint addresses and can be used from any inference
+algorithm.
 
 \section{Definitions and Runtime Library}
 
