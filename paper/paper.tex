@@ -941,11 +941,30 @@ the scheme:
     \item If a sequence of invocations of the same checkpoint is
         interrupted by a different checkpoint, the number of
         previous occurrences is rounded up to a multiple of
-        an integer. For efficiency, a small power of 2 is used
+        an integer. For efficiency, a small power of 2 is used,
         such as $2^4 = 16$.
 \end{itemize}
 
-For example, if checkpoint invocations
+Consider the following simplified Anglican query:
+
+\begin{lstlisting}[style=default]
+(defm foo []
+  (if (sample 'C1 (flip 0.5))
+    (foo)
+    (bar)))
+
+(defm bar []
+   (case (sample 'C2 (uniform-discrete 0 3))
+     0 (bar)
+     1 (foo)
+     2 (sample 'C3 (normal 0. 1.))))
+
+(defquery baz
+   (predict (foo)))
+\end{lstlisting}
+
+An execution of the query may result in the following
+sequence of checkpoint invocations:
 \begin{lstlisting}[style=default]
     (sample 'C1 ...)
     (sample 'C2 ...) 
@@ -956,7 +975,8 @@ For example, if checkpoint invocations
     (sample 'C2 ...) 
     (sample 'C3 ...) 
 \end{lstlisting}
-are encountered in the trace, then the addresses are:
+According to the addressing scheme, the addresses generated
+for this invocations are
 \begin{verbatim}
     [C1 0]
     [C2 0]
@@ -967,11 +987,59 @@ are encountered in the trace, then the addresses are:
     [C2 16]
     [C3 0]
 \end{verbatim}
+If the program is run by a Metropolis-Hastings algorithm, then a small change usually takes place in the sequence of checkpoints with each invocation, and the new sequence may become
+\begin{lstlisting}[style=default]
+    (sample 'C1 ...)
+    (sample 'C2 ...) 
+    (sample 'C1 ...)
+    (sample 'C1 ...)
+    (sample 'C2 ...) 
+    (sample 'C2 ...) 
+    (sample 'C3 ...) 
+\end{lstlisting}
+The addresses for the new sequence are
+\begin{verbatim}
+    [C1 0]
+    [C2 0]
+    [C1 16]
+    [C1 17]
+    [C2 16]
+    [C2 17]
+    [C3 0]
+\end{verbatim}
+Despite the change, the correspondence between checkpoints of
+similar types occurring in similar positions (relative positions
+in contiguous subsequences of a certain type) is preserved, and
+drawn values can be reused efficiently:
+
+\begin{center}
+\begin{tabular}{l l}
+    \textbf{old} & \textbf{new} \\ \hline
+    {}\texttt{[C1 0]} & \texttt{[C1 0]} \\
+    {}\texttt{[C2 0]} & \texttt{[C2 0]} \\
+    {}\texttt{[C2 1]} & \textit{unused} \\
+    {}\texttt{[C1 16]} & \texttt{[C1 16]} \\
+    {}\texttt{[C1 17]} & \texttt{[C1 17]} \\
+    {}\texttt{[C1 18]} & \textit{unused} \\
+    {}\texttt{[C2 16]} & \texttt{[C2 16]} \\
+    \textit{redrawn} & \texttt{[C2 17]} \\
+    {}\texttt{[C3 0]} & \texttt{[C3 0]}
+\end{tabular}
+\end{center}
+
+Note that correspondence between checkpoints in different
+traces plays the role of an heuristic in Metropolis-Hastings
+family of algorithms. Any correspondence (or no correspondence,
+meaning all values must be re-drawn from their proposal
+distributions) is valid, and reused values from the previous
+invocation which are not in support or have zero probability in
+the new invocation are simply ignored and new values are
+re-drawn.
+
 This way, each occurrence of a checkpoint has unique address,
 but small disturbances (like removal or addition of a single
 checkpoint with a particular identifier) are
 unlikely to derail the entire sequence.
-
 
 \section{Definitions and Runtime Library}
 
