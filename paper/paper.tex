@@ -1121,6 +1121,156 @@ recursively computing a new process based on the observed value:
 Unlike conventional implementations of random processes,
 Anglican's random processes do not have mutable state.
 
+\section{Case Study}
+
+The description of Anglican language and environment would be
+incomplete without a case study showing the process of building
+and executing a solution of an inference problem. This case
+study takes a problem for which a solution is not immediately
+obvious, \textit{the Deli dilemma}, and guides through
+writing an Anglican program for the problem, executing the
+program, and post-processing results.
+
+\subsection{The deli dilemma}
+
+Imagine that we are facing the following dilemma:
+
+\begin{quote}
+A customer wearing round sunglasses came to a deli at 1:13pm,
+and grabbed a sandwitch and a coffee. Later on the same day, a
+customer wearing round sunglasses came at 6:09pm and ordered a
+dinner.  Was it the same customer?
+\end{quote}
+
+In addition to the story above, we know that:
+
+\begin{itemize}
+    \item There is an adjacent office quarter, and it takes
+        between 5 and 15 minutes on average to walk from an
+        office to the deli, were different average times are  for
+        different buildings in the quarter.
+    \item Depending on traffic lights, the walking time varies by about 2
+        minutes.
+    \item The lunch break starts at 1:00pm, and the workday ends at 6:00pm.
+    \item The waiter's odds that this is the same customer are 2 to 1.
+\end{itemize}
+
+\subsection{Anglican query}
+
+We want to formalize the dilemma in an Anglican query, based on
+the knowledge we have. Let us formalize the knowledge in
+Clojure (the times are in minutes). First, we encode our prior
+information which holds true independently of the customer's
+visit:
+
+\begin{lstlisting}[style=default]
+(def mean-time-to-arrive
+     "average time to arrive"
+     10.)
+(def sd-time-to-arrive
+     "standard deviation of arrival time"
+     3.)
+(def time-sd
+     "walking time deviation"
+     1.)
+\end{lstlisting}
+
+Then, we encode our observations, based on which we want to
+solve the dilemma:
+
+\begin{lstlisting}[style=default]
+(def lunch-delay
+     "time between lunch break and lunch order"
+     13.)
+(def dinner-delay
+     "time between end of day and dinner order"
+     9.)
+(def p-same
+     "prior probability of the same customer"
+     (/ 2. 3.))
+\end{lstlisting}
+
+
+For inference, one often chooses known distribution to
+represent uncertainty. We choose the normal
+distribution for representing uncertainty about average arrival
+time.
+
+\begin{lstlisting}[style=default]
+(def time-to-arrive-prior 
+     "prior distribution of average arrival time"
+     (normal mean-time-to-arrive
+             sd-time-to-arrive))
+\end{lstlisting}
+
+There are two possibilities, either the same customer visited
+the deli twice, or two different customers came to the deli,
+one for lunch, one for dinner. We define an Anglican function
+for each case. Note that this is the first time we switch from
+Clojure to Anglican.
+
+\begin{lstlisting}[style=default]
+(defm same-customer 
+  "observe the same customer twice"
+  [time-to-arrive-prior
+   lunch-delay
+   dinner-delay]
+  (let [time-to-arrive
+          (sample time-to-arrive-prior)]
+    (observe (normal time-to-arrive time-sd) 
+             lunch-delay)
+    (observe (normal time-to-arrive time-sd)
+             dinner-delay)
+    (predict :time-to-arrive time-to-arrive)))
+
+(defm different-customers
+  "observe different customers"
+  [time-to-arrive-prior
+   lunch-delay
+   dinner-delay]
+  (let [time-to-arrive-1
+          (sample time-to-arrive-prior)
+        time-to-arrive-2
+          (sample time-to-arrive-prior)]
+    (observe (normal time-to-arrive-1 time-sd) 
+             lunch-delay)
+    (observe (normal time-to-arrive-2 time-sd)
+             dinner-delay)
+    (predict :times-to-arrive
+      [time-to-arrive-1 time-to-arrive-2])))
+\end{lstlisting}
+
+Both functions have the same structure: we first `guess' the
+average arrival time and then observe the actual time from a
+distribution parameterized by the guessed time. However, in
+\texttt{same-customer} the average arrival time is the same for
+both the lunch and the dinner, while for
+\texttt{different-customers} two average arrival times are
+guessed independently.
+
+We are finally ready to define the query. 
+
+\begin{lstlisting}[style=default]
+(defquery deli [time-to-arrive-prior
+                lunch-delay
+                dinner-delay]
+ (let [is-same-customer (sample (flip p-same))
+       observe-customer (if is-same-customer
+                           same-customer
+                           different-customer)]
+    (predict :is-same-customer is-same-customer)
+    (observe-customer time-to-arrive-prior
+                      lunch-delay
+                      dinner-delay)))
+\end{lstlisting}
+
+Performing inference on query \texttt{deli} should predict the
+probability that the same customer visited the deli twice, as
+well as probability distributions of average arrival times for
+both cases.
+
+\subsection{Inference}
+
 \section{Summary}
 
 In this paper, we presented design and implementation internals
