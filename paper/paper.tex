@@ -1012,7 +1012,6 @@ similar types occurring in similar positions (relative positions
 in contiguous subsequences of a certain type) is preserved, and
 drawn values can be reused efficiently:
 
-\begin{center}
 \begin{tabular}{l l}
     \textbf{old} & \textbf{new} \\ \hline
     {}\texttt{[C1 0]} & \texttt{[C1 0]} \\
@@ -1022,10 +1021,9 @@ drawn values can be reused efficiently:
     {}\texttt{[C1 17]} & \texttt{[C1 17]} \\
     {}\texttt{[C1 18]} & \textit{unused} \\
     {}\texttt{[C2 16]} & \texttt{[C2 16]} \\
-    \textit{redrawn} & \texttt{[C2 17]} \\
+    \textit{missing} & \texttt{[C2 17]} \textit{drawn}\\
     {}\texttt{[C3 0]} & \texttt{[C3 0]}
 \end{tabular}
-\end{center}
 
 Note that correspondence between checkpoints in different
 traces plays the role of an heuristic in Metropolis-Hastings
