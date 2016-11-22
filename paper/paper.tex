@@ -68,6 +68,8 @@
 \end{abstract}
 
 \section{Introduction}
+\label{sec:intro}
+
 For data science practitioners, statistical inference is typically
 just one step in a more elaborate analysis workflow. The first stage
 of this work involves data acquisition, pre-processing and cleaning.
@@ -176,7 +178,9 @@ computational efficiency without sacrificing expressiveness.
 Anglican language syntax, compilation, invocation, and runtime
 support of Anglican queries are discussed in detail in further
 sections.
+
 \section{Design Outline}
+\label{sec:design}
 
 An Anglican program, or \textit{query}, is compiled into a Clojure
 function. When inference is performed with a provided algorithm, this
@@ -331,6 +335,7 @@ particular set of functions for the distribution
 provides a convenient syntax for defining primitive distributions.
 
 \section{Language}
+\label{sec:language}
 
 The Anglican language is a subset of Clojure\footnote{It would be
 possible to support almost full Clojure by expanding all macros
@@ -349,6 +354,7 @@ literals for vectors, hash maps, and
 sets are supported just like in Clojure.
 
 \subsection{Core Library}
+\label{sec:core}
 
 All of Clojure's core library except for higher-order functions
 (functions that accept other functions as arguments) is
@@ -360,6 +366,7 @@ functions are implemented: \texttt{map}, \texttt{reduce},
 \texttt{comp}, \texttt{partial}.
 
 \subsection{Tail Call}
+\label{sec:tail}
 
 Clojure provides special forms \texttt{loop} and \texttt{recur}
 for writing tail-recursive programs. Such forms are not necessary
@@ -371,6 +378,7 @@ for convenience as a way to express loops. \texttt{recur} outside of \texttt{loo
 will lead to unpredictable behaviour and hard-to-catch errors.
 
 \section{Macro-based Compilation}
+\label{sec:compilation}
 
 Compilation of Anglican into Clojure is built around a variant of CPS
 transformation. In a basic CPS-transformed program, a
@@ -402,6 +410,7 @@ following form:
 \end{lstlisting}
 
 \subsection {The State}
+\label{sec:state}
 
 The state (\texttt{\$state}) is threaded through the computation
 and contains data used by inference algorithm. \texttt{\$state}
@@ -427,6 +436,7 @@ checkpoints corresponding to the probabilistic forms
 state and reinject a new state into the computation.
 
 \subsection{Expression Kinds}
+\label{sec:expr}
 
 There are three different kinds of inputs to CPS transformation:
 \begin{itemize}
@@ -446,6 +456,7 @@ There are three different kinds of inputs to CPS transformation:
 \end{itemize}
 
 \subsubsection{Literals}
+\label{sec:literals}
 
 Literals are the same in Anglican and Clojure. They are
 left unmodified; literals are a subset of opaque expressions.
@@ -469,6 +480,7 @@ corresponding calls:
 \end{lstlisting}
 
 \subsubsection{Opaque Expressions}
+\label{sec:opaque}
 
 Opaque, or value, expressions, have a different shape in the
 original and the CPS form. However, their CPS form follows the
@@ -494,6 +506,7 @@ In the actual code an automatically generated fresh symbol is
 used instead of \texttt{cont}.
 
 \subsubsection{General Expressions}
+\label{seq:general}
 
 The most general form of CPS transformation receives an
 expression and a continuation, and returns the expression
@@ -515,6 +528,7 @@ consistently named \texttt{cps-of-}\textit{form}, for example,
 \texttt{cps-of-do}, \texttt{cps-of-store}.
 
 \subsection{Implementation Highlights}
+\label{seq:highlights}
 
 So far we introduced the basics of Anglican compilation to
 Clojure. The described approaches and techniques are important
@@ -525,6 +539,7 @@ implementation of unique features of Anglican as a probabilistic
 programming language.
 
 \subsubsection{Continuations}
+\label{seq:continuations}
 
 Continuations are functions that are called in tail positions
 with the computed value and state as their arguments --- in CPS
@@ -614,6 +629,7 @@ establishes the binding automatically:
 \end{lstlisting}
 
 \subsubsection{Primitive Procedures}
+\label{seq:primitive}
 
 When an Anglican function is transformed into a Clojure function
 by \texttt{fn-cps}, two auxiliary parameters are added to the
@@ -653,7 +669,8 @@ The Anglican compiler takes care of the shading by rebinding
 (\texttt{fn-cps}, \texttt{cps-of-let}). Macro
 \texttt{shading-primitive-procedures} automates the shading.
 
-\subsubsection{Probabilistic forms}
+\subsubsection{Probabilistic Forms}
+\label{seq:forms}
 
 There are two proper probabilistic forms turning Anglican into a
 probabilistic programming language --- \texttt{sample} and
@@ -742,6 +759,7 @@ probabilistic program, which is intended. Otherwise, it would be
 impossible to memoize functions with random results.
 
 \section{Inference Algorithms}
+\label{sec:inference}
 
 A probabilistic program in Anglican may look almost like a
 Clojure program, however the purpose of executing a
@@ -770,7 +788,8 @@ algorithm identifier, a query --- the probabilistic program in
 which to perform the inference, an initial value for the query,
 and optional algorithm parameters.
 
-\subsection{The \texttt{infer} function}
+\subsection{The \texttt{infer} Function}
+\label{sec:infer}
 
 The sole purpose of the algorithm identifier of \texttt{infer} is to invoke
 an appropriate overloading or implementation of the function --- conventionally,
@@ -817,7 +836,8 @@ By convention, the arguments should be
 keyword arguments, and are interpreted in the algorithm-specific
 manner.
 
-\subsection{Internals of an inference algorithm}
+\subsection{Internals of an Inference Algorithm}
+\label{seq:internals}
 
 The simplest inference algorithm is \textit{importance
 sampling}:
@@ -848,7 +868,8 @@ handler is overridden. In addition, SMC runs multiple particles
 programs from an intermediate continuation rather than from the
 beginning.
 
-\subsection{Addressing of checkpoints}
+\subsection{Addressing of Checkpoints}
+\label{sec:addressing}
 
 Many inference algorithms memoize and reuse earlier computations
 at checkpoints: variants of Metropolis-Hastings reuse previously
@@ -1033,6 +1054,7 @@ checkpoint addresses and can be used from any inference
 algorithm.
 
 \section{Definitions and Runtime Library}
+\label{seq:runtime}
 
 A Clojure namespace that includes a definition of an Anglican
 program imports (`requires') two essential namespaces:
@@ -1122,6 +1144,7 @@ Unlike conventional implementations of random processes,
 Anglican's random processes do not have mutable state.
 
 \section{Case Study}
+\label{seq:study}
 
 The description of Anglican language and environment would be
 incomplete without a case study showing the process of building
@@ -1129,9 +1152,16 @@ and executing a solution of an inference problem. This case
 study takes a problem for which a solution is not immediately
 obvious, \textit{the Deli dilemma}, and guides through
 writing an Anglican program for the problem, executing the
-program, and post-processing results.
+program, and post-processing results. 
 
-\subsection{The deli dilemma}
+The program presented in this section is intentionally short and
+simple. Aglican is capable of compiling and running elaborated
+programs handling large amounts of data. Advanced examples of
+Anglican programs and inference can be found in literature on
+applications of probabilistic programming~\cite{PLW15, P16, MPT+16}.
+
+\subsection{The Deli Dilemma}
+\label{seq:deli}
 
 Imagine that we are facing the following dilemma:
 
@@ -1155,7 +1185,8 @@ In addition to the story above, we know that:
     \item The waiter's odds that this is the same customer are 2 to 1.
 \end{itemize}
 
-\subsection{Anglican query}
+\subsection{Anglican Query}
+\label{seq:deli-query}
 
 We want to formalize the dilemma in an Anglican query, based on
 the knowledge we have. Let us formalize the knowledge in
@@ -1203,11 +1234,14 @@ time.
              sd-time-to-arrive))
 \end{lstlisting}
 
-There are two possibilities, either the same customer visited
+There are two possibilities: either the same customer visited
 the deli twice, or two different customers came to the deli,
-one for lunch, one for dinner. We define an Anglican function
+one for lunch, one for dinner. We define an \textbf{Anglican} function
 for each case. Note that this is the first time we switch from
-Clojure to Anglican.
+Clojure to Anglican. The functions must be written in Anglican
+(and hence defined using \texttt{defm} instead of \texttt{defn})
+because they contain probabilistic forms \texttt{sample} and
+\texttt{observe}.
 
 \begin{lstlisting}[style=default]
 (defm same-customer 
@@ -1248,7 +1282,7 @@ both the lunch and the dinner, while for
 \texttt{different-customers} two average arrival times are
 guessed independently.
 
-We are finally ready to define the query. 
+We are finally ready to define the query in \textbf{Anglican}.
 
 \begin{lstlisting}[style=default]
 (defquery deli [time-to-arrive-prior
@@ -1264,29 +1298,69 @@ We are finally ready to define the query.
                       dinner-delay)))
 \end{lstlisting}
 
-Performing inference on query \texttt{deli} should predict the
+Performing inference on query \texttt{deli} predicts the
 probability that the same customer visited the deli twice, as
 well as probability distributions of average arrival times for
 both cases.
 
 \subsection{Inference}
+\label{seq:deli-inference}
+
+Having defined the query, we are now ready to run the query
+using an inference algorithm. Function \texttt{doquery} provided
+by the \texttt{anglican.core} namespace accepts the inference
+algorithm, the query, and optional parameters, and returns a
+lazy sequence of samples. We use here the inference algorithm
+called Lightweight Metropolis-Hastings (LMH). The algorithm is
+somewhat slow to converge but can be used with any Anglican
+query, and should be robust enough for our simple problem.
+
+We bind the results of \texttt{doquery} to variable
+\texttt{samples}, to analyse the results later. However, since
+the sequence is lazy, no inference is performed and no samples
+are generated until they are retrieved and processed.
 
 \begin{lstlisting}[style=default]
 (def samples (doquery :lmh deli nil))
 \end{lstlisting}
 
+To approximate the inferred distribution, we extract a finite
+subsequence of samples. Many algorithms use an initial
+subsequence of samples to converge to the target distribution,
+hence we drop initial $N$ samples ($N$ is 5000 in the code
+snippet below), and collect the next $N$ samples.
+
 \begin{lstlisting}[style=default]
-(def N 1000)
+(def N 5000)
 (def predicts (map get-predicts
                    (take N (drop N samples))))
 \end{lstlisting}
+
+Based on the collected samples we compute an approximation of
+the posterior probability \texttt{p-same+} that the same
+customer visited the deli twice.
+
 
 \begin{lstlisting}[style=default]
 (def p-same+ 
      (/ (count (filter :same-customer predicts))
         (double N)))
 \end{lstlisting}
-                            
+
+With the specified observations, \texttt{-same+} is $\approx
+0.12$. The results may vary from run to run, and, for given
+algorithm, the accuracy depends on the number of samples we
+chose to retrieve. The probability is much lower than the
+waiter's guess \texttt{p-same} ($\frac 2 3$).
+
+In addition to computing the posterior probability that the same
+customer visited the deli twice, we may want to know the average
+time (or times) to arrive. In Bayesian inference, it is common
+to report distributions instead of `most likely' values. We use
+predicted values in retrieved samples to approximate the
+distributions, and plot distribution histograms for the same
+customer visiting twice (Figure~\ref{fig:dist-same}) and
+two different customers (Figure~\ref{fig:dist-diff})
 
 \begin{lstlisting}[style=default]
 ;; single customer                      
@@ -1311,22 +1385,48 @@ both cases.
      (std (map second times-to-arrive+)))
 \end{lstlisting}
 
+In addition to plotting the distribution histograms, we use
+functions \texttt{mean}, \texttt{std} provided, along with other
+useful statistical functions, in the \texttt{anglican.{\linebreak[0]}stat}
+namespace. This is another illustration of advantage of tight
+integration between Clojure and Anglican --- probabilistic
+models are expressed in Anglican, however processing of data and
+results can rely on the full power of Clojure.
+
+\begin{figure}
+    \includegraphics[trim={12pt 0 0 0},scale=0.7]{same-customer-time.pdf}
+    \caption{Arrival time distribution for a single customer.}
+    \label{fig:dist-same}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[trim={12pt 0 0 0},scale=0.7]{different-customers-times.pdf}
+    \caption{Arrival time distributions for two customers.}
+    \label{fig:dist-diff}
+\end{figure}
+
+For inference, we chose to use  Lightweight
+Metropolis-Hastings, perhaps somewhat voluntarily. A strength of
+probabilistic programming is that models are separated from
+inference. To switch to a different inference algorithm we just
+need to pass a different value to \texttt{doquery}. For example,
+we may decide to use Black-Box Variational Bayes (BBVB), which
+may not work equally well for all probabilistic programs, but is
+much faster to converge.
+
 \begin{lstlisting}[style=default]
 (def samples (doquery :bbvb deli nil))
 \end{lstlisting}
+
+We can still use samples and summary statistics with BBVB to
+approximate the posterior distribution, however variational
+inferences approximates the posterior by known distributions,
+and we can directly retrieve the distribution parameters.
 
 \begin{lstlisting}[style=default]
 (clojure.pprint/pprint
   (anglican.bbvb/get-variational (nth samples N)))
 \end{lstlisting}
-
-\begin{figure}
-    \includegraphics[trim={12pt 0 0 0},scale=0.7]{same-customer-time.pdf}
-\end{figure}
-
-\begin{figure}
-    \includegraphics[trim={12pt 0 0 0},scale=0.7]{different-customers-times.pdf}
-\end{figure}
 
 \begin{verbatim}
 {S28209
@@ -1349,7 +1449,60 @@ both cases.
     :max 1.0}}}}
 \end{verbatim}
 
+We can guess that the variational distributions correspond to the
+prior distributions in the \texttt{sample} forms, in the order
+of appearance. However, it would help if we could use more
+informative labels instead of automatically generated symbols
+\texttt{S28209}, \texttt{S28217}, etc. Here the option to
+specify identifiers for probabilistic forms explicitly comes
+handy. If we modify the \texttt{sample} forms to use explicit identifiers
+(only the forms are shown for brevity), the output becomes much
+easier to analyse.
+
+\begin{lstlisting}[style=default]
+          (sample :arrival-time-same
+                  time-to-arrive-prior)]
+
+          (sample :arrival-time-first
+                  time-to-arrive-prior)
+
+          (sample :arrival-time-second
+                  time-to-arrive-prior)]
+
+  (let [is-same-customer (sample :same-or-different
+                                 (flip p-same))
+\end{lstlisting}
+
+The output becomes much easier to interpret and analyse
+programmatically.
+
+\begin{verbatim}
+{:arrivate-time-same
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 10.99753360180663,
+   :sd 0.7290976433082352}},
+ :arrival-time-first
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 12.668050292254202,
+   :sd 0.9446695174790353}},
+ :arrival-time-second
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 9.104132559955836,
+   :sd 0.9479290526821788}},
+ :same-or-different
+ {(0 anglican.runtime.flip-distribution)
+  {:p 0.11671977016875924,
+   :dist
+   {:min 0.0,
+    :max 1.0}}}}
+\end{verbatim}
+
+This completes the case study, where we showed a probabilistic
+programming solution of a problem, implemented and analysed in
+Anglican and Clojure, using two different inference algorithms.
+
 \section{Summary}
+\label{seq:summary}
 
 In this paper, we presented design and implementation internals
 of the \emph{probabilistic programming system} Anglican. Implementing
