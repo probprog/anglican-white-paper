@@ -97,18 +97,18 @@ models making the inference inherently faster.
 While probabilistic programming systems shorten the iteration cycle in
 exploratory model design, they typically lack basic functionality needed for
 data I/O, pre-processing, and analysis and visualization of inference results.
-In this demonstration, we describe the implementation of
+In this paper, we describe the implementation of
 Anglican~\cite{TMW15, Anglican}, a probabilistic
 programming language that tightly integrates with
 Clojure~\cite{H08,Clojure}, a general-purpose programming language
 that runs on the Java Virtual Machine (JVM). Both languages share a common
 syntax, and can be invoked from each other. This allows Anglican programs to
 make use of a rich set of libraries written in both Clojure and Java.
-Conversely Anglican allows intuitive and compact specification of models for
+Conversely, Anglican allows intuitive and compact specification of models for
 which inference may be performed as part of a larger Clojure project.
 
 There are several ways to build a programming language
-on top or besides another language.  The easiest to grasp is an
+on top of or besides another language.  The easiest is an
 interpreter --- a program that reads a program, in its entirety
 or line-by-line, and executes it by applying operational
 semantics of a certain kind to the language. \textsc{Basic} is
