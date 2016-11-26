@@ -255,8 +255,9 @@ Depending on the \textit{inference algorithm}, \texttt{sample}
 and \texttt{observe} may result in implicit input/output
 operations and control changes. For example, \texttt{observe} in
 particle filtering inference algorithms \cite{WVM14} is a non-deterministic
-control statement at which a thread (also called particle) 
-can be either forked or terminated. Similarly, in 
+control statement at which a particle (corresponding to
+a thread executing a program)
+can be either replicated or terminated. Similarly, in 
 Metropolis-Hastings \cite{WSG11},
 \texttt{sample} is both an input
 statement which `reads' values from a random source,
