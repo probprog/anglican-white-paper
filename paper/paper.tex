@@ -210,10 +210,16 @@ can look like the following code:
     ;; Returning the distribution and parameters
     [d a b]))
 \end{lstlisting}
-This query defines a probability distribution on three
-variables, $\texttt{d} \in \{\texttt{normal},\texttt{gamma}\}$
+The query builds a model for the input $\data$, a sequence of data points.
+It defines a probability distribution on three variables, 
+$\texttt{d} \in \{\texttt{normal},\texttt{gamma}\}$
 for a distribution type, and $\texttt{a}$ and $\texttt{b}$ for
-positive parameters for the type. Samples from this distribution
+positive parameters for the type. Concretely,
+using the $\texttt{sample}$ statements, the query
+first defines so called a prior distribution on these three variables,
+and then it adjust this prior distribution based on data points in
+$\texttt{data}$ using the \texttt{observe} statement.
+Samples from this adapted distribution (also called posterior distribution)
 can be obtained by running the query under one of Anglican's
 inference algorithms.
 
