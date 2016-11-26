@@ -194,7 +194,7 @@ can look like the following code:
 (defquery model data
   "chooses a distribution
    which describes the data"
-  (let [;;; Guessing a distribution
+  (let [;;; Guess a distribution.
         dist (sample (categorical
                        [[normal 0.5]
                         [gamma 0.5]]))
@@ -202,7 +202,7 @@ can look like the following code:
         b (sample (gamma 1 1))
         d (dist a b)]
 
-    ;;; Observing samples from the distribution
+    ;;; Observe samples from the distribution.
     (loop [observations data]
       (when (not-empty observations)
         ;; Retrieve the first observation as `o',
@@ -216,8 +216,7 @@ can look like the following code:
         ;; the rest of observations.
         (recur observations*)))
 
-    ;;; Finally, returning the distribution 
-    ;;; and parameters
+    ;;; Return the distribution and parameters.
     [d a b]))
 \end{lstlisting}
 \end{minipage}
@@ -388,7 +387,7 @@ functions are implemented: \texttt{map}, \texttt{reduce},
 Clojure provides special forms \texttt{loop} and \texttt{recur}
 for writing tail-recursive programs. Such forms are not necessary
 in Anglican, because Anglican programs are CPS-converted and do not
-use stacks. For instance, no recursive call in Anglican can lead to stack overflow.
+use the stack. For instance, no recursive call in Anglican can lead to stack overflow.
 In fact, in Anglican, it is recommended to use recursive calls to functions instead of
 \texttt{recur}. However, \texttt{loop}/\texttt{recur} is provided in Anglican
 for convenience as a way to express loops. \texttt{recur} outside of \texttt{loop}
