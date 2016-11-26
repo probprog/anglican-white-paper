@@ -1,4 +1,5 @@
 \documentclass[preprint]{sigplanconf}
+\linespread{1.08}
 
 \usepackage[color]{changebar}
 \usepackage{enumitem}
@@ -188,11 +189,12 @@ algorithm, this produces a sequence of samples. Anglican shares
 a common syntax with Clojure; Clojure functions can be called
 from Anglican code and vice versa. A simple program in Anglican
 can look like the following code:
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[style=default]
 (defquery model data
   "chooses a distribution
    which describes the data"
-  (let [;; Guessing a distribution
+  (let [;;; Guessing a distribution
         dist (sample (categorical
                        [[normal 0.5]
                         [gamma 0.5]]))
@@ -200,26 +202,35 @@ can look like the following code:
         b (sample (gamma 1 1))
         d (dist a b)]
 
-    ;; Observing samples from the distribution
-    (loop [data0 data]
-      (when (not-empty data0)
-        (let [[x & data1] data0]
-          (observe d x))
-        (recur data1)))
+    ;;; Observing samples from the distribution
+    (loop [observations data]
+      (when (not-empty observations)
+        ;; Retrieve the first observation as `o',
+        ;; and store the rest of observations in 
+        ;; 'observations*'.
+        (let [[o & observations*] observations]
+          ;; Observe 'o' from the guessed 
+          ;; distribution 'd'.
+          (observe d o))
+        ;; Proceed to the next iteration with
+        ;; the rest of observations.
+        (recur observations*)))
 
-    ;; Returning the distribution and parameters
+    ;;; Finally, returning the distribution 
+    ;;; and parameters
     [d a b]))
 \end{lstlisting}
+\end{minipage}
 The query builds a model for the input $\texttt{data}$, 
 a sequence of data points.
 It defines a probability distribution on three variables, 
 $\texttt{d} \in \{\texttt{normal},\texttt{gamma}\}$
 for a distribution type, and $\texttt{a}$ and $\texttt{b}$ for
 positive parameters for the type. Concretely,
-using the $\texttt{sample}$ statements, the query
-first defines so called a prior distribution on these three variables,
-and then it adjust this prior distribution based on data points in
-$\texttt{data}$ using the \texttt{observe} statement.
+using the $\texttt{sample}$ forms, the query
+first defines a so called prior distribution on these three variables,
+and then it adjusts this prior distribution based on observations in
+$\texttt{data}$ using the \texttt{observe} form.
 Samples from this adapted distribution (also called posterior distribution)
 can be obtained by running the query under one of Anglican's
 inference algorithms.
