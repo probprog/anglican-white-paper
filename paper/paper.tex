@@ -90,7 +90,7 @@ Metropolis-Hastings \cite{WSG11,MSP14,YHG14}, Hamiltonian Monte Carlo
 \cite{SDT04}, expectation propagation \cite{MWG+10}, and extensions
 of Sequential Monte Carlo \cite{WVM14,MYM+15,PWD+14} methods.
 These generic techniques may be less statistically efficient
-than techniques tailored to a specific model, however
+than techniques tailored to a specific model. However,
 probabilistic programming facilitates simpler implementations of
 models making the inference inherently faster.
 
@@ -166,7 +166,7 @@ task. Random choices may affect which parts of the program code
 are executed and how often. Many inference algorithms require
 re-running the program multiple times partially, from a certain
 point on.  Different executions may employ different random
-choices, however for efficient inference a correspondence
+choices. However, for efficient inference a correspondence
 between random choices in different executions should be
 maintained. These are just some of the challenges which were
 faced and solved during development of Anglican.
@@ -336,7 +336,7 @@ provides a convenient syntax for defining primitive distributions.
 
 The Anglican language is a subset of Clojure\footnote{It would be
 possible to support almost full Clojure by expanding all macros
-in the Anglican source code, however in Clojure, unlike in
+in the Anglican source code. However, in Clojure, unlike in
 Scheme~\cite{SDF+10}, or Common Lisp~\cite{PC94}, the result
 of macro-expansion of derived special forms is not well
 specified and implementation specific.}.  Anglican queries
@@ -633,7 +633,7 @@ beginning of the parameter list --- continuation and state.
 Correspondingly, when a function \textit{call} is transformed
 (by \texttt{cps-of-application} or \texttt{cps-of-apply}), the
 current continuation and the state are passed to the called
-function. Anglican can also call Clojure functions; however
+function. Anglican can also call Clojure functions; however,
 Clojure functions do not expect these auxiliary parameters.
 To allow the mixing of Anglican (CPS-transformed) and Clojure
 function calls in Anglican code, the Anglican compiler must be
@@ -643,7 +643,7 @@ rather than in Anglican) functions.
 Providing an explicit syntax for differentiating between
 Anglican and Clojure function calls would be cumbersome. Another
 option would be to use meta-data to identify Anglican function
-calls at runtime, however this would impact performance, and
+calls at runtime. However, this would impact performance, and
 a good runtime performance is critical for probabilistic
 programs. The approach taken by Anglican is to maintain a list
 of unqualified names of primitive functions, as well of
@@ -758,7 +758,7 @@ impossible to memoize functions with random results.
 \label{sec:inference}
 
 A probabilistic program in Anglican may look almost like a
-Clojure program, however the purpose of executing a
+Clojure program. However, the purpose of executing a
 probabilistic program is different from that of a `regular'
 program: instead of producing the result of a single execution,
 a probabilistic program computes, exactly or approximately, the
@@ -887,7 +887,7 @@ scheme based on computing of stack addresses of checkpoints was
 described in the context of Lightweight
 Metropolis-Hastings~\cite{WSG11}.  This scheme has advantages
 over the naive scheme where dynamic occurrences of checkpoints
-are numbered sequentially, however it impacts the
+are numbered sequentially. However, it impacts the
 performance of probabilistic programs because of the computation
 cost of computing the stack addresses:
 \begin{enumerate}
@@ -909,7 +909,7 @@ program fragment:
   (sample dist))
 \end{lstlisting}
 The \texttt{sample} checkpoint has the same stack address in
-different traces, however the random values should not be
+different traces. However, the random values should not be
 re-used between different distributions. Further on, in some
 algorithms, such as black-box variational inference, the role of
 checkpoint addresses is semantic rather than heuristic ---
@@ -1385,7 +1385,7 @@ functions \texttt{mean}, \texttt{std} provided, along with other
 useful statistical functions, in the \texttt{anglican.{\linebreak[0]}stat}
 namespace. This is another illustration of advantage of tight
 integration between Clojure and Anglican --- probabilistic
-models are expressed in Anglican, however processing of data and
+models are expressed in Anglican. However, processing of data and
 results can rely on the full power of Clojure.
 
 \begin{figure}
@@ -1414,7 +1414,7 @@ much faster to converge.
 \end{lstlisting}
 
 We can still use samples and summary statistics with BBVB to
-approximate the posterior distribution, however variational
+approximate the posterior distribution. However, variational
 inference approximates the posterior by known distributions,
 and we can directly retrieve the distribution parameters.
 
