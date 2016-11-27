@@ -1,0 +1,183 @@
+\usepackage{listings}
+\usepackage{color}
+\usepackage{xcolor}
+\definecolor{blue}{rgb}{0,0.3,0.7}
+\definecolor{red}{rgb}{0.60,0.0,0.0}
+\definecolor{purple}{rgb}{0.5,0,0.7}
+\definecolor{cyan}{rgb}{0.0,0.6,0.5}
+\definecolor{orange}{rgb}{0.7,0.5,0.0}
+\definecolor{gray}{rgb}{0.4,0.4,0.4}
+
+\lstdefinelanguage{scheme}
+{sensitive, %
+ alsoletter={:,-,+,*,?,/,!,>,<}, %
+ morecomment=[l];, %
+}[comments]
+
+% listings definition for Anglican programming language
+\lstdefinelanguage{anglican}%
+{% empty (strings and keywords)
+ morekeywords=[1]{},
+ % clojure declarations
+ morekeywords=[2]{%
+   def, def-, defn, defn-, defmacro, defmulti, defmethod, %
+   defstruct, defonce, declare, definline, definterface, %
+   defprotocol, defrecord, defstruct, deftype, defproject, ns, %
+ }, %
+ % clojure macros and special forms
+ morekeywords=[3]{->, ->>, .., amap, and, areduce, as->, assert, binding, %
+   bound-fn, case, comment, cond, cond->, cond->>, condp, declare, definline, %
+   definterface, defmacro, defmethod, defmulti, defn, defn-, defonce, %
+   defprotocol, defrecord, defstruct, deftype, delay, doseq, dosync, dotimes, %
+   doto, extend-protocol, extend-type, fn, for, future, gen-class, %
+   gen-interface, if, if-let, if-not, if-some, import, io!, lazy-cat, lazy-seq, let, %
+   letfn, locking, loop, memfn, ns, or, proxy, proxy-super, pvalues, %
+   recur, refer-clojure, reify, some->, some->>, sync, time, when, when-first, %
+   when-let, when-not, when-some, while, with-bindings, with-in-str, %
+   with-loading-context, with-local-vars, with-open, with-out-str, %
+   with-precision, with-redefs}, %
+  % clojure functions
+  morekeywords=[4]{*, *', +, +', -, -', ->ArrayChunk, ->Vec, ->VecNode, %
+    ->VecSeq, -cache-protocol-fn, -reset-methods, /, <, <=, =, ==, >, >=, %
+    accessor, aclone, add-classpath, add-watch, agent, agent-error, %
+    agent-errors, aget, alength, alias, all-ns, alter, alter-meta!, %
+    alter-var-root, ancestors, apply, array-map, aset, aset-boolean, aset-byte, %
+    aset-char, aset-double, aset-float, aset-int, aset-long, aset-short, assoc, %
+    assoc!, assoc-in, associative?, atom, await, await-for, await1, bases, bean, %
+    bigdec, bigint, biginteger, bit-and, bit-and-not, bit-clear, bit-flip, %
+    bit-not, bit-or, bit-set, bit-shift-left, bit-shift-right, bit-test, %
+    bit-xor, boolean, boolean-array, booleans, bound-fn*, bound?, butlast, byte, %
+    byte-array, bytes, cast, char, char-array, char?, chars, chunk, %
+    chunk-append, chunk-buffer, chunk-cons, chunk-first, chunk-next, chunk-rest, %
+    chunked-seq?, class, class?, clear-agent-errors, clojure-version, coll?, %
+    commute, comp, comparator, compare, compare-and-set!, compile, complement, %
+    concat, conj, conj!, cons, constantly, construct-proxy, contains?, count, %
+    counted?, create-ns, create-struct, cycle, dec, dec', decimal?, delay?, %
+    deliver, denominator, deref, derive, descendants, destructure, disj, disj!, %
+    dissoc, dissoc!, distinct, distinct?, doall, dorun, double, double-array, %
+    doubles, drop, drop-last, drop-while, empty, empty?, ensure, %
+    enumeration-seq, error-handler, error-mode, eval, even?, every-pred, every?, %
+    ex-data, ex-info, extend, extenders, extends?, false?, ffirst, file-seq, %
+    filter, filter-ns-publics, filterv, find, find-keyword, find-ns, %
+    find-protocol-impl, find-protocol-method, find-var, first, flatten, float, %
+    float-array, float?, floats, flush, fn?, fnext, fnil, force, format, %
+    frequencies, future-call, future-cancel, future-cancelled?, future-done?, %
+    future?, gensym, get, get-in, get-method, get-proxy-class, %
+    get-thread-bindings, get-validator, group-by, hash, hash-combine, hash-map, %
+    hash-ordered-coll, hash-set, hash-unordered-coll, identical?, identity, %
+    ifn?, in-ns, inc, inc', init-proxy, instance?, int, int-array, integer?, %
+    interleave, intern, interpose, into, into-array, ints, isa?, iterate, %
+    iterator-seq, juxt, keep, keep-indexed, key, keys, keyword, keyword?, last, %
+    line-seq, list, list*, list?, load, load-file, load-reader, load-string, %
+    loaded-libs, long, long-array, longs, macroexpand, macroexpand-1, %
+    make-array, make-hierarchy, map, map-indexed, map?, mapcat, mapv, max, %
+    max-key, memoize, merge, merge-with, meta, method-sig, methods, min, %
+    min-key, mix-collection-hash, mod, munge, name, namespace, namespace-munge, %
+    neg?, newline, next, nfirst, nil?, nnext, not, not-any?, not-empty, %
+    not-every?, not=, ns-aliases, ns-functions, ns-imports, ns-interns, %
+    ns-macros, ns-map, ns-name, ns-publics, ns-refers, ns-resolve, ns-unalias, %
+    ns-unmap, nth, nthnext, nthrest, num, number?, numerator, object-array, %
+    odd?, parents, partial, partition, partition-all, partition-by, pcalls, %
+    peek, persistent!, pmap, pop, pop!, pop-thread-bindings, pos?, pr, pr-str, %
+    prefer-method, prefers, print, print-ctor, print-simple, print-str, printf, %
+    println, println-str, prn, prn-str, promise, proxy-call-with-super, %
+    proxy-mappings, proxy-name, push-thread-bindings, quot, rand, rand-int, %
+    rand-nth, range, ratio?, rational?, rationalize, re-find, re-groups, %
+    re-matcher, re-matches, re-pattern, re-seq, read, read-line, read-string, %
+    realized?, record?, reduce, reduce-kv, reduced, reduced?, reductions, ref, %
+    ref-history-count, ref-max-history, ref-min-history, ref-set, refer, %
+    release-pending-sends, rem, remove, remove-all-methods, remove-method, %
+    remove-ns, remove-watch, repeat, repeatedly, replace, replicate, require, %
+    reset!, reset-meta!, resolve, rest, restart-agent, resultset-seq, reverse, %
+    reversible?, rseq, rsubseq, satisfies?, second, select-keys, send, send-off, %
+    send-via, seq, seq?, seque, sequence, sequential?, set, %
+    set-agent-send-executor!, set-agent-send-off-executor!, set-error-handler!, %
+    set-error-mode!, set-validator!, set?, short, short-array, shorts, shuffle, %
+    shutdown-agents, slurp, some, some-fn, some?, sort, sort-by, sorted-map, %
+    sorted-map-by, sorted-set, sorted-set-by, sorted?, special-symbol?, spit, %
+    split-at, split-with, str, string?, struct, struct-map, subs, subseq, %
+    subvec, supers, swap!, symbol, symbol?, take, take-last, take-nth, %
+    take-while, test, the-ns, thread-bound?, to-array, to-array-2d, trampoline, %
+    transient, tree-seq, true?, type, unchecked-add, unchecked-add-int, %
+    unchecked-byte, unchecked-char, unchecked-dec, unchecked-dec-int, %
+    unchecked-divide-int, unchecked-double, unchecked-float, unchecked-inc, %
+    unchecked-inc-int, unchecked-int, unchecked-long, unchecked-multiply, %
+    unchecked-multiply-int, unchecked-negate, unchecked-negate-int, %
+    unchecked-remainder-int, unchecked-short, unchecked-subtract, %
+    unchecked-subtract-int, underive, unsigned-bit-shift-right, update-in, %
+    update-proxy, use, val, vals, var-get, var-set, var?, vary-meta, vec, %
+    vector, vector-of, vector?, with-bindings*, with-meta, with-redefs-fn, %
+    xml-seq, zero?, zipmap}, %
+  % anglican declarations
+  morekeywords=[5]{def-cps-fn, defanglican, defm, defquery, defun}, %
+  % anglican macros
+  morekeywords=[6]{cps-fn, fm, lambda, mem, query, with-primitive-procedures}, %
+  % anglican functions
+  morekeywords=[7]{%
+    % anglican.core
+    doquery, %
+    % anglican.emit
+    conditional, %
+    % anglican.inference
+    collect-by, equalize, exec, infer, log-marginal, print-predicts, %
+    rand, rand-int, rand-nth, rand-roulette, stripdown, warmup, %
+    % anglican.runtime
+    ->CRP-process, ->DP-process, ->GP-process, %
+    ->bernoulli-distribution, ->beta-distribution, ->binomial-distribution, %
+    ->categorical-crp-distribution, ->categorical-distribution, %
+    ->categorical-dp-distribution, ->chi-squared-distribution, %
+    ->dirichlet-distribution, ->discrete-distribution, %
+    ->exponential-distribution, ->flip-distribution, ->gamma-distribution, %
+    ->mvn-distribution, ->normal-distribution, ->poisson-distribution, %
+    ->uniform-continuous-distribution, ->uniform-discrete-distribution, %
+    ->wishart-distribution, CRP, DP, GP, abs, absorb, acos, asin, atan, %
+    bernoulli, beta, binomial, categorical, categorical-crp, categorical-dp, %
+    cbrt, ceil, chi-squared, cos, cosh, cov, dirichlet, discrete, exp, %
+    exponential, flip, floor, gamma, gen-matrix, log, log-gamma-fn, %
+    log-mv-gamma-fn, log-sum-exp, map->CRP-process, map->DP-process, %
+    map->GP-process, map->bernoulli-distribution, map->beta-distribution, %
+    map->binomial-distribution, map->categorical-crp-distribution, %
+    map->categorical-distribution, map->categorical-dp-distribution, %
+    map->chi-squared-distribution, map->dirichlet-distribution, %
+    map->discrete-distribution, map->exponential-distribution, %
+    map->flip-distribution, map->gamma-distribution, map->mvn-distribution, %
+    map->normal-distribution, map->poisson-distribution, %
+    map->uniform-continuous-distribution, map->uniform-discrete-distribution, %
+    map->wishart-distribution, mvn, normal, poisson, pow, produce, %
+    rint, round, signum, sin, sinh, sqrt, tag, tan, tanh, transform-sample, %
+    uniform-continuous, uniform-discrete, wishart, %
+    % anglican.state
+    add-log-weight, add-predict, clear-predicts, get-log-weight, %
+    get-mem, get-predicts, in-mem?, set-log-weight, set-mem, %     
+  }, %
+  % anglican special forms
+  morekeywords=[8]{factor, observe, predict, retrieve, sample, store}, %
+  sensitive, %
+  alsoletter={:,-,+,*,?,/,!,>,<}, %
+  morecomment=[l];, %
+  morestring=[b]", %
+  keywordsprefix=:, %
+}[keywords,comments,strings]
+ 
+\lstset{
+  language=anglican,
+  basicstyle=\small\ttfamily,
+  commentstyle=\em\color{gray},
+  % keywords and strings
+  keywordstyle=[1]\color{orange},
+  stringstyle=\color{orange},
+  % clojure declarations
+  keywordstyle=[2]\color{purple},
+  % clojure macros and special forms
+  keywordstyle=[3]\color{red},
+  % clojure functions
+  keywordstyle=[4]\color{cyan},
+  % anglican declarations
+  keywordstyle=[5]\color{purple},
+  % anglican macros
+  keywordstyle=[6]\color{red},
+  % anglican functions
+  keywordstyle=[7]\color{cyan},
+  % anglican inference forms 
+  keywordstyle=[8]\color{blue}
+}
