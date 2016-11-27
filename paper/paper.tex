@@ -494,9 +494,9 @@ corresponding calls:
 
 Opaque, or value, expressions, have a different shape in the
 original and the CPS form. However, their CPS form follows the
-pattern \texttt{(continuation transformed-expression)}, and thus
-the transformation does not depend on the continuation, and
-can be accomplished without passing the continuation as a
+pattern \texttt{(continuation transformed-expression \$state)}, and thus
+the transformation does not depend on the continuation parameter, and
+can be accomplished without passing the parameter as a
 transformation argument. Primitive (non-CPS) procedures used in
 Anglican code, \texttt{(fn ...)} forms, and \text{(mem ...)}
 forms are opaque and transformed by
@@ -519,8 +519,8 @@ used instead of \texttt{cont}.
 \label{seq:general}
 
 The most general form of CPS transformation receives an
-expression and a continuation, and returns the expression
-in CPS form with the continuation potentially called in multiple
+expression and a continuation as parameters, and returns the expression
+in CPS form with the continuation parameter potentially called in multiple
 tail positions. General expressions can be somewhat voluntarily
 divided into several groups:
 \begin{itemize}
