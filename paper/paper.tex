@@ -865,13 +865,13 @@ manner.
 \label{seq:internals}
 
 Implementing an inference algorithm in Anglican amounts
-to defining a version of the \texttt{infer} function and 
-checkpoint handlers appropriate for the algorithm. The definitions may 
-just reuse default implementations or override them
-with new algorithm-specific treatment of \texttt{sample} and \texttt{observe} forms 
+to defining an appropriate version of the \texttt{infer} function and 
+checkpoint handlers for \texttt{sample} and \texttt{observe}.
+The definitions may just reuse default implementations or override them
+with new algorithm-specific treatment of \texttt{sample} and \texttt{observe} forms
 and inference state.
 
-Let us illustrate this implementation process with
+Let us illustrate this implementation step with
 \textit{importance sampling},
 the simplest inference algorithm.
 Here is an implementation of the \texttt{infer} function for the algorithm:
@@ -964,7 +964,7 @@ program fragment:
 \end{lstlisting}
 The \texttt{sample} checkpoint has the same stack address in
 different traces. However, the random values should not be
-re-used between different distributions. Further on, in some
+reused between different distributions. Further on, in some
 algorithms, such as black-box variational inference, the role of
 checkpoint addresses is semantic rather than heuristic ---
 appropriate correspondence must be established
@@ -973,7 +973,7 @@ work.
 
 To overcome the above problems, Anglican uses a different scheme
 which is almost as efficient as the scheme based on stack addresses for
-re-use of previously drawn values, as produces addresses of constant size,
+reuse of previously drawn values, while producing addresses of constant size,
 and allows manual computation of checkpoint addresses at runtime
 when the default automatic scheme is insufficient. According to
 the scheme:
@@ -1133,7 +1133,7 @@ handlers of the corresponding checkpoints, but do not have to
 be. For example, in LMH either the \texttt{sample*} or
 the \texttt{observe*} \textit{method} is called for a
 \texttt{sample} checkpoint, depending on whether the value is
-drawn or re-used.
+drawn or reused.
 
 Macro \texttt{defdist} should be used to define distributions.
 \texttt{defdist} takes care of defining a separate type
