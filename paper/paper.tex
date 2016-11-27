@@ -18,7 +18,7 @@
 \usepackage{hyperref}
 \usepackage{url}
 
-\input{anglican}
+\input{anglican-color}
 
 \special{papersize=8.5in,11in}
 \setlength{\pdfpageheight}{\paperheight}
@@ -287,7 +287,7 @@ option --- any other form of concurrency would put a higher burden
 on the underlying runtime (JVM) and the operating system.
 Consequently, Anglican has been implemented as a CPS-transformed
 computation with access to continuations in probabilistic
-checkpoints. Anglican `compiler', represented by a set of
+checkpoints. The Anglican `compiler', represented by a set of
 functions in the \texttt{anglican.trap} namespace, accepts a
 Clojure subset and transforms it into a variant of CPS
 representation, which allows inference algorithms to intervene
