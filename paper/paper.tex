@@ -434,7 +434,7 @@ which records inference-relevant information under various keys
 such as $\texttt{:log-weight}$ and $\texttt{::mem}$.
 The full list of map entries depends on the inference
 algorithm. Except for transformation of
-\texttt{mem} (which converts a function to one with memoization), 
+the \texttt{mem} form (which converts a function to one with memoization), 
 CPS transformation routines
 are not aware of contents of \texttt{\$state}, do not access or
 modify it directly, but rather just thread the state unmodified
@@ -448,16 +448,18 @@ state and reinject a new state into the computation.
 
 There are three different kinds of inputs to CPS transformation:
 \begin{itemize}
-    \item literals, which are passed as an argument to the
-        continuation unmodified;
-    \item value expressions (e.g. the \texttt{fn} form)
+    \item Literals, which are constant expressions. They
+       are passed as an argument to the
+        continuation unmodified.
+    \item Value expressions such as the \texttt{fn} form
         (called \textit{opaque}
-        expressions in the code) which must be transformed to
+        expressions in the code). They must be transformed to
         CPS, but the transformed object is passed to the
-        continuation as a whole, opaquely;
-    \item general expressions (let's call them
-        \textit{transparent}), through which the continuation is
-        threaded in an expression-specific way, and can be
+        continuation as a whole, opaquely.
+    \item General expressions (which we call
+        \textit{transparent} expressions).
+        The continuation is threaded through such an expression
+        in an expression-specific way, and can be
         called in multiple locations of the CPS-transformed
         code, such as in all branches of an \texttt{if}
         statement.
