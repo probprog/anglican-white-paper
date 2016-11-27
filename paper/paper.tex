@@ -748,7 +748,8 @@ dictionary, where the key is the argument list and the value is
 the returned value. However, there are no mutable data
 structures in a probabilistic program, hence \texttt{mem}'s
 memory is stored as a nested dictionary in the program state
-(function \texttt{mem-cps}).  Every memoized function gets a
+introduced during CPS transformation (function \texttt{mem-cps}).  
+Every memoized function gets a
 unique automatically generated identifier. Each time a memoized
 function is called, one of two continuations is chosen,
 depending on whether the same function (a function with the same
