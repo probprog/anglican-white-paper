@@ -669,8 +669,10 @@ bound variables \texttt{*primitive-procedures*} and
 \texttt{*primitive-namespaces*} contain the initial lists of
 names and namespaces, correspondingly. Of course, local bindings
 can shade global primitive function names. For example,
-\texttt{first} is an Anglican function inside the let block in the
-following example:
+\texttt{first} is a Clojure primitive function that takes the first
+element from an ordered collection such as list and vector,
+but inside the let block in the
+following example, \texttt{first} is an Anglican function:
 \begin{lstlisting}[style=default]
 (let [first (fn [[x & y]] x)]
   (first '[1 2 3]))
@@ -699,9 +701,12 @@ called:
 \begin{lstlisting}[style=default]
 => (cps-of-expression '(sample dist) 'cont)
 (->sample dist cont $state)
-=> (cps-of-expression '(observe dist val) 'cont)
-(->observe dist val cont $state)
+=> (cps-of-expression '(observe dist v) 'cont)
+(->observe dist v cont $state)
 \end{lstlisting}
+Here \texttt{->sample} and \texttt{->observe} in the CPS-transformed
+expressions constructors for Clojure records, and they take 
+values of their fields as arguments.
 
 In addition to checkpoints, there are a few other special forms
 ---  \texttt{store}, \texttt{retrieve}, \texttt{mem} --- which
