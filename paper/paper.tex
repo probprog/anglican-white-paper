@@ -818,10 +818,10 @@ and optional algorithm parameters.
 
 The sole purpose of the algorithm identifier of \texttt{infer} is to invoke
 an appropriate overloading or implementation of the function --- conventionally,
-the identifier is a keyword related to the
-algorithm name (\texttt{:lmh} for Lightweight
-Metropolis-Hasting, \texttt{:pcascade} for Particle Cascade
-etc.). The second parameter is a query as defined by
+the identifier is a Clojure keyword (a symbolic constant starting with colon)
+related to the algorithm name, such as \texttt{:lmh} for Lightweight
+Metropolis-Hasting and \texttt{:pcascade} for Particle Cascade.
+The second parameter is a query as defined by
 the \texttt{defquery} form or its anonymous version \texttt{query}. For instance,
 the following Clojure code invokes \texttt{infer} on an Anglican query
 defined anonymously via the \texttt{query} form:
