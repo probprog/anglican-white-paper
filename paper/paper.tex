@@ -1165,13 +1165,16 @@ an interface for these random-sequence objects). The protocol
 has two methods --- \texttt{produce}, which returns a
 distribution object, and \texttt{absorb}, which returns a new
 random process object obtained by absorbing a value drawn from
-the process. Here is a definition of the Poisson process:
+the process. Here is a definition of a beta Bernouilli process:
 \begin{lstlisting}[style=default]
-(defproc PP
-  "Poisson point process"
-  [rate] [dist (exponential rate)]
-  (produce [this] dist)
-  (absorb [this value] this))
+(defproc beta-bernoulli
+  "beta-Bernoulli process"
+  [a b]
+  (produce [this] (bernoulli (/ a (+ a b))))
+  (absorb [this x]
+    (case x
+      0 (beta-bernoulli a (inc b))
+      1 (beta-bernoulli (inc a) b))))
 \end{lstlisting}
 While distributions are random and non-functional,
 random processes are deterministic and functional, hence
@@ -1187,7 +1190,7 @@ not have corresponding special forms in Anglican:
 A common pattern of programming with processes in Anglican is
 recursively computing a new process based on the observed value:
 \begin{lstlisting}[style=default]
-(loop [process (HawkesPointProcess)
+(loop [process (beta-bernoulli 1.0 1.0)
        [value0 & values0] values] 
   (let [dist (produce process)]
     (observe dist value0)
