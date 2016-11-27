@@ -1,5 +1,5 @@
 \documentclass[preprint]{sigplanconf}
-\linespread{1.07}
+\linespread{1.06}
 
 \usepackage[color]{changebar}
 \usepackage{enumitem}
@@ -629,9 +629,10 @@ with continuation
     :wine (wine-glass choice)
     :juice (juice-bottle choice)))
 \end{lstlisting}
-The code of the continuation, represented by the \texttt{fn}
-form, will be repeated three times. In general, CPS code can
-grow extremely large if symbolic continuations are inserted
+During CPS transformation, if we substitute the code of this continuation 
+for all of its calls, the code will be repeated three times in 
+the CPS-transformed expression. In general, CPS code can
+grow extremely large if the code of continuations is substituted
 repeatedly.
 
 To circumvent this inefficiency, CPS transformers for
@@ -673,13 +674,15 @@ programs. The approach taken by Anglican is to maintain a list
 of unqualified names of primitive functions, as well of
 namespaces in which all functions are primitive, and recognize
 primitive functions by name --- if a function name is not in the
-list, the function is an Anglican function. Global dynamically
-bound variables \texttt{*primitive-procedures*} and
+list, the function is an Anglican function. Global dynamically-bound 
+variables \texttt{*primitive-procedures*} and
 \texttt{*primitive-namespaces*} contain the initial lists of
 names and namespaces, correspondingly. Of course, local bindings
 can shade global primitive function names. For example,
-\texttt{first} is an Anglican function inside the let block in the
-following example:
+\texttt{first} is a Clojure primitive function that takes the first
+element from an ordered collection such as list and vector,
+but inside the let block in the
+following example, \texttt{first} is an Anglican function:
 \begin{lstlisting}[style=default]
 (let [first (fn [[x & y]] x)]
   (first '[1 2 3]))
@@ -708,9 +711,12 @@ called:
 \begin{lstlisting}[style=default]
 => (cps-of-expression '(sample dist) 'cont)
 (->sample dist cont $state)
-=> (cps-of-expression '(observe dist val) 'cont)
-(->observe dist val cont $state)
+=> (cps-of-expression '(observe dist v) 'cont)
+(->observe dist v cont $state)
 \end{lstlisting}
+Here \texttt{->sample} and \texttt{->observe} in the CPS-transformed
+expressions constructors for Clojure records, and they take 
+values of their fields as arguments.
 
 In addition to checkpoints, there are a few other special forms
 ---  \texttt{store}, \texttt{retrieve}, \texttt{mem} --- which
@@ -720,8 +726,9 @@ expressions involving calls of functions from the
 implements memoization, deserves a more detailed explanation.
 
 \paragraph{Memoization}
-The author of a probabilistic model might want to draw a
-feature of an entity randomly, but to retain the same drawn
+The author of a probabilistic model might want to 
+randomly draw a feature value of each entity in a collection,
+but to retain the same drawn
 value for the same entity during a single run of the probabilistic
 program. For example, a person may have brown or green eyes
 with some probability, but the \textit{same} person will
@@ -738,13 +745,21 @@ might write:
     (eye-color 'bill)
     (eye-color 'john)))
 \end{lstlisting}
+The \texttt{mem} form converts a function to a memoized variant,
+which remembers past inputs and the corresponding outputs, and 
+returns the remembered output when given such a past input, 
+instead of calling the original function with it. As a result,
+for every input, randon draws will be made only for the first time 
+that the memoized function is called with the input; all subsequent
+calls with the input will just reuse these draws return the same output.
 
 Memoization is often implemented on top of a mutable
 dictionary, where the key is the argument list and the value is
 the returned value. However, there are no mutable data
 structures in a probabilistic program, hence \texttt{mem}'s
 memory is stored as a nested dictionary in the program state
-(function \texttt{mem-cps}).  Every memoized function gets a
+introduced during CPS transformation (function \texttt{mem-cps}).  
+Every memoized function gets a
 unique automatically generated identifier. Each time a memoized
 function is called, one of two continuations is chosen,
 depending on whether the same function (a function with the same
@@ -813,10 +828,10 @@ and optional algorithm parameters.
 
 The sole purpose of the algorithm identifier of \texttt{infer} is to invoke
 an appropriate overloading or implementation of the function --- conventionally,
-the identifier is a keyword related to the
-algorithm name (\texttt{:lmh} for Lightweight
-Metropolis-Hasting, \texttt{:pcascade} for Particle Cascade
-etc.). The second parameter is a query as defined by
+the identifier is a Clojure keyword (a symbolic constant starting with colon)
+related to the algorithm name, such as \texttt{:lmh} for Lightweight
+Metropolis-Hasting and \texttt{:pcascade} for Particle Cascade.
+The second parameter is a query as defined by
 the \texttt{defquery} form or its anonymous version \texttt{query}. For instance,
 the following Clojure code invokes \texttt{infer} on an Anglican query
 defined anonymously via the \texttt{query} form:
