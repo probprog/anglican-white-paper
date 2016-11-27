@@ -619,9 +619,10 @@ with continuation
     :wine (wine-glass choice)
     :juice (juice-bottle choice)))
 \end{lstlisting}
-The code of the continuation, represented by the \texttt{fn}
-form, will be repeated three times. In general, CPS code can
-grow extremely large if symbolic continuations are inserted
+During CPS transformation, if we substitute the code of this continuation 
+for all of its calls, the code will be repeated three times in 
+the CPS-transformed expression. In general, CPS code can
+grow extremely large if the code of continuations is substituted
 repeatedly.
 
 To circumvent this inefficiency, CPS transformers for
