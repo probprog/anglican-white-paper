@@ -1525,17 +1525,26 @@ handy. If we modify the \texttt{sample} forms to use explicit identifiers
 easier to analyse.
 
 \begin{lstlisting}[style=default]
-(sample :arrival-time-same
-        time-to-arrive-prior)]
+(defm same-customer 
+      ...
+      (sample :arrival-time-same
+              time-to-arrive-prior)]
+      ...)
 
-(sample :arrival-time-first
-        time-to-arrive-prior)
+(defm different-customers
+      ... 
+      (sample :arrival-time-first
+              time-to-arrive-prior)
+      ...
+      (sample :arrival-time-second
+              time-to-arrive-prior)]
+      ...)
 
-(sample :arrival-time-second
-        time-to-arrive-prior)]
-
-(let [is-same-customer (sample :same-or-different
-                               (flip p-same))
+(defquery deli ...
+      ...
+      (sample :same-or-different
+              (flip p-same))
+      ...)
 \end{lstlisting}
 
 The output becomes much easier to interpret and analyse
