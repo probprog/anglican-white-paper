@@ -217,8 +217,8 @@ $\texttt{d} \in \{\texttt{normal},\texttt{gamma}\}$
 for a distribution type, and $\texttt{a}$ and $\texttt{b}$ for
 positive parameters for the type. Concretely,
 using the $\texttt{sample}$ statements, the query
-first defines so called a prior distribution on these three variables,
-and then it adjust this prior distribution based on data points in
+first defines a so called prior distribution on these variables.
+Then, it adjusts this prior distribution based on data points in
 $\texttt{data}$ using the \texttt{observe} statement.
 Samples from this adapted distribution (also called posterior distribution)
 can be obtained by running the query under one of Anglican's
