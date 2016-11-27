@@ -201,11 +201,11 @@ can look like the following code:
         d (dist a b)]
 
     ;; Observing samples from the distribution
-    (loop [data0 data]
+    (loop [data0 data] ;; Initializing data0
       (when (not-empty data0)
-        (let [[x & data1] data0]
-          (observe d x))
-        (recur data1)))
+        (let [[x & data1] data0] 
+          (observe d x)
+          (recur data1))))
 
     ;; Returning the distribution and parameters
     [d a b]))
