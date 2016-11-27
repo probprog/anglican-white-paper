@@ -419,20 +419,23 @@ following form:
 \label{sec:state}
 
 The state (\texttt{\$state}) is threaded through the computation
-and contains data used by inference algorithm. \texttt{\$state}
+and contains data used by inference algorithms. \texttt{\$state}
 is a Clojure hash map:
 \begin{lstlisting}[style=default]
 (def initial-state
   "initial program state"
-  {:log-weight 0.0
-   :result nil
-   ::mem {}
-   ::store nil
+  {:log-weight 0.0,
+   :result nil,
+   ::mem {},
+   ::store nil,
    ... })
 \end{lstlisting}
+which records inference-relevant information under various keys
+such as $\texttt{:log-weight}$ and $\texttt{::mem}$.
 The full list of map entries depends on the inference
 algorithm. Except for transformation of
-\texttt{mem}, the memoization form, CPS transformation routines
+\texttt{mem} (which converts a function to one with memoization), 
+CPS transformation routines
 are not aware of contents of \texttt{\$state}, do not access or
 modify it directly, but rather just thread the state unmodified
 through the computation. Algorithm-specific handlers of
