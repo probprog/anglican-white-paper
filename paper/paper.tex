@@ -483,7 +483,7 @@ corresponding calls:
 \begin{lstlisting}[style=default]
 => (cps-of-vector [0 1 2] 'cont)
 (cont (vector 0 1 2) $state)
-=> (cps-of-hash-map {:a 1 :b 2} 'cont)
+=> (cps-of-hash-map {:a 1, :b 2} 'cont)
 (cont (hash-map :a 1, :b 2) $state)
 => (cps-of-set #{0 1} 'cont)
 (cont (set (list 0 1)) $state)
@@ -746,7 +746,7 @@ calls with the input will just reuse these draws return the same output.
 Memoization is often implemented on top of a mutable
 dictionary, where the key is the argument list and the value is
 the returned value. However, there are no mutable data
-structures in a probabilistic program, hence \texttt{mem}'s
+structures in a probabilistic program. Hence, \texttt{mem}'s
 memory is stored as a nested dictionary in the program state
 introduced during CPS transformation (function \texttt{mem-cps}).  
 Every memoized function gets a
@@ -820,7 +820,7 @@ The sole purpose of the algorithm identifier of \texttt{infer} is to invoke
 an appropriate overloading or implementation of the function --- conventionally,
 the identifier is a Clojure keyword (a symbolic constant starting with colon)
 related to the algorithm name, such as \texttt{:lmh} for Lightweight
-Metropolis-Hasting and \texttt{:pcascade} for Particle Cascade.
+Metropolis-Hastings and \texttt{:pcascade} for Particle Cascade.
 The second parameter is a query as defined by
 the \texttt{defquery} form or its anonymous version \texttt{query}. For instance,
 the following Clojure code invokes \texttt{infer} on an Anglican query
@@ -946,7 +946,7 @@ performance of probabilistic programs because of the computation
 cost of computing the stack addresses:
 \begin{enumerate}
     \item On every function call, a component is added to the
-        address, hence the address size is linear in stack depth.
+        address. Hence, the address size is linear in stack depth.
     \item Every function call must be augmented by symbolic
         information required to compute stack addresses.
 \end{enumerate}
@@ -1177,7 +1177,7 @@ the process. Here is a definition of a beta Bernouilli process:
       1 (beta-bernoulli (inc a) b))))
 \end{lstlisting}
 While distributions are random and non-functional,
-random processes are deterministic and functional, hence
+random processes are deterministic and functional. Hence,
 \texttt{produce} and \texttt{absorb} are called directly and do
 not have corresponding special forms in Anglican:
 \begin{itemize}
@@ -1233,7 +1233,7 @@ In addition to the story above, we know that:
 \begin{itemize}
     \item There is an adjacent office quarter, and it takes
         between 5 and 15 minutes on average to walk from an
-        office to the deli, were different average times are  for
+        office to the deli, where different average times are  for
         different buildings in the quarter.
     \item Depending on traffic lights, the walking time varies by about 2
         minutes.
@@ -1278,7 +1278,7 @@ solve the dilemma:
 \end{lstlisting}
 
 
-For inference, one often chooses known distribution to
+For inference, one often chooses a known distribution to
 represent uncertainty. We choose the normal
 distribution for representing uncertainty about average arrival
 time.
@@ -1292,7 +1292,7 @@ time.
 
 There are two possibilities: either the same customer visited
 the deli twice, or two different customers came to the deli,
-one for lunch, one for dinner. We define an \textbf{Anglican} function
+one for lunch and the other for dinner. We define an \textbf{Anglican} function
 for each case. Note that this is the first time we switch from
 Clojure to Anglican. The functions must be written in Anglican
 (and hence defined using \texttt{defm} instead of \texttt{defn})
@@ -1333,7 +1333,7 @@ Both functions have the same structure: we first `guess' the
 average arrival time and then observe the actual time from a
 distribution parameterized by the guessed time. However, in
 \texttt{same-customer} the average arrival time is the same for
-both the lunch and the dinner, while for
+both the lunch and the dinner, while in
 \texttt{different-customers} two average arrival times are
 guessed independently.
 
@@ -1346,8 +1346,8 @@ We are finally ready to define the query in \textbf{Anglican}.
   (let [is-same-customer (sample (flip p-same))
         observe-customer (if is-same-customer
                             same-customer
-                            different-customer)]
-    {:is-same-customer is-same-customer
+                            different-customers)]
+    {:same-customer is-same-customer,
      :times-to-arrive (observe-customer 
                         time-to-arrive-prior
                         lunch-delay
@@ -1382,8 +1382,8 @@ are generated until they are retrieved and processed.
 
 To approximate the inferred distribution, we extract a finite
 subsequence of samples. Many algorithms use an initial
-subsequence of samples to converge to the target distribution,
-hence we drop initial $N$ samples ($N$ is 5000 in the code
+subsequence of samples to converge to the target distribution.
+Hence, we drop initial $N$ samples ($N$ is 5000 in the code
 snippet below), and collect the next $N$ samples.
 
 \begin{lstlisting}[style=default]
@@ -1396,18 +1396,26 @@ Based on the collected samples we compute an approximation of
 the posterior probability \texttt{p-same+} that the same
 customer visited the deli twice.
 
-
 \begin{lstlisting}[style=default]
 (def p-same+ 
      (/ (count (filter :same-customer results))
         (double N)))
 \end{lstlisting}
+The \texttt{:same-customer} here represents a function
+that looks up the entry with the same name in a given map.
+The map stores the result of a single sampled execution,
+and the \texttt{:same-customer} entry in the map
+records whether the same customer visits the deli in the execution.
+The \texttt{filter} function in \texttt{p-same+} 
+goes through all the maps in \texttt{results}
+and picks only the ones whose executions involve just one customer.
 
-With the specified observations, \texttt{-same+} is $\approx
-0.12$. The results may vary from run to run, and, for given
-algorithm, the accuracy depends on the number of samples we
-chose to retrieve. The probability is much lower than the
+With the specified observations, \texttt{p-same+} is $\approx
+0.12$. The probability is much lower than the
 waiter's guess \texttt{p-same} ($\frac 2 3$).
+Of course, the results may vary from run to run, and, for a given
+algorithm, the accuracy depends on the number of samples we
+decide to retrieve. 
 
 In addition to computing the posterior probability that the same
 customer visited the deli twice, we may want to know the average
@@ -1421,16 +1429,17 @@ two different customers (Figure~\ref{fig:dist-diff})
 \begin{lstlisting}[style=default]
 ;; single customer                      
 (def time-to-arrive+ 
-     (map (comp first :times-to-arrive)
-          (filter :same-customer results)))
+    (map (fn [x] (first (:times-to-arrive x)))
+         (filter :same-customer results)))
 (def mean-to-arrive+ (mean time-to-arrive+))
 (def sd-to-arrive+ (std time-to-arrive+))
 
 ;; two customers
 (def times-to-arrive+ 
      (map :times-to-arrive 
-          (filter (complement :same-customer)
-                  results)))
+          (filter  
+            (fn [x] (not (:same-customer x)))
+            results)))
 (def mean-1-to-arrive+
      (mean (map first times-to-arrive+)))
 (def sd-1-to-arrive+
@@ -1442,9 +1451,11 @@ two different customers (Figure~\ref{fig:dist-diff})
 \end{lstlisting}
 
 In addition to plotting the distribution histograms, we use
-functions \texttt{mean}, \texttt{std} provided, along with other
-useful statistical functions, in the \texttt{anglican.{\linebreak[0]}stat}
-namespace. This is another illustration of advantage of tight
+functions \texttt{mean}, \texttt{std} provided
+in the \texttt{anglican.{\linebreak[0]}stat} namespace
+along with other
+useful statistical functions.
+This is another illustration of advantage of tight
 integration between Clojure and Anglican --- probabilistic
 models are expressed in Anglican. However, processing of data and
 results can rely on the full power of Clojure.
@@ -1481,7 +1492,8 @@ and we can directly retrieve the distribution parameters.
 
 \begin{lstlisting}[style=default]
 (clojure.pprint/pprint
-  (anglican.bbvb/get-variational (nth samples N)))
+  (anglican.bbvb/get-variational 
+    (nth samples N)))
 \end{lstlisting}
 
 \begin{verbatim}
@@ -1516,17 +1528,26 @@ handy. If we modify the \texttt{sample} forms to use explicit identifiers
 easier to analyse.
 
 \begin{lstlisting}[style=default]
-          (sample :arrival-time-same
-                  time-to-arrive-prior)]
+(defm same-customer 
+      ...
+      (sample :arrival-time-same
+              time-to-arrive-prior)]
+      ...)
 
-          (sample :arrival-time-first
-                  time-to-arrive-prior)
+(defm different-customers
+      ... 
+      (sample :arrival-time-first
+              time-to-arrive-prior)
+      ...
+      (sample :arrival-time-second
+              time-to-arrive-prior)]
+      ...)
 
-          (sample :arrival-time-second
-                  time-to-arrive-prior)]
-
-  (let [is-same-customer (sample :same-or-different
-                                 (flip p-same))
+(defquery deli ...
+      ...
+      (sample :same-or-different
+              (flip p-same))
+      ...)
 \end{lstlisting}
 
 The output becomes much easier to interpret and analyse
@@ -1557,7 +1578,7 @@ This completes the case study, where we showed a probabilistic
 programming solution of a problem, implemented and analysed in
 Anglican and Clojure, using two different inference algorithms.
 
-\section{Summary}
+\section{Conclusion}
 \label{seq:summary}
 
 In this paper, we presented design and implementation internals
@@ -1567,9 +1588,9 @@ language implements a new paradigm, in this case probabilistic
 programming. Functional programming is a natural complement of
 probabilistic programming --- the latter allows both concise and
 expressive specification of probabilistic generative models and
-efficient implementation of inference algorithm.
+efficient implementation of inference algorithms.
 
-Implementing a probabilistic language on top and in tight
+Implementing a probabilistic language on top of and in tight
 integration with a functional language, Clojure, both helped
 us to accomplish an ambitious goal in a short time span, and
 provided important insights on structure and semantics of
