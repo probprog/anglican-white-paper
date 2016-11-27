@@ -864,32 +864,57 @@ manner.
 \subsection{Internals of an Inference Algorithm}
 \label{seq:internals}
 
-The simplest inference algorithm is \textit{importance
-sampling}:
+Implementing an inference algorithm in Anglican amounts
+to defining a version of the \texttt{infer} function and 
+checkpoint handlers appropriate for the algorithm. The definitions may 
+just reuse default implementations or override them
+with new algorithm-specific treatment of \texttt{sample} and \texttt{observe} forms 
+and inference state.
+
+Let us illustrate this implementation process with
+\textit{importance sampling},
+the simplest inference algorithm.
+Here is an implementation of the \texttt{infer} function for the algorithm:
 \begin{lstlisting}[style=default]
 (derive ::algorithm
         :anglican.inference/algorithm)
-(defmethod infer :importance [_ prog value & {}]
+;; invoked when algo parameter is :importance
+(defmethod infer :importance 
+  [algo prog value & {}]
   (letfn
-    [(sample-seq []
-       (lazy-seq
-         (cons
-           (:state (exec ::algorithm prog value
-                         initial-state))
-           (sample-seq))))]
+    ;; recursive function without any parameter
+    [sample-seq 
+      []
+      ;; lazy infinite sequence 
+      (lazy-seq
+        (cons
+          (:state (exec ::algorithm prog value
+                        initial-state))
+          (sample-seq))))]
     (sample-seq)))
 \end{lstlisting}
-\texttt{anglican.importance/{\linebreak[0]}infer} just calls
-\texttt{anglican.inference/{\linebreak[0]}exec} and relies on default
-implementations of checkpoint handlers. A different inference
-algorithm would provide its own implementations of
+This implementation is dispatched 
+when \texttt{infer} receives \texttt{:importance} as its \texttt{algo} 
+parameter. (Anglican includes multiple implementations of \texttt{infer}
+for different inference algorithms.) Once dispatched, it lazily 
+constructs an infinite sequence of inference states by repeatedly 
+executing the program \texttt{prog} using \texttt{exec}
+and retrieving the final inference state of the execution 
+using \texttt{:state}. For checkpoint handlers, importance sampling simply
+relies on their default implementations.
+%\texttt{anglican.importance/{\linebreak[0]}infer} just calls
+%\texttt{anglican.inference/{\linebreak[0]}exec} and relies on default
+%implementations of checkpoint handlers. 
+
+Typically, an inference
+algorithm has its own implementations of
 \texttt{checkpoint} for \texttt{sample}, \texttt{observe}, or
 both, as well as invoke \texttt{exec} from an elaborated
 conditional control flow. LMH (\texttt{anglican.lmh}) and SMC
 (\texttt{anglican.smc}) are examples of inference algorithms
 where either \texttt{observe} (SMC) or \texttt{sample} (LMH)
 handler is overridden. In addition, SMC runs multiple particles
-(program instances) simultaneously, while LMH re-runs
+(threads executing a program) simultaneously, while LMH re-runs
 programs from an intermediate continuation rather than from the
 beginning.
 
