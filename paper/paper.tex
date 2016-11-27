@@ -263,7 +263,7 @@ and \texttt{observe} may result in implicit input/output
 operations and control changes. For example, \texttt{observe} in
 particle filtering inference algorithms \cite{WVM14} is a non-deterministic
 control statement at which a particle (corresponding to
-a thread executing a program)
+a user-level thread executing a program)
 can be either replicated or terminated. Similarly, in 
 Metropolis-Hastings \cite{WSG11},
 \texttt{sample} is both an input
@@ -914,7 +914,7 @@ conditional control flow. LMH (\texttt{anglican.lmh}) and SMC
 (\texttt{anglican.smc}) are examples of inference algorithms
 where either \texttt{observe} (SMC) or \texttt{sample} (LMH)
 handler is overridden. In addition, SMC runs multiple particles
-(threads executing a program) simultaneously, while LMH re-runs
+(corresponding to user-level threads) simultaneously, while LMH re-runs
 programs from an intermediate continuation rather than from the
 beginning.
 
@@ -922,10 +922,10 @@ beginning.
 \label{sec:addressing}
 
 Many inference algorithms memoize and reuse earlier computations
-at checkpoints: variants of Metropolis-Hastings reuse previously
+at checkpoints. Variants of Metropolis-Hastings reuse previously
 drawn values~\cite{WSG11}, as well as additional information
 used for adaptive sampling~\cite{TMP+15} at \texttt{sample}
-checkpoints, Asynchronous SMC (Particle Cascade) computes
+checkpoints. Asynchronous SMC (Particle Cascade) computes
 average particle weights at \texttt{observe}
 checkpoints~\cite{PWD+14}. Implementations of black-box
 variational inference~\cite{WW13,MPT+16} associate with random
