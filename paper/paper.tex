@@ -9,12 +9,13 @@
 \usepackage{amsfonts}
 \usepackage{graphicx}
 
+
 \usepackage{listings}
-\usepackage[lighttt]{lmodern}
+\usepackage{lmodern}
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
      {<->sub*lmtt/m/sl}{}
-\lstdefinestyle{default}{language=Anglican, basicstyle=\ttfamily\small, showstringspaces=false}
+\lstdefinestyle{default}{language=Anglican, basicstyle=\ttfamily\small, columns=flexible, showstringspaces=false}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -1040,7 +1041,7 @@ sequence of checkpoint invocations:
 \end{lstlisting}
 According to the addressing scheme, the addresses generated
 for this invocations are
-\begin{verbatim}
+\begin{lstlisting}[style=default]
     [C1 0]
     [C2 0]
     [C2 1]
@@ -1049,7 +1050,7 @@ for this invocations are
     [C1 18]
     [C2 16]
     [C3 0]
-\end{verbatim}
+\end{lstlisting}
 If the program is run by a Metropolis-Hastings algorithm, then a small change usually takes place in the sequence of checkpoints with each invocation, and the new sequence may become
 \begin{lstlisting}[style=default]
     (sample 'C1 ...)
@@ -1061,7 +1062,7 @@ If the program is run by a Metropolis-Hastings algorithm, then a small change us
     (sample 'C3 ...)
 \end{lstlisting}
 The addresses for the new sequence are
-\begin{verbatim}
+\begin{lstlisting}[style=default]
     [C1 0]
     [C2 0]
     [C1 16]
@@ -1069,13 +1070,14 @@ The addresses for the new sequence are
     [C2 16]
     [C2 17]
     [C3 0]
-\end{verbatim}
+\end{lstlisting}
 Despite the change, the correspondence between checkpoints of
 similar types occurring in similar positions (relative positions
 in contiguous subsequences of a certain type) is preserved, and
 drawn values can be reused efficiently:
 
 \vspace{\baselineskip}
+{\small
 \begin{tabular}{l l}
     \textbf{old} & \textbf{new} \\ \hline
     {}\texttt{[C1 0]} & \texttt{[C1 0]} \\
@@ -1088,7 +1090,7 @@ drawn values can be reused efficiently:
     \textit{missing} & \texttt{[C2 17]} \textit{drawn}\\
     {}\texttt{[C3 0]} & \texttt{[C3 0]}
 \end{tabular}
-\vspace{\baselineskip}
+\vspace{\baselineskip}}
 
 Note that correspondence between checkpoints in different
 traces plays the role of an heuristic in Metropolis-Hastings
@@ -1522,7 +1524,7 @@ and we can directly retrieve the distribution parameters.
     (nth samples N)))
 \end{lstlisting}
 
-\begin{verbatim}
+\begin{lstlisting}[style=default]
 {S28209
  {(0 anglican.runtime.normal-distribution)
   {:mean 10.99753360180663,
@@ -1541,7 +1543,7 @@ and we can directly retrieve the distribution parameters.
    :dist
    {:min 0.0,
     :max 1.0}}}}
-\end{verbatim}
+\end{lstlisting}
 
 We can guess that the variational distributions correspond to the
 prior distributions in the \texttt{sample} forms, in the order
@@ -1579,7 +1581,7 @@ easier to analyse.
 The output becomes much easier to interpret and analyse
 programmatically.
 
-\begin{verbatim}
+\begin{lstlisting}[style=default]
 {:arrivate-time-same
  {(0 anglican.runtime.normal-distribution)
   {:mean 10.99753360180663,
@@ -1598,7 +1600,7 @@ programmatically.
    :dist
    {:min 0.0,
     :max 1.0}}}}
-\end{verbatim}
+\end{lstlisting}
 
 This completes the case study, where we showed a probabilistic
 programming solution of a problem, implemented and analysed in

@@ -13,6 +13,8 @@ PDFLATEX=pdflatex -shell-escape
 	$(PDFLATEX) ${basename $<}
 
 paper.pdf: paper.tex \
+	anglican-color.tex \
+	anglican.tex \
 	refs.bib
 
 clean:
