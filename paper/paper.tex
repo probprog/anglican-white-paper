@@ -1170,7 +1170,7 @@ random variable in the sequence, and
 \item \texttt{absorb}, which incorporates the value for the next random
 variable and returns an updated random process.
 \end{itemize}
- As an example, here is a definition of a beta-Bernouilli process, in which
+ As an example, here is a definition of a beta-Bernoulli process, in which
 each random variable is distributed according to a Bernoulli distribution with
 an unknown parameter that is drawn from a beta distribution:
 \begin{lstlisting}[style=default]
@@ -1183,11 +1183,10 @@ an unknown parameter that is drawn from a beta distribution:
       0 (beta-bernoulli a (inc b))
       1 (beta-bernoulli (inc a) b))))
 \end{lstlisting}
-Unlike typical implementations of exchangeable random processes, Anglican's random processes do not have mutable state. The \texttt{produce} and \texttt{absorb} methods are deterministic and functional, and therefore do not have corresponding special forms in Anglican. Random values are generated using a recursion in which \texttt{produce} constructs the distribution on the next variable and \texttt{absorb} constructs the updated process for the next iteration. For example:
+Unlike typical implementations of exchangeable random processes, Anglican's random processes do not have mutable state. The \texttt{produce} and \texttt{absorb} methods are deterministic and functional, and therefore do not have corresponding special forms in Anglican. Random values are generated using a recursion in \texttt{absorb} constructs the updated process for the next iteration. For example:
 \begin{lstlisting}[style=default]
 (defm sample-beta-binomial [n a b]
-  (loop [process (beta-bernoulli a bb)
-         values []]
+  (loop [process (beta-bernoulli a b)]
     (if (= (count values) n)
       values
       (let [dist (produce process)
