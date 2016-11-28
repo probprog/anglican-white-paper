@@ -716,7 +716,7 @@ called:
 (->observe dist v cont $state)
 \end{lstlisting}
 Here \texttt{->sample} and \texttt{->observe} in the CPS-transformed
-expressions constructors for Clojure records, and they take 
+expressions are constructors for Clojure records, and they take 
 values of their fields as arguments.
 
 In addition to checkpoints, there are a few other special forms
@@ -752,7 +752,7 @@ returns the remembered output when given such a past input,
 instead of calling the original function with it. As a result,
 for every input, random draws will be made only for the first time 
 that the memoized function is called with the input; all subsequent
-calls with the input will just reuse these draws return the same output.
+calls with the input will just reuse these draws and return the same output.
 
 Memoization is often implemented on top of a mutable
 dictionary, where the key is the argument list and the value is
