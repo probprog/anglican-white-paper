@@ -1195,16 +1195,17 @@ an unknown parameter that is drawn from a beta distribution:
       0 (beta-bernoulli a (inc b))
       1 (beta-bernoulli (inc a) b))))
 \end{lstlisting}
-Unlike typical implementations of exchangeable random processes, Anglican's random processes do not have mutable state. The \texttt{produce} and \texttt{absorb} methods are deterministic and functional, and therefore do not have corresponding special forms in Anglican. Random values are generated using a recursion in \texttt{absorb} constructs the updated process for the next iteration. For example:
+Unlike typical implementations of exchangeable random processes, Anglican's random processes do not have mutable state. The \texttt{produce} and \texttt{absorb} methods are deterministic and functional, and therefore do not have corresponding special forms in Anglican. A sequence of random values can be generated using a recursive loop in which \texttt{absorb} returns the updated process for the next iteration. For example:
 \begin{lstlisting}[style=default]
 (defm sample-beta-binomial [n a b]
-  (loop [process (beta-bernoulli a b)]
+  (loop [process (beta-bernoulli a b)
+         values []]
     (if (= (count values) n)
       values
       (let [dist (produce process)
             value (sample dist)]
       (recur (absorb process value)
-             (conj values value)))))))
+             (conj values value))))))
 \end{lstlisting}
 Similarly, random processes can also be used to recursively observe a sequence of values:
 \begin{lstlisting}[style=default]
