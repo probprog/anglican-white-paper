@@ -357,7 +357,7 @@ provides a convenient syntax for defining primitive distributions.
 The Anglican language is a subset of Clojure\footnote{It would be
 possible to support almost full Clojure by expanding all macros
 in the Anglican source code. However, in Clojure, unlike in
-Scheme~\cite{SDF+10}, or Common Lisp~\cite{PC94}, the result
+Scheme~\cite{SDF+10} or Common Lisp~\cite{PC94}, the result
 of macro-expansion of derived special forms is not well
 specified and implementation specific.}.  Anglican queries
 are defined within \texttt{defquery} as shown in the previous section,
@@ -670,7 +670,7 @@ Providing an explicit syntax for differentiating between
 Anglican and Clojure function calls would be cumbersome. Another
 option would be to use meta-data to identify Anglican function
 calls at runtime. However, this would impact performance, and
-a good runtime performance is critical for probabilistic
+good runtime performance is critical for probabilistic
 programs. The approach taken by Anglican is to maintain a list
 of unqualified names of primitive functions, as well of
 namespaces in which all functions are primitive, and recognize
@@ -750,7 +750,7 @@ The \texttt{mem} form converts a function to a memoized variant,
 which remembers past inputs and the corresponding outputs, and 
 returns the remembered output when given such a past input, 
 instead of calling the original function with it. As a result,
-for every input, randon draws will be made only for the first time 
+for every input, random draws will be made only for the first time 
 that the memoized function is called with the input; all subsequent
 calls with the input will just reuse these draws return the same output.
 
@@ -920,7 +920,7 @@ relies on their default implementations.
 Typically, an inference
 algorithm has its own implementations of
 \texttt{checkpoint} for \texttt{sample}, \texttt{observe}, or
-both, as well as invoke \texttt{exec} from an elaborated
+both, as well as invokes \texttt{exec} from an elaborated
 conditional control flow. LMH (\texttt{anglican.lmh}) and SMC
 (\texttt{anglican.smc}) are examples of inference algorithms
 where either \texttt{observe} (SMC) or \texttt{sample} (LMH)
@@ -992,7 +992,7 @@ the scheme:
     \item A checkpoint may accept an auxiliary argument --- the
         checkpoint identifier. If specified, the identifier is the first
         argument of a checkpoint. For example \texttt{(sample
-        'x1  (normal 0 1)} defines a \texttt{sample} checkpoint
+        'x1  (normal 0 1))} defines a \texttt{sample} checkpoint
         with identifier \texttt{x1}.
     \item If the identifier is omitted, a unique identifier is
         generated automatically as a fresh symbol.
