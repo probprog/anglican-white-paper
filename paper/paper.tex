@@ -351,6 +351,11 @@ particular set of functions for the distribution
 (via Clojure's protocol mechanism). The \texttt{defdist} macro
 provides a convenient syntax for defining primitive distributions.
 
+\section{Related Work}
+\label{sec:related}
+
+{\it TODO}
+
 \section{Language}
 \label{sec:language}
 
@@ -369,6 +374,10 @@ Clojure's pattern matching mechanism for vector data type
 (called vector destructuring) is supported. Also, compound
 literals for vectors, hash maps, and
 sets are supported just like in Clojure.
+
+\subsection{Probabilistic Forms}
+
+{\it TODO}
 
 \subsection{Core Library}
 \label{sec:core}
@@ -393,6 +402,382 @@ In fact, in Anglican, it is recommended to use recursive calls to functions inst
 \texttt{recur}. However, \texttt{loop}/\texttt{recur} is provided in Anglican
 for convenience as a way to express loops. \texttt{recur} outside of \texttt{loop}
 will lead to unpredictable behaviour and hard-to-catch errors.
+
+\section{Case Study}
+\label{seq:study}
+
+The description of Anglican language and environment would be
+incomplete without a case study showing the process of building
+and executing a solution of an inference problem. This case
+study takes a problem for which a solution is not immediately
+obvious, \textit{the Deli dilemma}, and guides through
+writing an Anglican program for the problem, executing the
+program, and post-processing results. 
+
+The program presented in this section is intentionally short and
+simple. Anglican is capable of compiling and running elaborated
+programs handling large amounts of data. Advanced examples of
+Anglican programs and inference can be found in literature on
+applications of probabilistic programming~\cite{PLW15, P16, MPT+16}.
+
+\subsection{The Deli Dilemma}
+\label{seq:deli}
+
+Imagine that we are facing the following dilemma:
+\begin{quote}
+A customer wearing round sunglasses came to a deli at 1:13pm,
+and grabbed a sandwich and a coffee. Later on the same day, a
+customer wearing round sunglasses came at 6:09pm and ordered a
+dinner.  Was it the same customer?
+\end{quote}
+In addition to the story above, we know that:
+\begin{itemize}
+    \item There is an adjacent office quarter, and it takes
+        between 5 and 15 minutes on average to walk from an
+        office to the deli, where different average times are  for
+        different buildings in the quarter.
+    \item Depending on traffic lights, the walking time varies by about 2
+        minutes.
+    \item The lunch break starts at 1:00pm, and the workday ends at 6:00pm.
+    \item The waiter's odds that this is the same customer are 2 to 1.
+\end{itemize}
+
+\subsection{Anglican Query}
+\label{seq:deli-query}
+
+We want to formalize the dilemma in an Anglican query, based on
+the knowledge we have. Let us formalize the knowledge in
+Clojure (the times are in minutes). First, we encode our prior
+information which holds true independently of the customer's
+visit:
+
+\begin{lstlisting}[style=default]
+(def mean-time-to-arrive
+     "average time to arrive"
+     10.)
+(def sd-time-to-arrive
+     "standard deviation of arrival time"
+     3.)
+(def time-sd
+     "walking time deviation"
+     1.)
+\end{lstlisting}
+
+Then, we record our observations, based on which we want to
+solve the dilemma:
+
+\begin{lstlisting}[style=default]
+(def lunch-delay
+     "time between lunch break and lunch order"
+     13.)
+(def dinner-delay
+     "time between end of day and dinner order"
+     9.)
+(def p-same
+     "prior probability of the same customer"
+     (/ 2. 3.))
+\end{lstlisting}
+
+
+For inference, one often chooses a known distribution to
+represent uncertainty. We choose the normal
+distribution for representing uncertainty about average arrival
+time.
+
+\begin{lstlisting}[style=default]
+(def time-to-arrive-prior 
+     "prior distribution of average arrival time"
+     (normal mean-time-to-arrive
+             sd-time-to-arrive))
+\end{lstlisting}
+
+There are two possibilities: either the same customer visited
+the deli twice, or two different customers came to the deli,
+one for lunch and the other for dinner. We define an \textbf{Anglican} function
+for each case. Note that this is the first time we switch from
+Clojure to Anglican. The functions must be written in Anglican
+(and hence defined using \texttt{defm} instead of \texttt{defn})
+because they contain probabilistic forms \texttt{sample} and
+\texttt{observe}.
+
+\begin{lstlisting}[style=default]
+(defm same-customer 
+  "observe the same customer twice"
+  [time-to-arrive-prior
+   lunch-delay
+   dinner-delay]
+  (let [time-to-arrive
+          (sample time-to-arrive-prior)]
+    (observe (normal time-to-arrive time-sd) 
+             lunch-delay)
+    (observe (normal time-to-arrive time-sd)
+             dinner-delay)
+    [time-to-arrive]))
+
+(defm different-customers
+  "observe different customers"
+  [time-to-arrive-prior
+   lunch-delay
+   dinner-delay]
+  (let [time-to-arrive-1
+          (sample time-to-arrive-prior)
+        time-to-arrive-2
+          (sample time-to-arrive-prior)]
+    (observe (normal time-to-arrive-1 time-sd) 
+             lunch-delay)
+    (observe (normal time-to-arrive-2 time-sd)
+             dinner-delay)
+    [time-to-arrive-1 time-to-arrive-2]))
+\end{lstlisting}
+
+Both functions have the same structure: we first `guess' the
+average arrival time and then observe the actual time from a
+distribution parameterized by the guessed time. However, in
+\texttt{same-customer} the average arrival time is the same for
+both the lunch and the dinner, while in
+\texttt{different-customers} two average arrival times are
+guessed independently.
+
+We are finally ready to define the query in \textbf{Anglican}.
+
+\begin{lstlisting}[style=default]
+(defquery deli [time-to-arrive-prior
+                lunch-delay
+                dinner-delay]
+  (let [is-same-customer (sample (flip p-same))
+        observe-customer (if is-same-customer
+                            same-customer
+                            different-customers)]
+    {:same-customer is-same-customer,
+     :times-to-arrive (observe-customer 
+                        time-to-arrive-prior
+                        lunch-delay
+                        dinner-delay)}))
+\end{lstlisting}
+
+Performing inference on query \texttt{deli} computes the
+probability that the same customer visited the deli twice, as
+well as probability distributions of average arrival times for
+both cases.
+
+\subsection{Inference}
+\label{seq:deli-inference}
+
+Having defined the query, we are now ready to run the query
+using an inference algorithm. Function \texttt{doquery} provided
+by the \texttt{anglican.core} namespace accepts the inference
+algorithm, the query, and optional parameters, and returns a
+lazy sequence of samples. We use here the inference algorithm
+called Lightweight Metropolis-Hastings (LMH). The algorithm is
+somewhat slow to converge but can be used with any Anglican
+query, and should be robust enough for our simple problem.
+
+We bind the results of \texttt{doquery} to variable
+\texttt{samples}, to analyse the results later. However, since
+the sequence is lazy, no inference is performed and no samples
+are generated until they are retrieved and processed.
+
+\begin{lstlisting}[style=default]
+(def samples (doquery :lmh deli nil))
+\end{lstlisting}
+
+To approximate the inferred distribution, we extract a finite
+subsequence of samples. Many algorithms use an initial
+subsequence of samples to converge to the target distribution.
+Hence, we drop initial $N$ samples ($N$ is 5000 in the code
+snippet below), and collect the next $N$ samples.
+
+\begin{lstlisting}[style=default]
+(def N 5000)
+(def results (map get-result
+                   (take N (drop N samples))))
+\end{lstlisting}
+
+Based on the collected samples we compute an approximation of
+the posterior probability \texttt{p-same+} that the same
+customer visited the deli twice.
+
+\begin{lstlisting}[style=default]
+(def p-same+ 
+     (/ (count (filter :same-customer results))
+        (double N)))
+\end{lstlisting}
+The \texttt{:same-customer} here represents a function
+that looks up the entry with the same name in a given map.
+The map stores the result of a single sampled execution,
+and the \texttt{:same-customer} entry in the map
+records whether the same customer visits the deli in the execution.
+The \texttt{filter} function in \texttt{p-same+} 
+goes through all the maps in \texttt{results}
+and picks only the ones whose executions involve just one customer.
+
+With the specified observations, \texttt{p-same+} is $\approx
+0.12$. The probability is much lower than the
+waiter's guess \texttt{p-same} ($\frac 2 3$).
+Of course, the results may vary from run to run, and, for a given
+algorithm, the accuracy depends on the number of samples we
+decide to retrieve. 
+
+In addition to computing the posterior probability that the same
+customer visited the deli twice, we may want to know the average
+time (or times) to arrive. In Bayesian inference, it is common
+to report distributions instead of `most likely' values. We use
+query results in retrieved samples to approximate the
+distributions, and plot distribution histograms for the same
+customer visiting twice (Figure~\ref{fig:dist-same}) and
+two different customers (Figure~\ref{fig:dist-diff})
+
+\begin{lstlisting}[style=default]
+;; single customer                      
+(def time-to-arrive+ 
+    (map (fn [x] (first (:times-to-arrive x)))
+         (filter :same-customer results)))
+(def mean-to-arrive+ (mean time-to-arrive+))
+(def sd-to-arrive+ (std time-to-arrive+))
+
+;; two customers
+(def times-to-arrive+ 
+     (map :times-to-arrive 
+          (filter  
+            (fn [x] (not (:same-customer x)))
+            results)))
+(def mean-1-to-arrive+
+     (mean (map first times-to-arrive+)))
+(def sd-1-to-arrive+
+     (std (map first times-to-arrive+)))
+(def mean-2-to-arrive+
+     (mean (map second times-to-arrive+)))
+(def sd-2-to-arrive+
+     (std (map second times-to-arrive+)))
+\end{lstlisting}
+
+In addition to plotting the distribution histograms, we use
+functions \texttt{mean}, \texttt{std} provided
+in the \texttt{anglican.{\linebreak[0]}stat} namespace
+along with other
+useful statistical functions.
+This is another illustration of advantage of tight
+integration between Clojure and Anglican --- probabilistic
+models are expressed in Anglican. However, processing of data and
+results can rely on the full power of Clojure.
+
+\begin{figure}
+    \includegraphics[trim={12pt 0 0 0},scale=0.7]{same-customer-time.pdf}
+    \caption{Arrival time distribution for a single customer.}
+    \label{fig:dist-same}
+\end{figure}
+
+\begin{figure}
+    \includegraphics[trim={12pt 0 0 0},scale=0.7]{different-customers-times.pdf}
+    \caption{Arrival time distributions for two customers.}
+    \label{fig:dist-diff}
+\end{figure}
+
+For inference, we chose to use  Lightweight
+Metropolis-Hastings, perhaps somewhat voluntarily. A strength of
+probabilistic programming is that models are separated from
+inference. To switch to a different inference algorithm we just
+need to pass a different value to \texttt{doquery}. For example,
+we may decide to use Black-Box Variational Bayes (BBVB), which
+may not work equally well for all probabilistic programs, but is
+much faster to converge.
+
+\begin{lstlisting}[style=default]
+(def samples (doquery :bbvb deli nil))
+\end{lstlisting}
+
+We can still use samples and summary statistics with BBVB to
+approximate the posterior distribution. However, variational
+inference approximates the posterior by known distributions,
+and we can directly retrieve the distribution parameters.
+
+\begin{lstlisting}[style=default]
+(clojure.pprint/pprint
+  (anglican.bbvb/get-variational 
+    (nth samples N)))
+\end{lstlisting}
+
+\begin{lstlisting}[style=default]
+{S28209
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 10.99753360180663,
+   :sd 0.7290976433082352}},
+ S28217
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 12.668050292254202,
+   :sd 0.9446695174790353}},
+ S28215
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 9.104132559955836,
+   :sd 0.9479290526821788}},
+ S28219
+ {(0 anglican.runtime.flip-distribution)
+  {:p 0.11671977016875924,
+   :dist
+   {:min 0.0,
+    :max 1.0}}}}
+\end{lstlisting}
+
+We can guess that the variational distributions correspond to the
+prior distributions in the \texttt{sample} forms, in the order
+of appearance. However, it would help if we could use more
+informative labels instead of automatically generated symbols
+\texttt{S28209}, \texttt{S28217}, etc. Here the option to
+specify identifiers for probabilistic forms explicitly comes
+handy. If we modify the \texttt{sample} forms to use explicit identifiers
+(only the forms are shown for brevity), the output becomes much
+easier to analyse.
+
+\begin{lstlisting}[style=default]
+(defm same-customer 
+      ...
+      (sample :arrival-time-same
+              time-to-arrive-prior)]
+      ...)
+
+(defm different-customers
+      ... 
+      (sample :arrival-time-first
+              time-to-arrive-prior)
+      ...
+      (sample :arrival-time-second
+              time-to-arrive-prior)]
+      ...)
+
+(defquery deli ...
+      ...
+      (sample :same-or-different
+              (flip p-same))
+      ...)
+\end{lstlisting}
+
+The output becomes much easier to interpret and analyse
+programmatically.
+
+\begin{lstlisting}[style=default]
+{:arrivate-time-same
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 10.99753360180663,
+   :sd 0.7290976433082352}},
+ :arrival-time-first
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 12.668050292254202,
+   :sd 0.9446695174790353}},
+ :arrival-time-second
+ {(0 anglican.runtime.normal-distribution)
+  {:mean 9.104132559955836,
+   :sd 0.9479290526821788}},
+ :same-or-different
+ {(0 anglican.runtime.flip-distribution)
+  {:p 0.11671977016875924,
+   :dist
+   {:min 0.0,
+    :max 1.0}}}}
+\end{lstlisting}
+
+This completes the case study, where we showed a probabilistic
+programming solution of a problem, implemented and analysed in
+Anglican and Clojure, using two different inference algorithms.
 
 \section{Macro-based Compilation}
 \label{sec:compilation}
@@ -1227,385 +1612,11 @@ Similarly, random processes can also be used to recursively observe a sequence o
 
 % A common pattern when programming with random processes in 
 % Anglican is to generate a sequences of sampled values and 
-% constructing an updated process at each step
+% construct an updated process at each step.
 
+\section{Performance}
 
-
-\section{Case Study}
-\label{seq:study}
-
-The description of Anglican language and environment would be
-incomplete without a case study showing the process of building
-and executing a solution of an inference problem. This case
-study takes a problem for which a solution is not immediately
-obvious, \textit{the Deli dilemma}, and guides through
-writing an Anglican program for the problem, executing the
-program, and post-processing results. 
-
-The program presented in this section is intentionally short and
-simple. Anglican is capable of compiling and running elaborated
-programs handling large amounts of data. Advanced examples of
-Anglican programs and inference can be found in literature on
-applications of probabilistic programming~\cite{PLW15, P16, MPT+16}.
-
-\subsection{The Deli Dilemma}
-\label{seq:deli}
-
-Imagine that we are facing the following dilemma:
-\begin{quote}
-A customer wearing round sunglasses came to a deli at 1:13pm,
-and grabbed a sandwich and a coffee. Later on the same day, a
-customer wearing round sunglasses came at 6:09pm and ordered a
-dinner.  Was it the same customer?
-\end{quote}
-In addition to the story above, we know that:
-\begin{itemize}
-    \item There is an adjacent office quarter, and it takes
-        between 5 and 15 minutes on average to walk from an
-        office to the deli, where different average times are  for
-        different buildings in the quarter.
-    \item Depending on traffic lights, the walking time varies by about 2
-        minutes.
-    \item The lunch break starts at 1:00pm, and the workday ends at 6:00pm.
-    \item The waiter's odds that this is the same customer are 2 to 1.
-\end{itemize}
-
-\subsection{Anglican Query}
-\label{seq:deli-query}
-
-We want to formalize the dilemma in an Anglican query, based on
-the knowledge we have. Let us formalize the knowledge in
-Clojure (the times are in minutes). First, we encode our prior
-information which holds true independently of the customer's
-visit:
-
-\begin{lstlisting}[style=default]
-(def mean-time-to-arrive
-     "average time to arrive"
-     10.)
-(def sd-time-to-arrive
-     "standard deviation of arrival time"
-     3.)
-(def time-sd
-     "walking time deviation"
-     1.)
-\end{lstlisting}
-
-Then, we record our observations, based on which we want to
-solve the dilemma:
-
-\begin{lstlisting}[style=default]
-(def lunch-delay
-     "time between lunch break and lunch order"
-     13.)
-(def dinner-delay
-     "time between end of day and dinner order"
-     9.)
-(def p-same
-     "prior probability of the same customer"
-     (/ 2. 3.))
-\end{lstlisting}
-
-
-For inference, one often chooses a known distribution to
-represent uncertainty. We choose the normal
-distribution for representing uncertainty about average arrival
-time.
-
-\begin{lstlisting}[style=default]
-(def time-to-arrive-prior 
-     "prior distribution of average arrival time"
-     (normal mean-time-to-arrive
-             sd-time-to-arrive))
-\end{lstlisting}
-
-There are two possibilities: either the same customer visited
-the deli twice, or two different customers came to the deli,
-one for lunch and the other for dinner. We define an \textbf{Anglican} function
-for each case. Note that this is the first time we switch from
-Clojure to Anglican. The functions must be written in Anglican
-(and hence defined using \texttt{defm} instead of \texttt{defn})
-because they contain probabilistic forms \texttt{sample} and
-\texttt{observe}.
-
-\begin{lstlisting}[style=default]
-(defm same-customer 
-  "observe the same customer twice"
-  [time-to-arrive-prior
-   lunch-delay
-   dinner-delay]
-  (let [time-to-arrive
-          (sample time-to-arrive-prior)]
-    (observe (normal time-to-arrive time-sd) 
-             lunch-delay)
-    (observe (normal time-to-arrive time-sd)
-             dinner-delay)
-    [time-to-arrive]))
-
-(defm different-customers
-  "observe different customers"
-  [time-to-arrive-prior
-   lunch-delay
-   dinner-delay]
-  (let [time-to-arrive-1
-          (sample time-to-arrive-prior)
-        time-to-arrive-2
-          (sample time-to-arrive-prior)]
-    (observe (normal time-to-arrive-1 time-sd) 
-             lunch-delay)
-    (observe (normal time-to-arrive-2 time-sd)
-             dinner-delay)
-    [time-to-arrive-1 time-to-arrive-2]))
-\end{lstlisting}
-
-Both functions have the same structure: we first `guess' the
-average arrival time and then observe the actual time from a
-distribution parameterized by the guessed time. However, in
-\texttt{same-customer} the average arrival time is the same for
-both the lunch and the dinner, while in
-\texttt{different-customers} two average arrival times are
-guessed independently.
-
-We are finally ready to define the query in \textbf{Anglican}.
-
-\begin{lstlisting}[style=default]
-(defquery deli [time-to-arrive-prior
-                lunch-delay
-                dinner-delay]
-  (let [is-same-customer (sample (flip p-same))
-        observe-customer (if is-same-customer
-                            same-customer
-                            different-customers)]
-    {:same-customer is-same-customer,
-     :times-to-arrive (observe-customer 
-                        time-to-arrive-prior
-                        lunch-delay
-                        dinner-delay)}))
-\end{lstlisting}
-
-Performing inference on query \texttt{deli} computes the
-probability that the same customer visited the deli twice, as
-well as probability distributions of average arrival times for
-both cases.
-
-\subsection{Inference}
-\label{seq:deli-inference}
-
-Having defined the query, we are now ready to run the query
-using an inference algorithm. Function \texttt{doquery} provided
-by the \texttt{anglican.core} namespace accepts the inference
-algorithm, the query, and optional parameters, and returns a
-lazy sequence of samples. We use here the inference algorithm
-called Lightweight Metropolis-Hastings (LMH). The algorithm is
-somewhat slow to converge but can be used with any Anglican
-query, and should be robust enough for our simple problem.
-
-We bind the results of \texttt{doquery} to variable
-\texttt{samples}, to analyse the results later. However, since
-the sequence is lazy, no inference is performed and no samples
-are generated until they are retrieved and processed.
-
-\begin{lstlisting}[style=default]
-(def samples (doquery :lmh deli nil))
-\end{lstlisting}
-
-To approximate the inferred distribution, we extract a finite
-subsequence of samples. Many algorithms use an initial
-subsequence of samples to converge to the target distribution.
-Hence, we drop initial $N$ samples ($N$ is 5000 in the code
-snippet below), and collect the next $N$ samples.
-
-\begin{lstlisting}[style=default]
-(def N 5000)
-(def results (map get-result
-                   (take N (drop N samples))))
-\end{lstlisting}
-
-Based on the collected samples we compute an approximation of
-the posterior probability \texttt{p-same+} that the same
-customer visited the deli twice.
-
-\begin{lstlisting}[style=default]
-(def p-same+ 
-     (/ (count (filter :same-customer results))
-        (double N)))
-\end{lstlisting}
-The \texttt{:same-customer} here represents a function
-that looks up the entry with the same name in a given map.
-The map stores the result of a single sampled execution,
-and the \texttt{:same-customer} entry in the map
-records whether the same customer visits the deli in the execution.
-The \texttt{filter} function in \texttt{p-same+} 
-goes through all the maps in \texttt{results}
-and picks only the ones whose executions involve just one customer.
-
-With the specified observations, \texttt{p-same+} is $\approx
-0.12$. The probability is much lower than the
-waiter's guess \texttt{p-same} ($\frac 2 3$).
-Of course, the results may vary from run to run, and, for a given
-algorithm, the accuracy depends on the number of samples we
-decide to retrieve. 
-
-In addition to computing the posterior probability that the same
-customer visited the deli twice, we may want to know the average
-time (or times) to arrive. In Bayesian inference, it is common
-to report distributions instead of `most likely' values. We use
-query results in retrieved samples to approximate the
-distributions, and plot distribution histograms for the same
-customer visiting twice (Figure~\ref{fig:dist-same}) and
-two different customers (Figure~\ref{fig:dist-diff})
-
-\begin{lstlisting}[style=default]
-;; single customer                      
-(def time-to-arrive+ 
-    (map (fn [x] (first (:times-to-arrive x)))
-         (filter :same-customer results)))
-(def mean-to-arrive+ (mean time-to-arrive+))
-(def sd-to-arrive+ (std time-to-arrive+))
-
-;; two customers
-(def times-to-arrive+ 
-     (map :times-to-arrive 
-          (filter  
-            (fn [x] (not (:same-customer x)))
-            results)))
-(def mean-1-to-arrive+
-     (mean (map first times-to-arrive+)))
-(def sd-1-to-arrive+
-     (std (map first times-to-arrive+)))
-(def mean-2-to-arrive+
-     (mean (map second times-to-arrive+)))
-(def sd-2-to-arrive+
-     (std (map second times-to-arrive+)))
-\end{lstlisting}
-
-In addition to plotting the distribution histograms, we use
-functions \texttt{mean}, \texttt{std} provided
-in the \texttt{anglican.{\linebreak[0]}stat} namespace
-along with other
-useful statistical functions.
-This is another illustration of advantage of tight
-integration between Clojure and Anglican --- probabilistic
-models are expressed in Anglican. However, processing of data and
-results can rely on the full power of Clojure.
-
-\begin{figure}
-    \includegraphics[trim={12pt 0 0 0},scale=0.7]{same-customer-time.pdf}
-    \caption{Arrival time distribution for a single customer.}
-    \label{fig:dist-same}
-\end{figure}
-
-\begin{figure}
-    \includegraphics[trim={12pt 0 0 0},scale=0.7]{different-customers-times.pdf}
-    \caption{Arrival time distributions for two customers.}
-    \label{fig:dist-diff}
-\end{figure}
-
-For inference, we chose to use  Lightweight
-Metropolis-Hastings, perhaps somewhat voluntarily. A strength of
-probabilistic programming is that models are separated from
-inference. To switch to a different inference algorithm we just
-need to pass a different value to \texttt{doquery}. For example,
-we may decide to use Black-Box Variational Bayes (BBVB), which
-may not work equally well for all probabilistic programs, but is
-much faster to converge.
-
-\begin{lstlisting}[style=default]
-(def samples (doquery :bbvb deli nil))
-\end{lstlisting}
-
-We can still use samples and summary statistics with BBVB to
-approximate the posterior distribution. However, variational
-inference approximates the posterior by known distributions,
-and we can directly retrieve the distribution parameters.
-
-\begin{lstlisting}[style=default]
-(clojure.pprint/pprint
-  (anglican.bbvb/get-variational 
-    (nth samples N)))
-\end{lstlisting}
-
-\begin{lstlisting}[style=default]
-{S28209
- {(0 anglican.runtime.normal-distribution)
-  {:mean 10.99753360180663,
-   :sd 0.7290976433082352}},
- S28217
- {(0 anglican.runtime.normal-distribution)
-  {:mean 12.668050292254202,
-   :sd 0.9446695174790353}},
- S28215
- {(0 anglican.runtime.normal-distribution)
-  {:mean 9.104132559955836,
-   :sd 0.9479290526821788}},
- S28219
- {(0 anglican.runtime.flip-distribution)
-  {:p 0.11671977016875924,
-   :dist
-   {:min 0.0,
-    :max 1.0}}}}
-\end{lstlisting}
-
-We can guess that the variational distributions correspond to the
-prior distributions in the \texttt{sample} forms, in the order
-of appearance. However, it would help if we could use more
-informative labels instead of automatically generated symbols
-\texttt{S28209}, \texttt{S28217}, etc. Here the option to
-specify identifiers for probabilistic forms explicitly comes
-handy. If we modify the \texttt{sample} forms to use explicit identifiers
-(only the forms are shown for brevity), the output becomes much
-easier to analyse.
-
-\begin{lstlisting}[style=default]
-(defm same-customer 
-      ...
-      (sample :arrival-time-same
-              time-to-arrive-prior)]
-      ...)
-
-(defm different-customers
-      ... 
-      (sample :arrival-time-first
-              time-to-arrive-prior)
-      ...
-      (sample :arrival-time-second
-              time-to-arrive-prior)]
-      ...)
-
-(defquery deli ...
-      ...
-      (sample :same-or-different
-              (flip p-same))
-      ...)
-\end{lstlisting}
-
-The output becomes much easier to interpret and analyse
-programmatically.
-
-\begin{lstlisting}[style=default]
-{:arrivate-time-same
- {(0 anglican.runtime.normal-distribution)
-  {:mean 10.99753360180663,
-   :sd 0.7290976433082352}},
- :arrival-time-first
- {(0 anglican.runtime.normal-distribution)
-  {:mean 12.668050292254202,
-   :sd 0.9446695174790353}},
- :arrival-time-second
- {(0 anglican.runtime.normal-distribution)
-  {:mean 9.104132559955836,
-   :sd 0.9479290526821788}},
- :same-or-different
- {(0 anglican.runtime.flip-distribution)
-  {:p 0.11671977016875924,
-   :dist
-   {:min 0.0,
-    :max 1.0}}}}
-\end{lstlisting}
-
-This completes the case study, where we showed a probabilistic
-programming solution of a problem, implemented and analysed in
-Anglican and Clojure, using two different inference algorithms.
+{\it TODO}
 
 \section{Conclusion}
 \label{seq:summary}
