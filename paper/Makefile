@@ -13,9 +13,20 @@ PDFLATEX=pdflatex -shell-escape
 	$(PDFLATEX) ${basename $<}
 
 paper.pdf: paper.tex \
+	toggle.tex \
 	anglican-color.tex \
 	anglican.tex \
 	refs.bib
+
+full: 
+	cp toggle-full.tex toggle.tex
+
+ifl:
+	cp toggle-ifl.tex toggle.tex
+
+toggle.tex: toggle-full.tex
+	cp $< $@
+
 
 clean:
 	rm -f *.aux *.log *.bbl *.blg 
