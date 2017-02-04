@@ -1,0 +1,38 @@
+\paragraph{Avoiding exponential code growth}
+
+To realize potential danger of code size explosion, consider
+CPS transformation of code
+\begin{lstlisting}[style=default]
+(if (adult? person)
+  (if (male? person)
+     (choose-beer)
+     (choose-wine))
+  (choose-juice))
+\end{lstlisting}
+with continuation
+\begin{lstlisting}[style=default]
+(fn [choice _]
+  (case (kind choice)
+    :beer (beer-jar choice)
+    :wine (wine-glass choice)
+    :juice (juice-bottle choice)))
+\end{lstlisting}
+During CPS transformation, if we substitute the code of this continuation 
+for all of its calls, the code will be repeated three times in 
+the CPS-transformed expression. In general, CPS code can
+grow extremely large if the code of continuations is substituted
+repeatedly.
+
+To circumvent this inefficiency, CPS transformers for
+expressions with multiple continuation points (\texttt{if} and
+derivatives, \texttt{and}, \texttt{or}, and \texttt{case}) bind
+the continuation to a fresh symbol if it is not yet a symbol.
+Macro \texttt{defn-with-{\linebreak[0]}named-{\linebreak[0]}cont}
+establishes the binding automatically:
+\begin{lstlisting}[style=default]
+=> (cps-of-if '(c t f) '(fn [x] (* 2 x)))
+(let [cont (fn [x] (* 2 x))]
+  (if c
+      (fn [] (cont t $state))
+      (fn [] (cont f $state))))
+\end{lstlisting}

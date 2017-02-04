@@ -49,7 +49,7 @@
 \authorinfo{David Tolpin \and Jan-Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
 
 \newtoggle{full}
-\togglefalse{full}
+\input{toggle}
 
 \begin{document}
 
@@ -132,12 +132,12 @@ language.
 
 On top of these two approaches are methods in which a new
 language is implemented `inside' another language of the same
-level of abstraction. 
-}{%
-One way to implement a programming language is to embed it within another language.
+level of abstraction. Different languages provide different
+means for this; }{%
+There are several ways to build a new language on top of an
+existing one;
 }%
-Different languages provide different
-means for this; Lisp is famous for the macro facility
+Lisp is famous for the macro facility
 that allows to extend the language almost without
 restriction --- by writing \textit{macros}, one adds new
 constructs to the existing language. There are several uses of
@@ -189,6 +189,8 @@ computational efficiency without sacrificing expressiveness.
 Anglican language syntax, compilation, invocation, and runtime
 support of Anglican queries are discussed in detail in further
 sections.
+
+\subsection*{Contributions}
 
 \section{Design Outline}
 \label{sec:design}
@@ -317,9 +319,7 @@ Anglican is intended to co-exist with Clojure and be a part of
 the source of a Clojure program. To facilitate this, Anglican
 programs, or queries, are wrapped by macros (defined in the
 \texttt{anglican.emit} namespace), which call the CPS
-transformations and define Clojure values
-%Clojure objects
-suitable for passing
+transformations and define Clojure values suitable for passing
 as arguments to inference algorithms (\texttt{defquery},
 \texttt{query}). In addition to defining entire queries,
 Anglican promotes modularization of inference algorithms through
@@ -362,6 +362,11 @@ provides a convenient syntax for defining primitive distributions.
 
 \section{Related Work}
 \label{sec:related}
+
+{\it TODO}
+
+\section{Probabilistic Program}
+\label{sec:pp-def}
 
 {\it TODO}
 
@@ -813,7 +818,7 @@ and implemented as a library of \textit{functions} in namespace
 transformation is organized in top-down manner.  The top-level
 function is  \texttt{cps-of-expression}, which receives an
 expression and a continuation, and returns the expression in the
-CPS form.  For example, the CPS transformation of constant
+CPS form. For example, the CPS transformation of constant
 \texttt{1} with continuation \texttt{cont} thus takes the
 following form:
 \begin{lstlisting}[style=default]
@@ -850,102 +855,9 @@ checkpoints corresponding to the probabilistic forms
 state and reinject a new state into the computation.
 
 \iftoggle{full}{%
-\subsection{Expression Kinds}
-\label{sec:expr}
-
-There are three different kinds of inputs to CPS transformation:
-\begin{itemize}
-    \item Literals, which are constant expressions. They
-       are passed as an argument to the
-        continuation unmodified.
-    \item Value expressions such as the \texttt{fn} form
-        (called \textit{opaque}
-        expressions in the code). They must be transformed to
-        CPS, but the transformed object is passed to the
-        continuation as a whole, opaquely.
-    \item General expressions (which we call
-        \textit{transparent} expressions).
-        The continuation is threaded through such an expression
-        in an expression-specific way, and can be
-        called in multiple locations of the CPS-transformed
-        code, such as in all branches of an \texttt{if}
-        statement.
-\end{itemize}
-
-\subsubsection{Literals}
-\label{sec:literals}
-
-Literals are the same in Anglican and Clojure. They are
-left unmodified; literals are a subset of opaque expressions.
-However, the Clojure syntax has a peculiarity
-of using the syntax of compound literals (vectors, hash maps,
-and sets) for data constructors. Hence, compound literals must
-be traversed recursively, and if there is a nested non-literal
-component, transformed into a call to the corresponding data
-constructor. Functions \texttt{cps-of-vector},
-\texttt{cps-of-hash-map}, \texttt{cps-of-set}, called from
-\texttt{cps-of-expression}, transform Clojure constructor syntax
-(\texttt{[...]}, \texttt{\{...\}}, \texttt{\#\{...\}}) into the
-corresponding calls:
-\begin{lstlisting}[style=default]
-=> (cps-of-vector [0 1 2] 'cont)
-(cont (vector 0 1 2) $state)
-=> (cps-of-hash-map {:a 1, :b 2} 'cont)
-(cont (hash-map :a 1, :b 2) $state)
-=> (cps-of-set #{0 1} 'cont)
-(cont (set (list 0 1)) $state)
-\end{lstlisting}
-
-\subsubsection{Opaque Expressions}
-\label{sec:opaque}
-
-Opaque, or value, expressions, have a different shape in the
-original and the CPS form. However, their CPS form follows the
-pattern \texttt{(continuation transformed-expression \$state)}, and thus
-the transformation does not depend on the continuation parameter, and
-can be accomplished without passing the parameter as a
-transformation argument. Primitive (non-CPS) procedures used in
-Anglican code, \texttt{(fn ...)} forms, and \text{(mem ...)}
-forms are opaque and transformed by
-\texttt{primitive-}\linebreak[0]\texttt{procedure-}\linebreak[0]\texttt{cps},
-\texttt{fn-cps}, and \texttt{mem-cps}, correspondingly: a
-slightly simplified CPS form of expression
-\begin{lstlisting}[style=default]
-(fn [x y]
-  (+ x y))
-\end{lstlisting}
-would be
-\begin{lstlisting}[style=default]
-(fn [cont $state x y]
-  (cont (+ x y) $state))
-\end{lstlisting}
-In the actual code an automatically generated fresh symbol is
-used instead of \texttt{cont}.
-
-\subsubsection{General Expressions}
-\label{seq:general}
-
-The most general form of CPS transformation receives an
-expression and a continuation as parameters, and returns the expression
-in CPS form with the continuation parameter potentially called in multiple
-tail positions. General expressions can be somewhat voluntarily
-divided into several groups:
-\begin{itemize}
-    \item binding forms --- \texttt{let} and
-        \texttt{loop/recur};
-    \item flow control --- \texttt{if}, \texttt{when},
-        \texttt{cond}, \texttt{case}, \texttt{and}, \texttt{or} and \texttt{do};
-    \item function applications and \texttt{apply};
-    \item probabilistic forms --- \texttt{observe},
-        \texttt{sample}, \texttt{store}, and \texttt{retrieve}.
-\end{itemize}
-Functions that transform general expressions accept the
-expression and the continuation as parameters, and are
-consistently named \texttt{cps-of-}\textit{form}, for example,
-\texttt{cps-of-do}, \texttt{cps-of-store}.
-
+\input{expression-kinds.tex}
 }{%
-}
+}%
 
 \subsection{Implementation Highlights}
 \label{seq:highlights}
@@ -994,11 +906,11 @@ growth is avoided through \textit{tail call optimization} (TCO).
 However, Clojure does not support a general form of TCO, and
 CPS-transformed code that creates deeply nested calls will
 easily exhaust the stack. Anglican employs a workaround called
-\textit{trampolining} --- instead of inserting a continuation
-call directly, the transformer always wraps the call into a
-\textit{thunk}, or parameterless function. The thunk is returned
-and called by the trampoline (Clojure provides function
-\texttt{trampoline} for this purpose) --- this way the
+\textit{trampolining}~\cite{B95} --- instead of inserting a
+continuation call directly, the transformer always wraps the
+call into a \textit{thunk}, or parameterless function. The thunk
+is returned and called by the trampoline (Clojure provides
+function \texttt{trampoline} for this purpose) --- this way the
 computation continues, but the stack is collapsed on every
 continuation call. Function \texttt{continue} implements the
 wrapping and is invoked on every continuation call:
@@ -1021,46 +933,9 @@ When the CPS-transformed function is called, it returns a
 re-invoked through the trampoline, with the stack collapsed.
 
 \iftoggle{full}{%
-\paragraph{Avoiding exponential code growth}
-
-To realize potential danger of code size explosion, consider
-CPS transformation of code
-\begin{lstlisting}[style=default]
-(if (adult? person)
-  (if (male? person)
-     (choose-beer)
-     (choose-wine))
-  (choose-juice))
-\end{lstlisting}
-with continuation
-\begin{lstlisting}[style=default]
-(fn [choice _]
-  (case (kind choice)
-    :beer (beer-jar choice)
-    :wine (wine-glass choice)
-    :juice (juice-bottle choice)))
-\end{lstlisting}
-During CPS transformation, if we substitute the code of this continuation 
-for all of its calls, the code will be repeated three times in 
-the CPS-transformed expression. In general, CPS code can
-grow extremely large if the code of continuations is substituted
-repeatedly.
-
-To circumvent this inefficiency, CPS transformers for
-expressions with multiple continuation points (\texttt{if} and
-derivatives, \texttt{and}, \texttt{or}, and \texttt{case}) bind
-the continuation to a fresh symbol if it is not yet a symbol.
-Macro \texttt{defn-with-{\linebreak[0]}named-{\linebreak[0]}cont}
-establishes the binding automatically:
-\begin{lstlisting}[style=default]
-=> (cps-of-if '(c t f) '(fn [x] (* 2 x)))
-(let [cont (fn [x] (* 2 x))]
-  (if c
-      (fn [] (cont t $state))
-      (fn [] (cont f $state))))
-\end{lstlisting}
-}{
-}
+\input{code-explosion.tex}
+}{%
+}%
 
 \subsubsection{Primitive Procedures}
 \label{seq:primitive}
@@ -1395,12 +1270,12 @@ appropriate correspondence must be established
 between checkpoints in different traces for the algorithm to
 work.
 
-To overcome the above problems, Anglican uses a different scheme
-which is almost as efficient as the scheme based on stack addresses for
-reuse of previously drawn values, while producing addresses of constant size,
-and allows manual computation of checkpoint addresses at runtime
-when the default automatic scheme is insufficient. According to
-the scheme:
+To overcome the above problems, Anglican introduces a new
+addressing scheme which is almost as efficient as the scheme
+based on stack addresses for reuse of previously drawn values,
+while producing addresses of constant size, and allows manual
+computation of checkpoint addresses at runtime when the default
+automatic scheme is insufficient. According to the scheme:
 \begin{itemize}
     \item A checkpoint may accept an auxiliary argument --- the
         checkpoint identifier. If specified, the identifier is the first
@@ -1628,19 +1503,6 @@ Similarly, random processes can also be used to recursively observe a sequence o
     (observe dist value0)
     (recur (absorb process value0) values0)))
 \end{lstlisting}
-
-
-% \begin{itemize}
-%     \item Values produced by the process are sampled from the distribution
-%         returned by \texttt{produce}.
-%     \item When a value is observed from the distribution, a new
-%         process, with the observed value absorbed, is returned
-%         by \texttt{absorb}.
-% \end{itemize}
-
-% A common pattern when programming with random processes in 
-% Anglican is to generate a sequences of sampled values and 
-% construct an updated process at each step.
 
 \section{Performance}
 
