@@ -192,6 +192,11 @@ sections.
 
 \subsection*{Contributions}
 
+\section{Related Work}
+\label{sec:related}
+
+{\it TODO}
+
 \section{Design Outline}
 \label{sec:design}
 
@@ -360,18 +365,55 @@ particular set of functions for the distribution
 (via Clojure's protocol mechanism). The \texttt{defdist} macro
 provides a convenient syntax for defining primitive distributions.
 
-\section{Related Work}
-\label{sec:related}
-
-{\it TODO}
-
 \section{Probabilistic Program}
 \label{sec:pp-def}
 
-{\it TODO}
+Anglican is a language for expressing probabilistic programs.
+A probabilistic program is a stateful \textit{deterministic} computation
+$\mathcal{P}$ with the following properties~\cite{TMP+15}:
+\begin{itemize}
+\item Initially, $\mathcal{P}$ expects no arguments.
+\item On every call, $\mathcal{P}$ returns either a distribution
+  and an address $(F,\alpha)$, a distribution and a value $(G, y)$, a
+  value $z$, or $\bot$.
+\item Upon returning $F$, $\mathcal{P}$ expects a value $x$ drawn from $F$ as
+  the argument to the next call.
+\item Upon returning $(G, y)$ or $z$, $\mathcal{P}$ is invoked again
+  without arguments.
+\item Upon returning $\bot$, $\mathcal{P}$ terminates.
+\end{itemize}
+A program is run by calling $\mathcal{P}$ repeatedly until
+termination.
+
+A program need not generate the same sequence of random variables in
+every execution. For this reason we assume that each random variable
+$x$ is assigned a unique label $\alpha$, which we call an address,
+that induces a correspondence between variables in different
+executions. Every execution implicitly produces a sequence of triples
+of distributions, values of \textit{latent} random variables, and
+addresses, $(F_i, x_i, \alpha_i)$.  We call this sequence a
+\textit{trace} and denote it by $\pmb{x}$. A trace induces a sequence
+of pairs $(G_j, y_j)$ of distributions and values of
+\textit{observed} random variables. We call this
+sequence an \textit{image} and denote it by $\pmb{y}$. For notational simplicity we assume that the program always generates the same ordered set $\pmb{z}$ of \textit{output} values $z_k$.
+
+The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
+is defined in terms of the product of the probabilities of all random
+choices $\pmb{x}$ and the likelihood of all observations $\pmb{y}$
+\begin{align}
+  \gamma(\pmb{x}) 
+  &:= 
+  \prod_{i=1}^{\left|\pmb{x}\right|}
+  p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j}).
+  \label{eqn:p-trace}
+\end{align}
+The objective of inference in probabilistic program $\mathcal{P}$
+is to discover the distribution of $\pmb{z}$.
 
 \section{Language}
 \label{sec:language}
+
+\subsection{Syntax}
 
 The Anglican language is a subset of Clojure\footnote{It would be
 possible to support almost full Clojure by expanding all macros
