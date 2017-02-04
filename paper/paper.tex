@@ -19,6 +19,7 @@
 
 \usepackage{hyperref}
 \usepackage{url}
+\usepackage{etoolbox}
 
 \input{anglican-color}
 
@@ -46,6 +47,9 @@
 
 \title{Design and Implementation of Probabilistic Programming Language Anglican}
 \authorinfo{David Tolpin \and Jan-Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
+
+\newtoggle{full}
+\togglefalse{full}
 
 \begin{document}
 
@@ -109,6 +113,7 @@ make use of a rich set of libraries written in both Clojure and Java.
 Conversely, Anglican allows intuitive and compact specification of models for
 which inference may be performed as part of a larger Clojure project.
 
+\iftoggle{full}{%
 There are several ways to build a programming language
 on top of or besides another language.  The easiest is an
 interpreter --- a program that reads a program, in its entirety
@@ -127,7 +132,11 @@ language.
 
 On top of these two approaches are methods in which a new
 language is implemented `inside' another language of the same
-level of abstraction. Different languages provide different
+level of abstraction. 
+}{%
+One way to implement a programming language is to embed it within another language.
+}%
+Different languages provide different
 means for this; Lisp is famous for the macro facility
 that allows to extend the language almost without
 restriction --- by writing \textit{macros}, one adds new
@@ -396,23 +405,24 @@ functions are implemented: \texttt{map}, \texttt{reduce},
 
 Clojure provides special forms \texttt{loop} and \texttt{recur}
 for writing tail-recursive programs. Such forms are not necessary
-in Anglican, because Anglican programs are CPS-converted and do not
-use the stack. For instance, no recursive call in Anglican can lead to stack overflow.
-In fact, in Anglican, it is recommended to use recursive calls to functions instead of
-\texttt{recur}. However, \texttt{loop}/\texttt{recur} is provided in Anglican
-for convenience as a way to express loops. \texttt{recur} outside of \texttt{loop}
-will lead to unpredictable behaviour and hard-to-catch errors.
+in Anglican, because Anglican programs are CPS-converted and do
+not use the stack. For instance, no recursive call in Anglican
+can lead to stack overflow.  In fact, in Anglican, it is
+recommended to use recursive calls to functions instead of
+\texttt{recur}. However, \texttt{loop}/\texttt{recur} is
+provided in Anglican for convenience as a way to express loops.
+\texttt{recur} outside of \texttt{loop} will lead to
+unpredictable behaviour and hard-to-catch errors.
 
 \section{Case Study}
 \label{seq:study}
 
-The description of Anglican language and environment would be
-incomplete without a case study showing the process of building
-and executing a solution of an inference problem. This case
+Before delving into implementation details, we provide a case
+study of using the Anglican language and environment. This case
 study takes a problem for which a solution is not immediately
-obvious, \textit{the Deli dilemma}, and guides through
-writing an Anglican program for the problem, executing the
-program, and post-processing results. 
+obvious, \textit{the Deli dilemma}, and guides through writing
+an Anglican program for the problem, executing the program, and
+post-processing results. 
 
 The program presented in this section is intentionally short and
 simple. Anglican is capable of compiling and running elaborated
@@ -839,6 +849,7 @@ checkpoints corresponding to the probabilistic forms
 (\texttt{sample}, \texttt{observe}) modify the
 state and reinject a new state into the computation.
 
+\iftoggle{full}{%
 \subsection{Expression Kinds}
 \label{sec:expr}
 
@@ -933,12 +944,21 @@ expression and the continuation as parameters, and are
 consistently named \texttt{cps-of-}\textit{form}, for example,
 \texttt{cps-of-do}, \texttt{cps-of-store}.
 
+}{%
+}
+
 \subsection{Implementation Highlights}
 \label{seq:highlights}
 
+\iftoggle{full}{%
 So far we introduced the basics of Anglican compilation to
 Clojure. The described approaches and techniques are important
 for grasping the language implementation but relatively well-known.
+}{%
+Anglican compilation to Clojure is based on CPS transformation
+and compilation techniques, many of which are
+well known and widely used~\cite{AJ89,A07}.
+}%
 In the rest of the section we focus on challenges we met and
 resolved while implementing Anglican, as well as on
 implementation of unique features of Anglican as a probabilistic
@@ -947,6 +967,7 @@ programming language.
 \subsubsection{Continuations}
 \label{seq:continuations}
 
+\iftoggle{full}{
 Continuations are functions that are called in tail positions
 with the computed value and state as their arguments --- in CPS
 there is always a function call in every tail position and never
@@ -964,7 +985,10 @@ continuations:
 \end{itemize}
 
 \paragraph{Managing stack size}
-
+}{%
+Continuations may lead to unbounded stack growth in
+recursive code.
+}%
 In implementations of functional programming languages stack
 growth is avoided through \textit{tail call optimization} (TCO).
 However, Clojure does not support a general form of TCO, and
@@ -996,6 +1020,7 @@ When the CPS-transformed function is called, it returns a
 \textit{thunk} (a parameterless function) which is then
 re-invoked through the trampoline, with the stack collapsed.
 
+\iftoggle{full}{%
 \paragraph{Avoiding exponential code growth}
 
 To realize potential danger of code size explosion, consider
@@ -1034,15 +1059,18 @@ establishes the binding automatically:
       (fn [] (cont t $state))
       (fn [] (cont f $state))))
 \end{lstlisting}
+}{
+}
 
 \subsubsection{Primitive Procedures}
 \label{seq:primitive}
 
-When an Anglican function is transformed into a Clojure function
-by \texttt{fn-cps}, two auxiliary parameters are added to the
+When an Anglican function is transformed into a Clojure
+function\iftoggle{full}{ by \texttt{fn-cps}}{}, two auxiliary parameters are added to the
 beginning of the parameter list --- continuation and state.
-Correspondingly, when a function \textit{call} is transformed
-(by \texttt{cps-of-application} or \texttt{cps-of-apply}), the
+Correspondingly, when a function \textit{call} is
+transformed\iftoggle{full}{ (by \texttt{cps-of-application} or
+\texttt{cps-of-apply})}{}, the
 current continuation and the state are passed to the called
 function. Anglican can also call Clojure functions; however,
 Clojure functions do not expect these auxiliary parameters.
@@ -1074,9 +1102,9 @@ following example, \texttt{first} is an Anglican function:
   (first '[1 2 3]))
 \end{lstlisting}
 The Anglican compiler takes care of the shading by rebinding
-\texttt{*primitive-procedures*} in every lexical scope
-(\texttt{fn-cps}, \texttt{cps-of-let}). Macro
-\texttt{shading-primitive-procedures} automates the shading.
+\texttt{*primitive-procedures*} in every lexical
+scope\iftoggle{full}{ (\texttt{fn-cps}, \texttt{cps-of-let}). Macro
+\texttt{shading-primitive-procedures} automates the shading}{.}
 
 \subsubsection{Probabilistic Forms}
 \label{seq:forms}
