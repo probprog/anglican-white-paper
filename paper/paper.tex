@@ -719,12 +719,14 @@ models are expressed in Anglican. However, processing of data and
 results can rely on the full power of Clojure.
 
 \begin{figure}
+	\centering
     \includegraphics[trim={12pt 0 0 0},scale=0.7]{same-customer-time.pdf}
     \caption{Arrival time distribution for a single customer.}
     \label{fig:dist-same}
 \end{figure}
 
 \begin{figure}
+	\centering
     \includegraphics[trim={12pt 0 0 0},scale=0.7]{different-customers-times.pdf}
     \caption{Arrival time distributions for two customers.}
     \label{fig:dist-diff}
@@ -1360,46 +1362,33 @@ Consider the following simplified Anglican query:
 An execution of the query may result in the following
 sequence of checkpoint invocations:
 \begin{lstlisting}[style=default]
-    (sample 'C1 ...)
-    (sample 'C2 ...)
-    (sample 'C2 ...)
-    (sample 'C1 ...)
-    (sample 'C1 ...)
-    (sample 'C1 ...)
-    (sample 'C2 ...)
-    (sample 'C3 ...)
+  (sample 'C1 ...)
+  (sample 'C2 ...)
+  (sample 'C2 ...)
+  (sample 'C1 ...)
+  (sample 'C1 ...)
+  (sample 'C1 ...)
+  (sample 'C2 ...)
+  (sample 'C3 ...)
 \end{lstlisting}
 According to the addressing scheme, the addresses generated
 for this invocations are
 \begin{lstlisting}[style=default]
-    [C1 0]
-    [C2 0]
-    [C2 1]
-    [C1 16]
-    [C1 17]
-    [C1 18]
-    [C2 16]
-    [C3 0]
+  [C1 0][C2 0][C2 1][C1 16][C1 17][C1 18][C2 16][C3 0]
 \end{lstlisting}
 If the program is run by a Metropolis-Hastings algorithm, then a small change usually takes place in the sequence of checkpoints with each invocation, and the new sequence may become
 \begin{lstlisting}[style=default]
-    (sample 'C1 ...)
-    (sample 'C2 ...)
-    (sample 'C1 ...)
-    (sample 'C1 ...)
-    (sample 'C2 ...)
-    (sample 'C2 ...)
-    (sample 'C3 ...)
+  (sample 'C1 ...)
+  (sample 'C2 ...)
+  (sample 'C1 ...)
+  (sample 'C1 ...)
+  (sample 'C2 ...)
+  (sample 'C2 ...)
+  (sample 'C3 ...)
 \end{lstlisting}
 The addresses for the new sequence are
 \begin{lstlisting}[style=default]
-    [C1 0]
-    [C2 0]
-    [C1 16]
-    [C1 17]
-    [C2 16]
-    [C2 17]
-    [C3 0]
+  [C1 0][C2 0][C1 16][C1 17][C2 16][C2 17][C3 0]
 \end{lstlisting}
 Despite the change, the correspondence between checkpoints of
 similar types occurring in similar positions (relative positions
