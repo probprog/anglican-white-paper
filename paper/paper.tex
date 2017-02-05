@@ -190,7 +190,24 @@ Anglican language syntax, compilation, invocation, and runtime
 support of Anglican queries are discussed in detail in further
 sections.
 
-\subsection*{Contributions}
+\subsection*{Contributions} This paper brings the following
+major contributions:
+\begin{itemize}
+	\item Design and implementation of a probabilistic
+		programming language Anglican involving tight bilateral
+		integration with a general-purpose programming language.
+	\item Definition of semantics of probabilistic forms in
+		Anglican which facilitates full separation of
+		probabilistic programs from inference algorithms.
+	\item Stateless representation of exchangeable
+		random procedures, or processes, seamlessly integrated
+		into pure functional computation.
+	\item Techniques for efficient and compact implementation of
+		inference algorithms, such as representation of
+		inference results as a lazy sequence of samples and 
+		a novel scheme for addressing of checkpoints.
+\end{itemize}
+
 
 \section{Related Work}
 \label{sec:related}
@@ -274,7 +291,9 @@ which JVM is available.
 A probabilistic program, or query, mostly runs deterministic
 code, except for certain checkpoints, in which probabilities are
 involved, and normal, linear execution of the program is
-disrupted. In Anglican and similar languages there are two types
+disrupted.
+\iftoggle{full}{%
+In Anglican and similar languages there are two types
 of such checkpoints:
 
 \begin{itemize}
@@ -283,8 +302,11 @@ of such checkpoints:
         (\texttt{observe}).
 \end{itemize}
 
+}{%
+}%
 Anglican can be mostly implemented as a regular programming
 language, except for the handling of these checkpoints.
+\iftoggle{full}{%
 Depending on the \textit{inference algorithm}, \texttt{sample}
 and \texttt{observe} may result in implicit input/output
 operations and control changes. For example, \texttt{observe} in
@@ -299,13 +321,17 @@ and a non-deterministic control statement
 (with delayed effect), eventually affecting acceptance or
 rejection of a sample.
 
+}{%
+}%
 Because of the checkpoints, Anglican programs must allow the
 inference algorithm to step in, recording information and
 affecting control flow. This can be implemented through
 coroutines/cooperative multitasking, and parallel execution/preemptive
 multitasking, as well as through explicit
 maintenance of program continuations at checkpoints. Anglican
-follows the latter option. Clojure is
+follows the latter option.
+\iftoggle{full}{%
+Clojure is
 a functional language, and continuation-passing style (CPS)
 transformation is a well-developed technique in the area of
 functional languages. Implementing a variant of CPS
@@ -314,25 +340,25 @@ option --- any other form of concurrency would put a higher burden
 on the underlying runtime (JVM) and the operating system.
 Consequently, Anglican has been implemented as a CPS-transformed
 computation with access to continuations in probabilistic
-checkpoints. The Anglican `compiler', represented by a set of
-functions in the \texttt{anglican.trap} namespace, accepts a
+checkpoints. 
+}{%
+}%
+The Anglican `compiler'\iftoggle{full}{, represented by a set of
+functions in the \texttt{anglican.trap} namespace,}{} accepts a
 Clojure subset and transforms it into a variant of CPS
 representation, which allows inference algorithms to intervene
 in the execution flow at probabilistic checkpoints.
 
 Anglican is intended to co-exist with Clojure and be a part of
 the source of a Clojure program. To facilitate this, Anglican
-programs, or queries, are wrapped by macros (defined in the
-\texttt{anglican.emit} namespace), which call the CPS
+programs, or queries, are wrapped by macros\iftoggle{full}{ (defined in the
+\texttt{anglican.emit} namespace)}{} which call the CPS
 transformations and define Clojure values suitable for passing
 as arguments to inference algorithms (\texttt{defquery},
 \texttt{query}). In addition to defining entire queries,
 Anglican promotes modularization of inference algorithms through
 the definitions of \textit{probabilistic functions} using
-\texttt{defm}
-%and \texttt{fm}
-(Anglican counterparts of Clojure \texttt{defn}).
-%and \texttt{fn}).
+\texttt{defm} (Anglican counterpart of Clojure \texttt{defn}).
 Probabilistic functions are
 written in Anglican, may include probabilistic forms
 \texttt{sample} and \texttt{observe}, and can be seamlessly
@@ -341,8 +367,8 @@ defined within the same query.
 
 Operational semantics of Anglican queries is different from that
 of Clojure code, therefore queries must be called through
-inference algorithms, rather than `directly'.  The
-\texttt{anglican.inference} namespace declares the (ad-hoc) polymorphic
+inference algorithms, rather than `directly'. \iftoggle{full}{The
+\texttt{anglican.inference} namespace}{Anglican} declares the (ad-hoc) polymorphic
 function \texttt{infer} using Clojure's multimethod mechanism.
 This function accepts an Anglican query and
 returns a lazy sequence of weighted samples from the
@@ -356,14 +382,15 @@ as a multimethod) so as to handle \texttt{sample} and
 to construct an appropriate result on the
 termination of a probabilistic program.
 
-Finally, Anglican queries use `primitive', or commonly known
-and used, distributions, to draw random samples and condition
-observations. Many primitive distributions are provided by the
-\texttt{anglican.runtime} namespace, and an additional
-distribution can be defined by the user by implementing a
-particular set of functions for the distribution
-(via Clojure's protocol mechanism). The \texttt{defdist} macro
-provides a convenient syntax for defining primitive distributions.
+Finally, Anglican queries use `primitive', or commonly known and
+used, distributions, to draw random samples and condition
+observations. Many primitive distributions are provided by
+\iftoggle{full}{the \texttt{anglican.runtime} namespace}{the
+runtime}, and an additional distribution can be defined by the
+user by implementing a particular set of functions for the
+distribution (via Clojure's protocol mechanism). The
+\texttt{defdist} macro provides a convenient syntax for defining
+primitive distributions.
 
 \section{Probabilistic Program}
 \label{sec:pp-def}
@@ -621,8 +648,9 @@ both cases.
 \label{seq:deli-inference}
 
 Having defined the query, we are now ready to run the query
-using an inference algorithm. Function \texttt{doquery} provided
-by the \texttt{anglican.core} namespace accepts the inference
+using an inference algorithm. Function
+\texttt{doquery}\iftoggle{full}{ provided
+by the \texttt{anglican.core} namespace}{} accepts the inference
 algorithm, the query, and optional parameters, and returns a
 lazy sequence of samples. We use here the inference algorithm
 called Lightweight Metropolis-Hastings (LMH). The algorithm is
@@ -857,8 +885,9 @@ accepts  \textit{two} arguments:
 \end{itemize}
 
 The compilation relies on the Clojure \textit{macro} facility,
-and implemented as a library of \textit{functions} in namespace
-\texttt{anglican.trap}, which are invoked by macros.  The CPS
+and implemented as a library of
+\textit{functions}\iftoggle{full}{ in namespace
+\texttt{anglican.trap}, which are}{} invoked by macros.  The CPS
 transformation is organized in top-down manner.  The top-level
 function is  \texttt{cps-of-expression}, which receives an
 expression and a continuation, and returns the expression in the
@@ -1053,9 +1082,9 @@ values of their fields as arguments.
 
 In addition to checkpoints, there are a few other special forms
 ---  \texttt{store}, \texttt{retrieve}, \texttt{mem} --- which
-modify program state. These forms are translated into
+modify program state. \iftoggle{full}{These forms are translated into
 expressions involving calls of functions from the
-\texttt{anglican.state} namespace. The \texttt{mem} form, which
+\texttt{anglican.state} namespace. }{}The \texttt{mem} form, which
 implements memoization, deserves a more detailed explanation.
 
 \paragraph{Memoization}
@@ -1150,11 +1179,12 @@ as a part of ongoing research.
 
 In the implementation of Anglican, inference algorithms are
 instantiations of the (ad-hoc) polymorphic function
-\texttt{infer} declared as Clojure's multimethod in the
-\texttt{anglican.{\linebreak[0]}inference} namespace. The function accepts an
-algorithm identifier, a query --- the probabilistic program in
-which to perform the inference, an initial value for the query,
-and optional algorithm parameters.
+\texttt{infer} declared as Clojure's multimethod\iftoggle{full}{
+in the \texttt{anglican.{\linebreak[0]}inference}
+namespace}{}. The function accepts an algorithm identifier,
+a query --- the probabilistic program in which to perform the
+inference, an initial value for the query, and optional
+algorithm parameters.
 
 \subsection{The \texttt{infer} Function}
 \label{sec:infer}
@@ -1427,11 +1457,14 @@ The probability of derailment depends on the padding. The
 padding can be safely, and without any impact on performance,
 set to rather large numbers. However, rounding up to a multiple
 of 16 proved to be appropriate for all practical purposes.
+\iftoggle{full}{%
 
 Function \texttt{checkpoint-id} in the
 \texttt{anglican.inference} namespace automates generation of
 checkpoint addresses and can be used from any inference
 algorithm.
+}{%
+}%
 
 \section{Definitions and Runtime Library}
 \label{seq:runtime}
