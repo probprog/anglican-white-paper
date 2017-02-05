@@ -210,7 +210,7 @@ major contributions:
 \section{Related Work} \label{sec:related}
 
 Efficient implementation of expressive probabilistic programming languages has
-recently been an active idea of research~\cite{MMR+07,GMR+08,P09,MWG+10,MSP14,
+recently been an active area of research~\cite{MMR+07,GMR+08,P09,MWG+10,MSP14,
 SDT14,WVM14,GS15,GSX+16}. There is often a compromise between the
 expressiveness of the language and the efficiency of inference.  Some languages
 emphasize expressiveness~\cite{MMR+07,GMR+08,MSP14,GS15}; others restrict the
@@ -235,9 +235,10 @@ diversity of applicable inference algorithms.
 
 Probabilistic programming languages are often implemented as pure functional
 languages~\cite{GMR+08,MSP14,SGG15}. This is because reasoning about
-probabilistic programsand distribution defined by the programs is easier in
-pure functional setting. Anglican is also implemented as a language without
-side-effects. However, there are also languages which follow imperative
+probabilistic programs and distributions defined by the programs, as well as
+implementation of certain inference algorithms~\cite{MYM+15}, is easier in pure
+functional setting. Anglican is also implemented as a language without
+side-effects.  However, there are also languages which follow imperative
 paradigm and support mutable state directly~\cite{SDT14,GSX+16}, or through
 probabilistic primitives~\cite{GMR+08,MSP14}. Anglican introduces a functional
 alternative to stateful random primitives in the form of random processes.
@@ -960,129 +961,21 @@ state and reinject a new state into the computation.
 }{%
 }%
 
+\iftoggle{full}{%
 \subsection{Implementation Highlights}
 \label{seq:highlights}
 
-\iftoggle{full}{%
 So far we introduced the basics of Anglican compilation to
 Clojure. The described approaches and techniques are important
 for grasping the language implementation but relatively well-known.
-}{%
-Anglican compilation to Clojure is based on CPS transformation
-and compilation techniques, many of which are
-well known and widely used~\cite{AJ89,A07}.
-}%
 In the rest of the section we focus on challenges we met and
 resolved while implementing Anglican, as well as on
 implementation of unique features of Anglican as a probabilistic
 programming language.
-
-\subsubsection{Continuations}
-\label{seq:continuations}
-
-\iftoggle{full}{
-Continuations are functions that are called in tail positions
-with the computed value and state as their arguments --- in CPS
-there is always a function call in every tail position and never
-a value. Continuations are passed to CPS transformers, and when
-transformers are called recursively, the continuations are
-generated on the fly.
-
-There are two critical issues related to generation of
-continuations:
-\begin{itemize}
-    \item unbounded \textit{stack growth} in recursive code;
-    \item code size \textit{explosion} when a non-atomic
-        continuation is symbolically substituted in multiple
-        locations.
-\end{itemize}
-
-\paragraph{Managing stack size}
-}{%
-Continuations may lead to unbounded stack growth in
-recursive code.
-}%
-In implementations of functional programming languages stack
-growth is avoided through \textit{tail call optimization} (TCO).
-However, Clojure does not support a general form of TCO, and
-CPS-transformed code that creates deeply nested calls will
-easily exhaust the stack. Anglican employs a workaround called
-\textit{trampolining}~\cite{B95} --- instead of inserting a
-continuation call directly, the transformer always wraps the
-call into a \textit{thunk}, or parameterless function. The thunk
-is returned and called by the trampoline (Clojure provides
-function \texttt{trampoline} for this purpose) --- this way the
-computation continues, but the stack is collapsed on every
-continuation call. Function \texttt{continue} implements the
-wrapping and is invoked on every continuation call:
-\begin{lstlisting}[style=default]
-=> (continue 'cont 'value 'state)
-(fn [] (cont value state))
-\end{lstlisting}
-Correspondingly, the full, wrapped CPS form of
-\begin{lstlisting}[style=default]
-(fn [x y] (+ x y))
-\end{lstlisting}
-becomes
-\begin{lstlisting}[style=default]
-(fn [cont $state x y]
-  (fn []
-    (cont (+ x y) $state)))
-\end{lstlisting}
-When the CPS-transformed function is called, it returns a
-\textit{thunk} (a parameterless function) which is then
-re-invoked through the trampoline, with the stack collapsed.
-
-\iftoggle{full}{%
-\input{code-explosion.tex}
 }{%
 }%
 
-\subsubsection{Primitive Procedures}
-\label{seq:primitive}
-
-When an Anglican function is transformed into a Clojure
-function\iftoggle{full}{ by \texttt{fn-cps}}{}, two auxiliary parameters are added to the
-beginning of the parameter list --- continuation and state.
-Correspondingly, when a function \textit{call} is
-transformed\iftoggle{full}{ (by \texttt{cps-of-application} or
-\texttt{cps-of-apply})}{}, the
-current continuation and the state are passed to the called
-function. Anglican can also call Clojure functions; however,
-Clojure functions do not expect these auxiliary parameters.
-To allow the mixing of Anglican (CPS-transformed) and Clojure
-function calls in Anglican code, the Anglican compiler must be
-able to recognize `primitive' (that is, implemented in Clojure
-rather than in Anglican) functions.
-
-Providing an explicit syntax for differentiating between
-Anglican and Clojure function calls would be cumbersome. Another
-option would be to use meta-data to identify Anglican function
-calls at runtime. However, this would impact performance, and
-good runtime performance is critical for probabilistic
-programs. The approach taken by Anglican is to maintain a list
-of unqualified names of primitive functions, as well of
-namespaces in which all functions are primitive, and recognize
-primitive functions by name --- if a function name is not in the
-list, the function is an Anglican function. Global dynamically-bound 
-variables \texttt{*primitive-procedures*} and
-\texttt{*primitive-namespaces*} contain the initial lists of
-names and namespaces, correspondingly. Of course, local bindings
-can shade global primitive function names. For example,
-\texttt{first} is a Clojure primitive function that takes the first
-element from an ordered collection such as list and vector,
-but inside the let block in the
-following example, \texttt{first} is an Anglican function:
-\begin{lstlisting}[style=default]
-(let [first (fn [[x & y]] x)]
-  (first '[1 2 3]))
-\end{lstlisting}
-The Anglican compiler takes care of the shading by rebinding
-\texttt{*primitive-procedures*} in every lexical
-scope\iftoggle{full}{ (\texttt{fn-cps}, \texttt{cps-of-let}). Macro
-\texttt{shading-primitive-procedures} automates the shading}{.}
-
-\subsubsection{Probabilistic Forms}
+\iftoggle{full}{\subsubsection}{\subsection}{Probabilistic Forms}
 \label{seq:forms}
 
 There are two proper probabilistic forms turning Anglican into a
@@ -1108,14 +1001,18 @@ Here \texttt{->sample} and \texttt{->observe} in the CPS-transformed
 expressions are constructors for Clojure records, and they take 
 values of their fields as arguments.
 
+\iftoggle{full}{\subsubsection }{\subsection}{Memoization}
+
+\iftoggle{full}{%
 In addition to checkpoints, there are a few other special forms
 ---  \texttt{store}, \texttt{retrieve}, \texttt{mem} --- which
-modify program state. \iftoggle{full}{These forms are translated into
+modify program state. These forms are translated into
 expressions involving calls of functions from the
-\texttt{anglican.state} namespace. }{}The \texttt{mem} form, which
+\texttt{anglican.state} namespace. The \texttt{mem} form, which
 implements memoization, deserves a more detailed explanation.
+}{%
+}%
 
-\paragraph{Memoization}
 The author of a probabilistic model might want to 
 randomly draw a feature value for each entity in a collection,
 but to retain the same drawn
@@ -1182,6 +1079,111 @@ updated state:
 Memoized results are not shared among multiple runs of a
 probabilistic program, which is intended. Otherwise, it would be
 impossible to memoize functions with random results.
+
+\iftoggle{full}{\subsubsection{Continuations}}{\subsection{Managing stack size}}
+\label{seq:continuations}
+
+\iftoggle{full}{
+Continuations are functions that are called in tail positions
+with the computed value and state as their arguments --- in CPS
+there is always a function call in every tail position and never
+a value. Continuations are passed to CPS transformers, and when
+transformers are called recursively, the continuations are
+generated on the fly.
+
+There are two critical issues related to generation of
+continuations:
+\begin{itemize}
+    \item unbounded \textit{stack growth} in recursive code;
+    \item code size \textit{explosion} when a non-atomic
+        continuation is symbolically substituted in multiple
+        locations.
+\end{itemize}
+
+\paragraph{Managing stack size}
+}{%
+Continuations may lead to unbounded stack growth in
+recursive code.
+}%
+In implementations of functional programming languages stack
+growth is avoided through \textit{tail call optimization} (TCO).
+However, Clojure does not support a general form of TCO, and
+CPS-transformed code that creates deeply nested calls will
+easily exhaust the stack. Anglican employs a workaround called
+\textit{trampolining}~\cite{B95} --- instead of inserting a
+continuation call directly, the transformer always wraps the
+call into a \textit{thunk}, or parameterless function. The thunk
+is returned and called by the trampoline (Clojure provides
+function \texttt{trampoline} for this purpose) --- this way the
+computation continues, but the stack is collapsed on every
+continuation call. Function \texttt{continue} implements the
+wrapping and is invoked on every continuation call:
+\begin{lstlisting}[style=default]
+=> (continue 'cont 'value 'state)
+(fn [] (cont value state))
+\end{lstlisting}
+Correspondingly, the full, wrapped CPS form of
+\begin{lstlisting}[style=default]
+(fn [x y] (+ x y))
+\end{lstlisting}
+becomes
+\begin{lstlisting}[style=default]
+(fn [cont $state x y]
+  (fn []
+    (cont (+ x y) $state)))
+\end{lstlisting}
+When the CPS-transformed function is called, it returns a
+\textit{thunk} (a parameterless function) which is then
+re-invoked through the trampoline, with the stack collapsed.
+
+\iftoggle{full}{%
+\input{code-explosion.tex}
+}{%
+}%
+
+\iftoggle{full}{\subsubsection}{\subsection}{Primitive Procedures}
+\label{seq:primitive}
+
+When an Anglican function is transformed into a Clojure
+function\iftoggle{full}{ by \texttt{fn-cps}}{}, two auxiliary parameters are added to the
+beginning of the parameter list --- continuation and state.
+Correspondingly, when a function \textit{call} is
+transformed\iftoggle{full}{ (by \texttt{cps-of-application} or
+\texttt{cps-of-apply})}{}, the
+current continuation and the state are passed to the called
+function. Anglican can also call Clojure functions; however,
+Clojure functions do not expect these auxiliary parameters.
+To allow the mixing of Anglican (CPS-transformed) and Clojure
+function calls in Anglican code, the Anglican compiler must be
+able to recognize `primitive' (that is, implemented in Clojure
+rather than in Anglican) functions.
+
+Providing an explicit syntax for differentiating between
+Anglican and Clojure function calls would be cumbersome. Another
+option would be to use meta-data to identify Anglican function
+calls at runtime. However, this would impact performance, and
+good runtime performance is critical for probabilistic
+programs. The approach taken by Anglican is to maintain a list
+of unqualified names of primitive functions, as well of
+namespaces in which all functions are primitive, and recognize
+primitive functions by name --- if a function name is not in the
+list, the function is an Anglican function. Global dynamically-bound 
+variables \texttt{*primitive-procedures*} and
+\texttt{*primitive-namespaces*} contain the initial lists of
+names and namespaces, correspondingly. Of course, local bindings
+can shade global primitive function names. For example,
+\texttt{first} is a Clojure primitive function that takes the first
+element from an ordered collection such as list and vector,
+but inside the let block in the
+following example, \texttt{first} is an Anglican function:
+\begin{lstlisting}[style=default]
+(let [first (fn [[x & y]] x)]
+  (first '[1 2 3]))
+\end{lstlisting}
+The Anglican compiler takes care of the shading by rebinding
+\texttt{*primitive-procedures*} in every lexical
+scope\iftoggle{full}{ (\texttt{fn-cps}, \texttt{cps-of-let}). Macro
+\texttt{shading-primitive-procedures} automates the shading}{.}
 
 \section{Inference Algorithms}
 \label{sec:inference}
