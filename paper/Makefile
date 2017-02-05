@@ -24,9 +24,8 @@ full:
 ifl:
 	cp toggle-ifl.tex toggle.tex
 
-toggle.tex: toggle-full.tex
+toggle.tex: toggle-ifl.tex
 	cp $< $@
-
 
 clean:
 	rm -f *.aux *.log *.bbl *.blg 
