@@ -441,17 +441,18 @@ $\mathcal{P}$ with the following properties~\cite{TMP+15}:
 A program is run by calling $\mathcal{P}$ repeatedly until
 termination.
 
-A program need not generate the same sequence of random variables in
-every execution. For this reason we assume that each random variable
-$x$ is assigned a unique label $\alpha$, which we call an address,
-that induces a correspondence between variables in different
-executions. Every execution implicitly produces a sequence of triples
-of distributions, values of \textit{latent} random variables, and
-addresses, $(F_i, x_i, \alpha_i)$.  We call this sequence a
-\textit{trace} and denote it by $\pmb{x}$. A trace induces a sequence
-of pairs $(G_j, y_j)$ of distributions and values of
-\textit{observed} random variables. We call this
-sequence an \textit{image} and denote it by $\pmb{y}$. For notational simplicity we assume that the program always generates the same ordered set $\pmb{z}$ of \textit{output} values $z_k$.
+A program need not generate the same sequence of random variables in every
+execution. For this reason we assume that each random variable $x$ is assigned
+a unique label $\alpha$, which we call an address, that induces a
+correspondence between variables in different executions. Every execution
+implicitly produces a sequence of triples of distributions, values of
+\textit{latent} random variables, and addresses, $(F_i, x_i, \alpha_i)$.  We
+call this sequence a \textit{trace} and denote it by $\pmb{x}$. A trace induces
+a sequence of pairs $(G_j, y_j)$ of distributions and values of
+\textit{observed} random variables. We call this sequence an \textit{image} and
+denote it by $\pmb{y}$. For notational simplicity we assume that the program
+always generates the same ordered set $\pmb{z}$ of \textit{output} values
+$z_k$.
 
 The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
 is defined in terms of the product of the probabilities of all random
