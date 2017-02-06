@@ -785,14 +785,14 @@ results can rely on the full power of Clojure.
 
 \begin{figure}
 	\centering
-    \includegraphics[trim={12pt 0 0 0},scale=0.7]{same-customer-time.pdf}
+    \includegraphics[trim={12pt 0 0 0},scale=0.6]{same-customer-time.pdf}
     \caption{Arrival time distribution for a single customer.}
     \label{fig:dist-same}
 \end{figure}
 
 \begin{figure}
 	\centering
-    \includegraphics[trim={12pt 0 0 0},scale=0.7]{different-customers-times.pdf}
+    \includegraphics[trim={12pt 0 0 0},scale=0.6]{different-customers-times.pdf}
     \caption{Arrival time distributions for two customers.}
     \label{fig:dist-diff}
 \end{figure}
@@ -989,30 +989,32 @@ programming language.
 The purpose of probabilistic forms \texttt{sample} and
 \texttt{observe} is to interrupt deterministic computation and
 transfer control to the inference algorithm.  Practically, this
-is achieved through returning \textbf{checkpoints} --- Clojure
-values of the corresponding types
+is achieved by  returning a \textbf{checkpoint} instead of
+invoking a continuation in a CPS-transformed program.  In
+Clojure, checkpoints are represented by values of the
+corresponding record types
 (\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} or
 \texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe}).
 The types contain fields specific to each form, as well as the
 continuation; calling the continuation resumes the computation.
-Checkpoints expose the program state to the inference algorithm,
-and the updated state is re-injected into the computation when
-the continuation is called:
 \begin{lstlisting}[style=default]
 => (cps-of-expression '(sample dist) 'cont)
 (->sample dist cont $state)
 => (cps-of-expression '(observe dist v) 'cont)
 (->observe dist v cont $state)
 \end{lstlisting}
-Here \texttt{->sample} and \texttt{->observe} in the CPS-transformed
-expressions are constructors for Clojure records, and they take 
-values of their fields as arguments. How the state is updated, 
-the number of times the continuation is called, and the value
-passed to the continuation of \texttt{sample} depend on the
-inference algorithm executing the program.
-Section~\ref{sec:inference} provides more detail on internals of
-inference algorithms and their interaction with probabilistic
-programs.
+Here \texttt{->sample} and \texttt{->observe} in the
+CPS-transformed expressions are constructors for Clojure
+records, and they take values of their fields as arguments.
+
+Upon encountering a checkpoint, the inference algorithm computes
+the updated program state and the value to be passed to the
+continuation.  How the state is updated, the number of times the
+continuation is called, and the value passed to the continuation
+of \texttt{sample} depend on the inference algorithm executing
+the program.  Section~\ref{sec:inference} provides more detail
+on internals of inference algorithms and their interaction with
+probabilistic programs.
 
 \iftoggle{full}{%
 \smallskip
