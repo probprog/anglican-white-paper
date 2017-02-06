@@ -1165,11 +1165,11 @@ re-invoked through the trampoline, with the stack collapsed.
 \label{seq:primitive}
 
 When an Anglican function is transformed into a Clojure
-function\iftoggle{full}{ by \texttt{fn-cps}}{}, two auxiliary parameters are added to the
-beginning of the parameter list --- continuation and state.
-Correspondingly, when a function \textit{call} is
-transformed\iftoggle{full}{ (by \texttt{cps-of-application} or
-\texttt{cps-of-apply})}{}, the
+function\iftoggle{full}{ by \texttt{fn-cps}}{}, two auxiliary
+parameters are added to the beginning of the parameter list ---
+continuation and state.  Correspondingly, when a function
+\textit{call} is transformed\iftoggle{full}{ (by
+\texttt{cps-of-application} or \texttt{cps-of-apply})}{}, the
 current continuation and the state are passed to the called
 function. Anglican can also call Clojure functions; however,
 Clojure functions do not expect these auxiliary parameters.
@@ -1281,12 +1281,13 @@ manner.
 \subsection{Internals of an Inference Algorithm}
 \label{sec:internals}
 
-Implementing an inference algorithm in Anglican amounts
-to defining an appropriate version of the \texttt{infer} function and 
-checkpoint handlers for \texttt{sample} and \texttt{observe}.
-The definitions may just reuse default implementations or override them
-with new algorithm-specific treatment of \texttt{sample} and \texttt{observe} forms
-and inference state.
+Implementing an inference algorithm in Anglican amounts to
+defining an appropriate version of the \texttt{infer} function
+and checkpoint handlers for \texttt{sample} and
+\texttt{observe}.  The definitions may just reuse default
+implementations or override them with new algorithm-specific
+treatment of \texttt{sample} and \texttt{observe} forms and
+inference state.
 
 Let us illustrate this implementation step with
 \textit{importance sampling},
@@ -1450,7 +1451,9 @@ for this invocations are
 \begin{lstlisting}[style=default]
   [C1 0][C2 0][C2 1][C1 16][C1 17][C1 18][C2 16][C3 0]
 \end{lstlisting}
-If the program is run by a Metropolis-Hastings algorithm, then a small change usually takes place in the sequence of checkpoints with each invocation, and the new sequence may become
+If the program is run by a Metropolis-Hastings algorithm, then a
+small change usually takes place in the sequence of checkpoints
+with each invocation, and the new sequence may become
 \begin{lstlisting}[style=default]
   (sample 'C1 ...)
   (sample 'C2 ...)
@@ -1591,7 +1594,13 @@ an unknown parameter that is drawn from a beta distribution:
       0 (beta-bernoulli a (inc b))
       1 (beta-bernoulli (inc a) b))))
 \end{lstlisting}
-Unlike typical implementations of exchangeable random processes, Anglican's random processes do not have mutable state. The \texttt{produce} and \texttt{absorb} methods are deterministic and functional, and therefore do not have corresponding special forms in Anglican. A sequence of random values can be generated using a recursive loop in which \texttt{absorb} returns the updated process for the next iteration. For example:
+Unlike typical implementations of exchangeable random processes,
+Anglican's random processes do not have mutable state. The
+\texttt{produce} and \texttt{absorb} methods are deterministic
+and functional, and therefore do not have corresponding special
+forms in Anglican. A sequence of random values can be generated
+using a recursive loop in which \texttt{absorb} returns the
+updated process for the next iteration. For example:
 \begin{lstlisting}[style=default]
 (defm sample-beta-binomial [n a b]
   (loop [process (beta-bernoulli a b)
@@ -1603,7 +1612,8 @@ Unlike typical implementations of exchangeable random processes, Anglican's rand
       (recur (absorb process value)
              (conj values value))))))
 \end{lstlisting}
-Similarly, random processes can also be used to recursively observe a sequence of values:
+Similarly, random processes can also be used to recursively
+observe a sequence of values:
 \begin{lstlisting}[style=default]
 (loop [process (beta-bernoulli 1.0 1.0)
        [value0 & values0] values] 
