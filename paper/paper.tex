@@ -196,7 +196,7 @@ major contributions:
     \item Design and implementation of a probabilistic programming language
         Anglican involving tight bilateral integration with a general-purpose
         programming language.
-    \item Semantics of probabilistic forms in Anglican which facilitates full
+    \item Specification of probabilistic forms in Anglican which facilitates 
         separation of probabilistic programs from inference algorithms.
     \item Stateless representation of random processes, seamlessly integrated
         into pure functional computation.
@@ -207,39 +207,48 @@ major contributions:
 
 \section{Related Work} \label{sec:related}
 
-Efficient implementation of expressive probabilistic programming languages has
-recently been an active area of research~\cite{MMR+07,GMR+08,P09,MWG+10,MSP14,
-SDT14,WVM14,GS15,GSX+16}. There is often a compromise between the
-expressiveness of the language and the efficiency of inference.  Some languages
-emphasize expressiveness~\cite{MMR+07,GMR+08,MSP14,GS15}; others restrict the
-class of models which can be expressed by the language~\cite{MWG+10,SDT14,NN14}
-to facilitate application of efficient inference algorithms. Anglican allows
-unrestricted specification of probabilistic models in the spirit of
+Efficient implementation of expressive probabilistic programming
+languages has recently been an active area of
+research~\cite{MMR+07,GMR+08,P09,MWG+10,MSP14,
+SDT14,WVM14,GS15,GSX+16}. There is often a compromise between
+the expressiveness of the language and the efficiency of
+inference.  Some languages emphasize
+expressiveness~\cite{MMR+07,GMR+08,MSP14,GS15}; others restrict
+the class of models which can be expressed by the
+language~\cite{MWG+10,SDT14,NN14} to facilitate application of
+efficient inference algorithms. Anglican allows unrestricted
+specification of probabilistic models in the spirit of
 Church~\cite{GMR+08}, while still supporting efficient scalable
 inference~\cite{WVM14,PWD+14,RNL+2016}.
 
 Probabilistic programming languages are implemented as
-interpreters~\cite{GMR+08,MSP14}, embedded languages~\cite{P09,SGG15,GSX+16},
-compiled languages~\cite{MMR+07,SDT14}, as through source-to-source
-transformation with augmentation~\cite{WSG11,GS15}. Each of these methods
-emphasizes different priorities in language design, such as computational
-efficiency, integration with an existing development environment, ease of
-implementation, or efficiency of inference. Anglican implemented using a
-combination of embedding and source-to-source transformational compilation to
-combine advantages of both approaches.  CPS transformation, employed by
-Anglican compiler, is also used in WebPPL~\cite{GS15} and facilitates clean
-separation between probabilistic programs and inference algorithms and
-diversity of applicable inference algorithms.
+interpreters~\cite{GMR+08,MSP14}, embedded
+languages~\cite{P09,SGG15,GSX+16}, compiled
+languages~\cite{MMR+07,SDT14}, as through source-to-source
+transformation with augmentation~\cite{WSG11,GS15}. Each of
+these methods emphasizes different priorities in language
+design, such as computational efficiency, integration with an
+existing development environment, ease of implementation, or
+efficiency of inference. Anglican implemented using a
+combination of embedding and source-to-source transformational
+compilation to combine advantages of both approaches.  CPS
+transformation, employed by Anglican compiler, is also used in
+WebPPL~\cite{GS15} and facilitates clean separation between
+probabilistic programs and inference algorithms and diversity of
+applicable inference algorithms.
 
-Probabilistic programming languages are often implemented as pure functional
-languages~\cite{GMR+08,MSP14,SGG15}. This is because reasoning about
-probabilistic programs and distributions defined by the programs, as well as
-implementation of certain inference algorithms~\cite{MYM+15}, is easier in pure
-functional setting. Anglican is also implemented as a language without
-side-effects.  However, there are also languages which follow imperative
-paradigm and support mutable state directly~\cite{SDT14,GSX+16}, or through
-probabilistic primitives~\cite{GMR+08,MSP14}. Anglican introduces a functional
-alternative to stateful random primitives in the form of random processes.
+Probabilistic programming languages are often implemented as
+pure functional languages~\cite{GMR+08,MSP14,SGG15}. This is
+because reasoning about probabilistic programs and distributions
+defined by the programs, as well as implementation of certain
+inference algorithms~\cite{MYM+15}, is easier in pure functional
+setting. Anglican is also implemented as a language without
+side-effects.  However, there are also languages which follow
+imperative paradigm and support mutable state
+directly~\cite{SDT14,GSX+16}, or through probabilistic
+primitives~\cite{GMR+08,MSP14}. Anglican introduces a functional
+alternative to stateful random primitives in the form of random
+processes.
 
 \section{Design Outline}
 \label{sec:design}
@@ -977,19 +986,18 @@ programming language.
 \iftoggle{full}{\subsubsection}{\subsection}{Probabilistic Forms}
 \label{seq:forms}
 
-There are two proper probabilistic forms turning Anglican into a
-probabilistic programming language --- \texttt{sample} and
-\texttt{observe}. Their purpose is to interrupt deterministic
-computation and transfer control to the inference algorithm.
-Practically, this is achieved through returning
-\textbf{checkpoints} --- Clojure values of the corresponding
-types (\texttt{anglican.trap.sample} or
-\texttt{anglican.trap.observe}). The types contain fields
-specific to each form, as well as the continuation; calling the
-continuation resumes the computation. Checkpoints expose the
-program state to the inference algorithm, and the updated state
-is re-injected into the computation when the continuation is
-called:
+The purpose of probabilistic forms \texttt{sample} and
+\texttt{observe} is to interrupt deterministic computation and
+transfer control to the inference algorithm.  Practically, this
+is achieved through returning \textbf{checkpoints} --- Clojure
+values of the corresponding types
+(\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} or
+\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe}).
+The types contain fields specific to each form, as well as the
+continuation; calling the continuation resumes the computation.
+Checkpoints expose the program state to the inference algorithm,
+and the updated state is re-injected into the computation when
+the continuation is called:
 \begin{lstlisting}[style=default]
 => (cps-of-expression '(sample dist) 'cont)
 (->sample dist cont $state)
@@ -998,19 +1006,30 @@ called:
 \end{lstlisting}
 Here \texttt{->sample} and \texttt{->observe} in the CPS-transformed
 expressions are constructors for Clojure records, and they take 
-values of their fields as arguments.
-
-\iftoggle{full}{\subsubsection }{\subsection}{Memoization}
+values of their fields as arguments. How the state is updated, 
+the number of times the continuation is called, and the value
+passed to the continuation of \texttt{sample} depend on the
+inference algorithm executing the program.
+Section~\ref{sec:inference} provides more detail on internals of
+inference algorithms and their interaction with probabilistic
+programs.
 
 \iftoggle{full}{%
-In addition to checkpoints, there are a few other special forms
----  \texttt{store}, \texttt{retrieve}, \texttt{mem} --- which
-modify program state. These forms are translated into
+\smallskip
+\begin{center}
+*\qquad*\qquad*
+\end{center}
+
+In addition to the checkpoints, there are a few other special
+forms ---  \texttt{store}, \texttt{retrieve}, \texttt{mem} ---
+which modify program state. These forms are translated into
 expressions involving calls of functions from the
 \texttt{anglican.state} namespace. The \texttt{mem} form, which
 implements memoization, deserves a more detailed explanation.
 }{%
 }%
+
+\iftoggle{full}{\subsubsection }{\subsection}{Memoization}
 
 The author of a probabilistic model might want to 
 randomly draw a feature value for each entity in a collection,
@@ -1227,9 +1246,6 @@ The second parameter is a query as defined by
 the \texttt{defquery} form or its anonymous version \texttt{query}. For instance,
 the following Clojure code invokes \texttt{infer} on an Anglican query
 defined anonymously via the \texttt{query} form:
-%If needed, the query
-%can be defined anonymously, right in the argument list of a call
-%to \texttt{infer}:
 \begin{lstlisting}[style=default]
 (let [x 1]
   (infer :pgibbs (query x) nil))
@@ -1247,7 +1263,6 @@ of an input vector. In this case, the initial value is given
 as a structured value, such as a vector, and the components
 of this value are matched to the corresponding
 parameters of the query via the destructuring mechanism of Clojure.
-%The value is destructured via pattern match in case of a structured binding.
 For example,
 \begin{lstlisting}[style=default]
 (defquery my-query [mean sd]
@@ -1257,14 +1272,12 @@ For example,
 \end{lstlisting}
 Finally, any number of auxiliary arguments can be
 passed to \texttt{infer}.
-%Finally, an indefinite number of auxiliary arguments can be
-%passed to \texttt{infer}.
 By convention, the arguments should be
 keyword arguments, and are interpreted in the algorithm-specific
 manner.
 
 \subsection{Internals of an Inference Algorithm}
-\label{seq:internals}
+\label{sec:internals}
 
 Implementing an inference algorithm in Anglican amounts
 to defining an appropriate version of the \texttt{infer} function and 
