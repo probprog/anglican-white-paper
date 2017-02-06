@@ -193,18 +193,16 @@ sections.
 \subsection*{Contributions} This paper brings the following
 major contributions:
 \begin{itemize}
-	\item Design and implementation of a probabilistic
-		programming language Anglican involving tight bilateral
-		integration with a general-purpose programming language.
-	\item Definition of semantics of probabilistic forms in
-		Anglican which facilitates full separation of
-		probabilistic programs from inference algorithms.
-	\item Stateless representation of random processes, seamlessly integrated
-		into pure functional computation.
-	\item Techniques for efficient and compact implementation of
-		inference algorithms, such as representation of
-		inference results as a lazy sequence of samples and 
-		a novel scheme for addressing of checkpoints.
+    \item Design and implementation of a probabilistic programming language
+        Anglican involving tight bilateral integration with a general-purpose
+        programming language.
+    \item Semantics of probabilistic forms in Anglican which facilitates full
+        separation of probabilistic programs from inference algorithms.
+    \item Stateless representation of random processes, seamlessly integrated
+        into pure functional computation.
+    \item Techniques for efficient and compact implementation of inference
+        algorithms, such as representation of inference results as a lazy
+        sequence of samples and a novel scheme for addressing of checkpoints.
 \end{itemize}
 
 \section{Related Work} \label{sec:related}
@@ -1516,9 +1514,9 @@ Clojure before any inference is performed.
 convenience, it exposes common mathematical functions
 (\texttt{abs}, \texttt{floor}, \texttt{sin}, \texttt{log},
 \texttt{exp}, etc.), but most importantly, it provides
-definitions of common distributions. Each distribution object
-implements a distribution interface with the \texttt{sample*} and \texttt{observe*}
-methods; this interface is defined using Clojure's protocol mechanism
+definitions of common distributions. Each distribution object implements a
+distribution interface with the \texttt{sample*} and \texttt{observe*} methods;
+this interface is defined using Clojure's protocol mechanism
 (\texttt{anglican.{\linebreak[0]}runtime/{\linebreak[0]}distribution}).
 The \texttt{sample*} \textit{method} returns a random sample and
 roughly corresponds to the \texttt{sample} checkpoint,
@@ -1601,7 +1599,42 @@ Similarly, random processes can also be used to recursively observe a sequence o
 
 \section{Performance}
 
-{\it TODO}
+To justify the claim that Anglican is an \textit{efficient}
+implementation, performance of Anglican programs must evaluated
+both against Clojure programs and against inference tasks in
+other probabilistic programming languages and environments.
+Anglican passes two additional parameters to every function, adds
+extra code to variable bindings, and passes every function
+call through the trampoline. Hence difference in performance
+between Anglican and Clojure should be most noticeable on
+programs which involve many function calls. One such example is
+the famous \textit{Towers of Hanoi}:
+
+\begin{lstlisting}[style=default]
+(defn towers-of-hanoi [n from to via]
+  (when (not= n 1)
+      (towers-of-hanoi (dec n) from via to)
+      (towers-of-hanoi (dec n) via to from)))
+\end{lstlisting}
+
+We run this program for n equal to 10, 15, 20, and 25. Clojure
+is consistently only twice as fast as Anglican
+(Table~\ref{tbl:hanoi}); considering the amount of overhead
+Anglican introduces, this is a good result.
+\begin{table}
+    \centering
+    \begin{tabular}{r|r|r|r|r}
+        {\bf n}  & {\bf 10} & {\bf 15} & {\bf 20} &{\bf 25} \\ \hline
+        Clojure &  0.32 & 1.45 & 38.1  &  1245.9 \\ \hline
+        Anglican & 0.63 & 3.00 & 75.9 & 2381.1 
+    \end{tabular}
+    \caption{Towers of Hanoi. Average running times, in
+    seconds, of Clojure and Anglican, averaged over 100 runs.
+    Clojure is only twice as fast as Anglican.}
+    \label{tbl:hanoi}
+\end{table}
+
+
 
 \section{Conclusion}
 \label{seq:summary}
