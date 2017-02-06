@@ -1634,7 +1634,25 @@ Anglican introduces, this is a good result.
     \label{tbl:hanoi}
 \end{table}
 
-
+The other comparison must be made between Anglican and other
+probabilistic programming environment. \cite[pp. 32 -- 33]{P16} 
+provides a comparison of Anglican to an older, interpreted
+version of Anglican~\cite{WVM14}, and Probabilistic
+Scheme~\cite{PW14} on a rather complicated inference task of
+program synthesis. According to this comparison, Anglican is at
+least 10 times faster than the older interpreted version, and
+almost as fast as Probabilistic Scheme which uses inference
+engine implemented in C. In addition, \cite[p. 171]{SGG15}
+compares Anglican to a DSL for probabilistic programming in
+Haskell and to Probabilistic C~\cite{PW14} on two simple
+probabilistic programs. Anglican shows similar performance
+to the Haskell implementation of Sequential Monte
+Carlo~\cite{DFG+01} and scales better with the number of
+particles. Given the simplicity of the programs used in the
+evaluation, this comparison is a confirmation that the flexible
+checkpoint and trampoline based interaction between Anglican
+program and inference engine does not introduce any noticeable
+overhead compared to more rigid designs.
 
 \section{Conclusion}
 \label{seq:summary}
