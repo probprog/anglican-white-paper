@@ -1,5 +1,4 @@
 \documentclass[preprint]{sigplanconf}
-\linespread{1.00}
 
 \usepackage[color]{changebar}
 \usepackage{enumitem}
@@ -15,7 +14,7 @@
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
      {<->sub*lmtt/m/sl}{}
-\lstdefinestyle{default}{language=Anglican, basicstyle=\ttfamily, columns=flexible, showstringspaces=false}
+\lstdefinestyle{default}{language=Anglican, basicstyle=\linespread{0.95}\ttfamily, columns=flexible, showstringspaces=false}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -261,9 +260,7 @@ from Anglican code and vice versa. A simple program in Anglican
 can look like the following code:
 %\begin{minipage}{\linewidth}
 \begin{lstlisting}[style=default]
-(defquery model data
-  "chooses a distribution
-   which describes the data"
+(defquery model "model selection" data
   (let [;;; Guess a distribution.
         dist (sample (categorical
                        [[normal 0.5]
@@ -437,13 +434,13 @@ $\mathcal{P}$ with the following properties~\cite{TMP+15}:
 \begin{itemize}
 \item Initially, $\mathcal{P}$ expects no arguments.
 \item On every call, $\mathcal{P}$ returns either a distribution
-  and an address $(F,\alpha)$, a distribution and a value $(G, y)$, a
-  value $z$, or $\bot$.
+  and an address $(F,\alpha)$, a distribution and a value $(G,
+        y)$, or a value $z$.
 \item Upon returning $F$, $\mathcal{P}$ expects a value $x$ drawn from $F$ as
-  the argument to the next call.
-\item Upon returning $(G, y)$ or $z$, $\mathcal{P}$ is invoked again
-  without arguments.
-\item Upon returning $\bot$, $\mathcal{P}$ terminates.
+	the argument to the next call (\texttt{sample} in Anglican).
+\item Upon returning $(G, y)$, $\mathcal{P}$ is invoked again
+	without arguments (\texttt{observe} in Anglican).
+\item Upon returning $z$, $\mathcal{P}$ terminates.
 \end{itemize}
 A program is run by calling $\mathcal{P}$ repeatedly until
 termination.
@@ -458,8 +455,7 @@ call this sequence a \textit{trace} and denote it by $\pmb{x}$. A trace induces
 a sequence of pairs $(G_j, y_j)$ of distributions and values of
 \textit{observed} random variables. We call this sequence an \textit{image} and
 denote it by $\pmb{y}$. For notational simplicity we assume that the program
-always generates the same ordered set $\pmb{z}$ of \textit{output} values
-$z_k$.
+always generates the same ordered set $\pmb{z}$ of \textit{results} $z_k$.
 
 The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
 is defined in terms of the product of the probabilities of all random
@@ -485,19 +481,44 @@ in the Anglican source code. However, in Clojure, unlike in
 Scheme~\cite{SDF+10} or Common Lisp~\cite{PC94}, the result
 of macro-expansion of derived special forms is not well
 specified and implementation specific.}.  Anglican queries
-are defined within \texttt{defquery} as shown in the previous section,
-using \texttt{if}, \texttt{when}, \texttt{cond}, \texttt{case},
-\texttt{let}, \texttt{and}, \texttt{or}, \texttt{fn} forms;
-other forms of Clojure may be supported in the future but are not now.
-In \texttt{let} bindings and \texttt{fn} argument lists,
-Clojure's pattern matching mechanism for vector data type
-(called vector destructuring) is supported. Also, compound
-literals for vectors, hash maps, and
-sets are supported just like in Clojure.
+are defined within \texttt{defquery}. The value of the last
+expression in the query body is the result of the query.
+\begin{lstlisting}[style=default]
+(defquery name doc-string? param? expr*)
+\end{lstlisting}
+Anglican functions outside of a query are defined using
+\texttt{defm} with the same syntax as Clojure \texttt{defn},
+however \texttt{name} is bound to an Anglican function.
+\begin{lstlisting}[style=default]
+(defm name doc-string? [param*] expr*)
+\end{lstlisting}
+Within the body of \texttt{defquery} and \texttt{defm}, the
+following special forms are supported, with syntax and semantics 
+matching those of Clojure:
+\begin{lstlisting}[style=default]
+(if test then else?)
+(when test expr*)
+(cond clause*)
+(case expr clause* default?)
+(let [binding*] expr*)
+(and expr*)
+(or expr*)
+(fn name? [param*] expr*)
+(loop [binding*] expr*)
+(recur expr*)
+\end{lstlisting}
+In \texttt{defquery} parameter, \texttt{let} bindings, and
+\texttt{fn} argument lists, Clojure vector destructuring is
+supported. Literals for atomic types and compound literals for
+vectors, hash maps, and sets are supported just like in Clojure.
 
-\subsection{Probabilistic Forms}
-
-{\it TODO}
+Clojure provides special forms \texttt{loop} and \texttt{recur}
+for writing tail-recursive programs.  Anglican programs are
+CPS-converted and do not use the stack; recursive calls
+in Anglican cannot lead to stack overflow.  However,
+\texttt{loop}/\texttt{recur} is provided in Anglican for
+convenience as a way to express loops. Unlike in Clojure though,
+\texttt{recur} supported only inside a \texttt{loop}.
 
 \subsection{Core Library}
 \label{sec:core}
@@ -511,19 +532,55 @@ functions are implemented: \texttt{map}, \texttt{reduce},
 \texttt{filter}, \texttt{some}, \texttt{repeatedly},
 \texttt{comp}, \texttt{partial}.
 
-\subsection{Tail Call}
-\label{sec:tail}
+\subsection{Probabilistic Forms}
 
-Clojure provides special forms \texttt{loop} and \texttt{recur}
-for writing tail-recursive programs. Such forms are not necessary
-in Anglican, because Anglican programs are CPS-converted and do
-not use the stack. For instance, no recursive call in Anglican
-can lead to stack overflow.  In fact, in Anglican, it is
-recommended to use recursive calls to functions instead of
-\texttt{recur}. However, \texttt{loop}/\texttt{recur} is
-provided in Anglican for convenience as a way to express loops.
-\texttt{recur} outside of \texttt{loop} will lead to
-unpredictable behaviour and hard-to-catch errors.
+In addition to re-implementing a subset of Clojure, Anglican
+provides special forms for probabilistic inference:
+\begin{lstlisting}[style=default]
+(sample address? distribution)
+(observe address? distribution value)
+(mem function)
+(store tag value)
+(retrieve tag)
+\end{lstlisting}
+
+\texttt{sample} and \texttt{observe} forms correspond to
+handling $(F, \alpha)$ and $(G, y)$ correspondingly in the
+definition of probabilistic program (Section~\ref{sec:pp-def}).
+Their operational semantics can be defined in terms of
+importance sampling(Equation~\ref{eqn:p-trace}): 
+\begin{itemize}
+	\item \texttt{sample} returns a value drawn from
+		the distribution.
+	\item \texttt{observe} multiplies the unnormalized
+		probability of the program trace by the probability of
+		drawing the value from the distribution.
+\end{itemize}
+However, the actual computation involved in handling of
+\texttt{sample} and \texttt{observe} depends on the inference
+algorithm. Different inference algorithms may treat
+\texttt{sample} and \texttt{observe} differently as long as they
+compute the same distribution of program results.
+Denotational and operational semantics for an idealized version
+of Anglican is introduced in \cite{SYH+16}; in general though,
+specifying semantics of higher-order probabilistic programming
+languages is an open problem.
+
+\texttt{sample} and \texttt{observe} may appear anywhere in the
+code of an Anglican program. To support these forms, the
+inference engine must be able to intervene into execution of the
+program, perform computations related to inference, and control
+further execution of the program. This tight and complicated
+interaction between the program and the inference engine
+necessiates implementing Anglican as a language rather than a
+library.
+
+The remaining Anglican special forms support carrying values in
+the hidden program state. \texttt{mem} implements stochastic
+function  memoization (Section~\ref{sec:mem}). \texttt{store}
+stores a value for a tag in the program state, which can be
+later retrieved by the tag using \texttt{retrieve} in the same
+program execution.
 
 \section{Case Study}
 \label{seq:study}
@@ -784,14 +841,14 @@ models are expressed in Anglican. However, processing of data and
 results can rely on the full power of Clojure.
 
 \begin{figure}
-	\centering
+    \centering
     \includegraphics[trim={12pt 0 0 0},scale=0.6]{same-customer-time.pdf}
     \caption{Arrival time distribution for a single customer.}
     \label{fig:dist-same}
 \end{figure}
 
 \begin{figure}
-	\centering
+    \centering
     \includegraphics[trim={12pt 0 0 0},scale=0.6]{different-customers-times.pdf}
     \caption{Arrival time distributions for two customers.}
     \label{fig:dist-diff}
@@ -837,9 +894,7 @@ and we can directly retrieve the distribution parameters.
  S28219
  {(0 anglican.runtime.flip-distribution)
   {:p 0.11671977016875924,
-   :dist
-   {:min 0.0,
-    :max 1.0}}}}
+   :dist {:min 0.0, :max 1.0}}}}
 \end{lstlisting}
 
 We can guess that the variational distributions correspond to the
@@ -894,9 +949,7 @@ programmatically.
  :same-or-different
  {(0 anglican.runtime.flip-distribution)
   {:p 0.11671977016875924,
-   :dist
-   {:min 0.0,
-    :max 1.0}}}}
+   :dist {:min 0.0, :max 1.0}}}}
 \end{lstlisting}
 
 This completes the case study, where we showed a probabilistic
@@ -1032,6 +1085,7 @@ implements memoization, deserves a more detailed explanation.
 }%
 
 \iftoggle{full}{\subsubsection }{\subsection}{Memoization}
+\label{sec:mem}
 
 The author of a probabilistic model might want to 
 randomly draw a feature value for each entity in a collection,
@@ -1044,10 +1098,9 @@ through the use of memoized functions. In Anglican, one
 might write:
 \begin{lstlisting}[style=default]
 (let [eye-color (mem (fn [person]
-                       (sample
-                         (categorical
-                           ['brown 0.5]
-                           ['green 0.5]))))]
+                       (sample (categorical
+                                 ['brown 0.5]
+                                 ['green 0.5]))))]
   (if (not= (eye-color 'bill) (eye-color 'john))
     (eye-color 'bill)
     (eye-color 'john)))
@@ -1084,16 +1137,13 @@ updated state:
   (fn mem23623 [C $state & P]
     (if (in-mem? $state M P)
       ;; previously memoized result
-      (fn []
-        (C (get-mem $state M P) $state))
+      (fn [] (C (get-mem $state M P) $state))
       ;; new computation
-      (clojure.core/apply
-        foo
+      (clojure.core/apply foo
         ;; memoize result in state
         (fn [V $state]
           (fn [] (C V (set-mem $state M P V))))
-        $state
-        P)))))
+        $state P)))))
 \end{lstlisting}
 
 Memoized results are not shared among multiple runs of a
