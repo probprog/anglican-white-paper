@@ -364,13 +364,12 @@ multitasking, as well as through explicit
 maintenance of program continuations at checkpoints. Anglican
 follows the latter option.
 \iftoggle{full}{%
-Clojure is
-a functional language, and continuation-passing style (CPS)
-transformation is a well-developed technique in the area of
-functional languages. Implementing a variant of CPS
+Clojure is a functional language, and continuation-passing style
+(CPS) transformation is a well-developed technique in the area
+of functional languages. Implementing a variant of CPS
 transformation seemed to be the most flexible and lightweight
-option --- any other form of concurrency would put a higher burden
-on the underlying runtime (JVM) and the operating system.
+option --- any other form of concurrency would put a higher
+burden on the underlying runtime (JVM) and the operating system.
 Consequently, Anglican has been implemented as a CPS-transformed
 computation with access to continuations in probabilistic
 checkpoints. 
