@@ -46,3 +46,8 @@
 (time (m! -a almh -n 100 -b 10000 lda))
 (time (m! -a lmh -n 1 -b 10000 lda))
 (time (m! -a lmh -n 1 -b 20000 lda))
+(time (m! -a lmh -n 1 -b 100000 lda))
+(doc time)
+(time (m! -a lmh -n 1 -b 100000 lda))
+(gc)
+(time (m! -a lmh -n 1 -b 100000 lda))
