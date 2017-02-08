@@ -51,3 +51,5 @@
 (time (m! -a lmh -n 1 -b 100000 lda))
 (gc)
 (time (m! -a lmh -n 1 -b 100000 lda))
+(time (m! -a lmh -n 1 -b 10 logisticRegression))
+(time (m! -a lmh -n 1 -b 100000 logisticRegression))
