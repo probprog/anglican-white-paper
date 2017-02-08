@@ -607,7 +607,7 @@ and grabbed a sandwich and a coffee. Later on the same day, a
 customer wearing round sunglasses came at 6:09pm and ordered a
 dinner.  Was it the same customer?
 \end{quote}
-In addition to the story above, we know that:
+Additionally, we know that:
 \begin{itemize}
     \item There is an adjacent office quarter, and it takes
         between 5 and 15 minutes on average to walk from an
@@ -796,7 +796,7 @@ Of course, the results may vary from run to run, and, for a given
 algorithm, the accuracy depends on the number of samples we
 decide to retrieve. 
 
-In addition to computing the posterior probability that the same
+Besides computing the posterior probability that the same
 customer visited the deli twice, we may want to know the average
 time (or times) to arrive. In Bayesian inference, it is common
 to report distributions instead of `most likely' values. We use
@@ -832,12 +832,11 @@ two different customers (Figure~\ref{fig:dist-diff})
 In addition to plotting the distribution histograms, we use
 functions \texttt{mean}, \texttt{std} provided
 in the \texttt{anglican.{\linebreak[0]}stat} namespace
-along with other
-useful statistical functions.
-This is another illustration of advantage of tight
-integration between Clojure and Anglican --- probabilistic
-models are expressed in Anglican. However, processing of data and
-results can rely on the full power of Clojure.
+along with other useful statistical functions to compute
+summary statistics. This is another illustration of advantage of
+tight integration between Clojure and Anglican --- probabilistic
+models are expressed in Anglican. However, processing of data
+and results can rely on the full power of Clojure.
 
 \begin{figure}
     \centering
