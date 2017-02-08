@@ -1,5 +1,6 @@
 ## VIM temporary files
 .*.sw*
+*~
 
 ## Core latex/pdflatex auxiliary files:
 *.aux
@@ -129,3 +130,6 @@ sympy-plots-for-*.tex/
 # WinEdt
 *.bak
 *.sav
+
+# Clojure
+target/
