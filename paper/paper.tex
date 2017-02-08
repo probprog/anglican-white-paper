@@ -14,7 +14,7 @@
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
      {<->sub*lmtt/m/sl}{}
-\lstdefinestyle{default}{language=Anglican, basicstyle=\linespread{0.92}\ttfamily, columns=flexible, showstringspaces=false}
+\lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{1.0}\ttfamily, columns=flexible, showstringspaces=false}
 
 \usepackage{hyperref}
 \usepackage{url}
@@ -853,107 +853,14 @@ results can rely on the full power of Clojure.
     \label{fig:dist-diff}
 \end{figure}
 
-For inference, we chose to use  Lightweight
-Metropolis-Hastings, perhaps somewhat arbitrarily. A strength of
-probabilistic programming is that models are separated from
-inference. To switch to a different inference algorithm we just
-need to pass a different value to \texttt{doquery}. For example,
-we may decide to use Black-Box Variational Bayes (BBVB), which
-may not work equally well for all probabilistic programs, but is
-much faster to converge.
-
-\begin{lstlisting}[style=default]
-(def samples (doquery :bbvb deli nil))
-\end{lstlisting}
-
-We can still use samples and summary statistics with BBVB to
-approximate the posterior distribution. However, variational
-inference approximates the posterior by known distributions,
-and we can directly retrieve the distribution parameters.
-
-\begin{lstlisting}[style=default]
-(clojure.pprint/pprint
-  (anglican.bbvb/get-variational 
-    (nth samples N)))
-\end{lstlisting}
-
-\begin{lstlisting}[style=default]
-{S28209
- {(0 anglican.runtime.normal-distribution)
-  {:mean 10.99753360180663,
-   :sd 0.7290976433082352}},
- S28217
- {(0 anglican.runtime.normal-distribution)
-  {:mean 12.668050292254202,
-   :sd 0.9446695174790353}},
- S28215
- {(0 anglican.runtime.normal-distribution)
-  {:mean 9.104132559955836,
-   :sd 0.9479290526821788}},
- S28219
- {(0 anglican.runtime.flip-distribution)
-  {:p 0.11671977016875924,
-   :dist {:min 0.0, :max 1.0}}}}
-\end{lstlisting}
-
-We can guess that the variational distributions correspond to the
-prior distributions in the \texttt{sample} forms, in the order
-of appearance. However, it would help if we could use more
-informative labels instead of automatically generated symbols
-\texttt{S28209}, \texttt{S28217}, etc. Here the option to
-specify identifiers for probabilistic forms explicitly comes
-handy. If we modify the \texttt{sample} forms to use explicit identifiers
-(only the forms are shown for brevity), the output becomes much
-easier to analyse.
-
-\begin{lstlisting}[style=default]
-(defm same-customer 
-      ...
-      (sample :arrival-time-same
-              time-to-arrive-prior)]
-      ...)
-
-(defm different-customers
-      ... 
-      (sample :arrival-time-first
-              time-to-arrive-prior)
-      ...
-      (sample :arrival-time-second
-              time-to-arrive-prior)]
-      ...)
-
-(defquery deli ...
-      ...
-      (sample :same-or-different
-              (flip p-same))
-      ...)
-\end{lstlisting}
-
-The output becomes much easier to interpret and analyse
-programmatically.
-
-\begin{lstlisting}[style=default]
-{:arrivate-time-same
- {(0 anglican.runtime.normal-distribution)
-  {:mean 10.99753360180663,
-   :sd 0.7290976433082352}},
- :arrival-time-first
- {(0 anglican.runtime.normal-distribution)
-  {:mean 12.668050292254202,
-   :sd 0.9446695174790353}},
- :arrival-time-second
- {(0 anglican.runtime.normal-distribution)
-  {:mean 9.104132559955836,
-   :sd 0.9479290526821788}},
- :same-or-different
- {(0 anglican.runtime.flip-distribution)
-  {:p 0.11671977016875924,
-   :dist {:min 0.0, :max 1.0}}}}
-\end{lstlisting}
+\iftoggle{full}{%
+\input{case-study-bbvb}
+}{}%
 
 This completes the case study, where we showed a probabilistic
 programming solution of a problem, implemented and analysed in
-Anglican and Clojure, using two different inference algorithms.
+Anglican and Clojure\iftoggle{full}{, using two different
+inference algorithms}{}.
 
 \section{Macro-based Compilation}
 \label{sec:compilation}
@@ -1699,17 +1606,46 @@ Anglican introduces, this is a good result.
     \centering
     \begin{tabular}{r|r|r|r|r}
         {\bf n}  & {\bf 10} & {\bf 15} & {\bf 20} &{\bf 25} \\ \hline
-        Clojure &  0.32 & 1.45 & 38.1  &  1245.9 \\ \hline
-        Anglican & 0.63 & 3.00 & 75.9 & 2381.1 
+        Clojure &  0.32 & 1.45 & 38.1  &  1245. \\ \hline
+        Anglican & 0.63 & 3.00 & 75.9 & 2381. 
     \end{tabular}
-    \caption{Towers of Hanoi. Average running times, in
+    \caption{Towers of Hanoi. Running times, in
     seconds, of Clojure and Anglican, averaged over 100 runs.
     Clojure is only twice as fast as Anglican.}
     \label{tbl:hanoi}
 \end{table}
 
-The other comparison must be made between Anglican and other
-probabilistic programming environment. \cite[pp. 32 -- 33]{P16} 
+The other comparison must be made between Anglican and another
+probabilistic programming environment. WebPPL~\cite{GS15} is
+similar to Anglican in expressivity.  WebPPL runs on top of
+\href{http://v8project.blogspot.com/}{V8}, a high performance
+JavaScript engine featuring a native compiler.
+Table~\ref{tbl:webppl} shows results for two models from WebPPL
+distribution, \textit{LDA} and
+\textit{Logistic regression}. For
+comparison, we re-implemented the models in Anglican, as close
+as possible to the WebPPL implementations, and run the same
+inference algorithm (called MCMC in WebPPL, LMH in Anglican)
+with the same number of iterations. Anglican outperforms WebPPL
+on both models. This can be attributed both to a better
+transformed representation of probabilistic programs and to more
+efficient architecture of the inference engine.
+\begin{table}
+    \centering
+    \begin{tabular}{r|c|c}
+        {\bf model}  & {\bf LDA} & {\bf Logistic regression} \\ \hline
+        Anglican & 22. & 4.8 \\ \hline
+        WebPPL & 31. & 9.4
+    \end{tabular}
+ 
+    \caption{Anglican vs. WebPPL. Running times, in seconds, of
+    Anglican and WebPPL, for $100\,000$ iterations of Markov Chain
+    Monte Carlo (Lighweight Metropolis-Hastings), averaged over
+    100 runs. Anglican outperforms WebPPL on both models.}
+    \label{tbl:webppl}
+\end{table}
+
+In addition, \cite[pp. 32 -- 33]{P16} 
 provides a comparison of Anglican to an older, interpreted
 version of Anglican~\cite{WVM14}, and Probabilistic
 Scheme~\cite{PW14} on a rather complicated inference task of
