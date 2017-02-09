@@ -16,5 +16,6 @@
    (loop [data (map #(-> [%1 %2]) xs ys)]
     (when (seq data)
      (let [[[x y] & data] data] 
-       (observe (normal (f x) sigma) y))))
+       (observe (normal (f x) sigma) y)
+       (recur data)))
    (predict (f (m/array [5 4])))))

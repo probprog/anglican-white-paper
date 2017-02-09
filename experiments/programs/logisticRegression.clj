@@ -14,5 +14,6 @@
    (loop [data (map #(-> [%1 %2]) xs labels)]
     (when (seq data)
      (let [[[x label] & data] data] 
-       (observe (flip (sigmoid x)) label))))
+       (observe (flip (sigmoid x)) label)
+       (recur data)))
    (predict (sigmoid 8))))
