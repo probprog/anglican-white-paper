@@ -1,0 +1,31 @@
+var xs = map(Vector, [
+  [0., 1],
+  [1, 1.5],
+  [2, 2],
+  [3, 2.5],
+  [4, 3]
+])
+
+var ys = [0.5, 2.8, 5., 7.3, 9.5]
+
+var model = function() {
+  var cov = T.diagonal(ones([2, 1]))
+  var m = multivariateGaussian(zeros([2, 1]), cov)
+  var e = gaussian(0, 2)
+  var sigma = gamma(1, 1)
+
+  var f = function(x) {
+    return T.sumreduce(T.mul(m, x)) + e
+  }
+
+  map2(
+      function(x, y) {
+        factor(Gaussian({mu: f(x), sigma: sigma}).score(y))
+      },
+      xs,
+      ys)
+
+  return f(Vector([5, 4]))
+}
+
+Infer({model, method: 'MCMC', samples: 100000})
