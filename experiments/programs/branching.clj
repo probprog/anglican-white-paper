@@ -1,6 +1,9 @@
+(use 'nstools.ns)
+(ns+ branching
+  (:like anglican-user.program))
 
 (defn  fib [n]
-  (loop [a 0 b 1 m 0]
+  (loop [a 1 b 1 m 0]
         (if (= m n)
           a
           (recur b (+ a b) (inc m)))))
@@ -12,6 +15,6 @@
           l (if (< 4 r)
               6
               (+ (fib (* 3 r))
-                 (sample  count-prior )))]
+                 (sample  count-prior)))]
       (observe (poisson l) 6)
       (predict :r r))))

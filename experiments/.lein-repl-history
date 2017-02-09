@@ -104,3 +104,4 @@
 (time (m! -a lmh -n 1 -b 100000 linearRegression))
 (time (m! -a lmh -n 1 -b 100000 logisticRegression))
 (time (m! -a lmh -n 1 -b 100000 multivariateRegression))
+(time (m! -a lmh -n 1 -b 100000 branching))
