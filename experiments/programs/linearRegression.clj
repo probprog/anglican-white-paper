@@ -14,5 +14,5 @@
     (when (seq data)
      (let [[[x y] & data] data] 
        (observe (normal (f x) sigma) y)
-       (recur data)))
+       (recur data))))
    (predict (f 4))))

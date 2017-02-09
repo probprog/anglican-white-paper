@@ -28,4 +28,4 @@ var model = function() {
   return f(Vector([5, 4]))
 }
 
-Infer({model, method: 'MCMC', samples: 100000})
+Infer({model, method: 'MCMC', samples: 1, burn: 100000})

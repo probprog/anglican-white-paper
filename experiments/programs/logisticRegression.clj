@@ -15,5 +15,5 @@
     (when (seq data)
      (let [[[x label] & data] data] 
        (observe (flip (sigmoid x)) label)
-       (recur data)))
+       (recur data))))
    (predict (sigmoid 8))))
