@@ -1,5 +1,6 @@
 \documentclass[preprint]{sigplanconf}
 
+\usepackage{siunitx}
 \usepackage[color]{changebar}
 \usepackage{enumitem}
 \usepackage[lighttt]{lmodern}
@@ -1604,9 +1605,9 @@ Anglican introduces, this is a good result.
 \begin{table}
     \centering
     \begin{tabular}{r|r|r|r|r}
-        {\bf n}  & {\bf 10} & {\bf 15} & {\bf 20} &{\bf 25} \\ \hline
-        Clojure &  0.32 & 1.45 & 38.1  &  1245. \\ \hline
-        Anglican & 0.63 & 3.00 & 75.9 & 2381. 
+        {\bf n}  & 10 & 15 & 20 & 25 \\ \hline
+		{\bf Anglican} & 0.63 & 3.00 & 75.9 & 2381.  \\ \hline
+		{\bf Clojure} &  0.32 & 1.45 & 38.1  &  1245.
     \end{tabular}
     \caption{Towers of Hanoi. Running times, in
     seconds, of Clojure and Anglican, averaged over 100 runs.
@@ -1619,29 +1620,32 @@ probabilistic programming environment. WebPPL~\cite{GS15} is
 similar to Anglican in expressivity.  WebPPL runs on top of
 \href{http://v8project.blogspot.com/}{V8}, a high performance
 JavaScript engine featuring a native compiler.
-Table~\ref{tbl:webppl} shows results for two models from
-\href{https://github.com/probmods/webppl}{WebPPL
-distribution}, \textit{LDA} and
-\textit{Logistic regression}. For
-comparison, we re-implemented the models in Anglican, as close
-as possible to the WebPPL implementations, and run the same
-inference algorithm (called MCMC in WebPPL, LMH in Anglican)
-with the same number of iterations. Anglican outperforms WebPPL
-on both models. This can be attributed both to a better
-transformed representation of probabilistic programs and to more
-efficient architecture of the inference engine.
+Table~\ref{tbl:webppl} shows results for a few models from
+\href{https://github.com/probmods/webppl}{WebPPL distribution},
+as well as from Anglican test suite. For the comparison, we
+re-implemented WebPPL models in Anglican, and Anglican models in
+WebPPL, following as close as possible the original
+implementations, and run the same inference algorithm (called
+MCMC in WebPPL, LMH in Anglican) with the same number of
+iterations. Anglican outperforms WebPPL on all models. This can
+be attributed both to a better transformed representation of
+probabilistic programs and to more efficient architecture of the
+inference engine.
 \begin{table}
     \centering
-    \begin{tabular}{r|c|c}
-        {\bf model}  & {\bf LDA} & {\bf Logistic regression} \\ \hline
-        Anglican & 22. & 4.8 \\ \hline
-        WebPPL & 31. & 9.4
+	\begin{tabular}{r|S[table-format=2.2]|S[table-format=2.2]}
+		{\bf model}  & {\bf Anglican} & {\bf WebPPL} \\ \hline
+		LDA & 22. & 31. \\ 
+		\shortstack{Linear regression}  & 0. & 0. \\
+		\shortstack{Logistic regression} & 6.2 & 9.4 \\
+		\shortstack{Multivariate regression} & 0. & 0. \\
+		\shortstack{Simple branching} & 0. & 0.
     \end{tabular}
  
     \caption{Anglican vs. WebPPL. Running times, in seconds, of
     Anglican and WebPPL, for $100\,000$ iterations of Markov Chain
     Monte Carlo (Lighweight Metropolis-Hastings), averaged over
-    100 runs. Anglican outperforms WebPPL on both models.}
+    100 runs. Anglican outperforms WebPPL on all models.}
     \label{tbl:webppl}
 \end{table}
 The source code of the examples is available in the
