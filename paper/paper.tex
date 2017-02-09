@@ -437,9 +437,9 @@ $\mathcal{P}$ with the following properties~\cite{TMP+15}:
   and an address $(F,\alpha)$, a distribution and a value $(G,
         y)$, or a value $z$.
 \item Upon returning $F$, $\mathcal{P}$ expects a value $x$ drawn from $F$ as
-	the argument to the next call (\texttt{sample} in Anglican).
+    the argument to the next call (\texttt{sample} in Anglican).
 \item Upon returning $(G, y)$, $\mathcal{P}$ is invoked again
-	without arguments (\texttt{observe} in Anglican).
+    without arguments (\texttt{observe} in Anglican).
 \item Upon returning $z$, $\mathcal{P}$ terminates.
 \end{itemize}
 A program is run by calling $\mathcal{P}$ repeatedly until
@@ -550,11 +550,11 @@ definition of probabilistic program (Section~\ref{sec:pp-def}).
 Their operational semantics can be defined in terms of
 importance sampling(Equation~\ref{eqn:p-trace}): 
 \begin{itemize}
-	\item \texttt{sample} returns a value drawn from
-		the distribution.
-	\item \texttt{observe} multiplies the unnormalized
-		probability of the program trace by the probability of
-		drawing the value from the distribution.
+    \item \texttt{sample} returns a value drawn from
+        the distribution.
+    \item \texttt{observe} multiplies the unnormalized
+        probability of the program trace by the probability of
+        drawing the value from the distribution.
 \end{itemize}
 However, the actual computation involved in handling of
 \texttt{sample} and \texttt{observe} depends on the inference
@@ -1606,8 +1606,8 @@ Anglican introduces, this is a good result.
     \centering
     \begin{tabular}{r|r|r|r|r}
         {\bf n}  & 10 & 15 & 20 & 25 \\ \hline
-		{\bf Anglican} & 0.63 & 3.00 & 75.9 & 2381.  \\ \hline
-		{\bf Clojure} &  0.32 & 1.45 & 38.1  &  1245.
+        {\bf Anglican} & 0.63 & 3.00 & 75.9 & 2381.  \\ \hline
+        {\bf Clojure} &  0.32 & 1.45 & 38.1  &  1245.
     \end{tabular}
     \caption{Towers of Hanoi. Running times, in
     seconds, of Clojure and Anglican, averaged over 100 runs.
@@ -1634,14 +1634,14 @@ transformed representation of probabilistic programs and to more
 efficient architecture of the inference engine.
 \begin{table}
     \centering
-	\begin{tabular}{r|S[table-format=2.2]|S[table-format=2.2]}
-		{\bf model}  & {\bf Anglican} & {\bf WebPPL} \\ \hline
-		Latent Dirichlet allocation & 22. & 31. \\ 
-		Linear regression  & 0. & 0. \\
-		Logistic regression & 6.2 & 9.4 \\
-		Multivariate regression & 0. & 0. \\
-		Simple branching & 0. & 0. \\
-		Hidden Markov model & 0. & 0.
+    \begin{tabular}{r|S[table-format=2.1]|S[table-format=2.1]}
+        {\bf model}  & {\bf Anglican} & {\bf WebPPL} \\ \hline
+        Latent Dirichlet allocation & 22.2 & 31.5 \\ 
+        Linear regression  & 6.1 & 8.5 \\
+        Logistic regression & 8.4 & 10.4 \\
+        Multivariate regression & 6.9 & 14.2 \\
+        Simple branching & 2.4 & 5.7 \\
+        Hidden Markov model & 8.7 & 0.
     \end{tabular}
  
     \caption{Anglican vs. WebPPL. Running times, in seconds, of
