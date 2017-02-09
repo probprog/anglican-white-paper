@@ -1622,24 +1622,26 @@ similar to Anglican in expressivity.  WebPPL runs on top of
 JavaScript engine featuring a native compiler.
 Table~\ref{tbl:webppl} shows results for a few models from
 \href{https://github.com/probmods/webppl}{WebPPL distribution},
-as well as from Anglican test suite. For the comparison, we
-re-implemented WebPPL models in Anglican, and Anglican models in
-WebPPL, following as close as possible the original
-implementations, and run the same inference algorithm (called
-MCMC in WebPPL, LMH in Anglican) with the same number of
-iterations. Anglican outperforms WebPPL on all models. This can
-be attributed both to a better transformed representation of
-probabilistic programs and to more efficient architecture of the
-inference engine.
+as well as from
+\href{https://bitbucket.org/probprog/anglican}{Anglican test
+suite}. For the comparison, we re-implemented WebPPL models in
+Anglican, and Anglican models in WebPPL, following as close as
+possible the original implementations, and run the same
+inference algorithm (called MCMC in WebPPL, LMH in Anglican)
+with the same number of iterations. Anglican outperforms WebPPL
+on all models. This can be attributed both to a better
+transformed representation of probabilistic programs and to more
+efficient architecture of the inference engine.
 \begin{table}
     \centering
 	\begin{tabular}{r|S[table-format=2.2]|S[table-format=2.2]}
 		{\bf model}  & {\bf Anglican} & {\bf WebPPL} \\ \hline
 		LDA & 22. & 31. \\ 
-		\shortstack{Linear regression}  & 0. & 0. \\
-		\shortstack{Logistic regression} & 6.2 & 9.4 \\
-		\shortstack{Multivariate regression} & 0. & 0. \\
-		\shortstack{Simple branching} & 0. & 0.
+		Linear regression  & 0. & 0. \\
+		Logistic regression & 6.2 & 9.4 \\
+		Multivariate regression & 0. & 0. \\
+		Simple branching & 0. & 0. \\
+		HMM & 0. & 0.
     \end{tabular}
  
     \caption{Anglican vs. WebPPL. Running times, in seconds, of
