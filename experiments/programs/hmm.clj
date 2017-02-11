@@ -10,9 +10,9 @@
 
 (def init-dist (discrete [1.0 1.0 1.0]))
 
-(def trans-dists {0 (discrete [0.1 0.5 0.4])
-                  1 (discrete [0.2 0.2 0.6])
-                  2 (discrete [0.15 0.15 0.7])})
+(def trans-dists [(discrete [0.1 0.5 0.4])
+                  (discrete [0.2 0.2 0.6])
+                  (discrete [0.15 0.15 0.7])])
 
 (def obs-dists {0 (normal -1 1)
                 1 (normal 1 1)

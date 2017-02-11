@@ -125,3 +125,8 @@
 (System/gc)
 (time (doall (repeatedly 10 #(do (System/gc) (m! -a lmh -n 1 -b 100000 hmm)))))
 (time (doall (repeatedly 100 #(do (System/gc) (m! -a lmh -n 1 -b 100000 hmm)))))
+(time (m! -a lmh -n 1 -b 1000 hmm))
+(time (m! -a lmh -n 1 -b 10000 hmm))
+(time (m! -a lmh -n 1 -b 100000 hmm))
+(time (m! -a lmh -n 1 -b 200000 hmm))
+(time (m! -a lmh -n 1 -b 100000 hmm))
