@@ -14,9 +14,9 @@
                   (discrete [0.2 0.2 0.6])
                   (discrete [0.15 0.15 0.7])])
 
-(def obs-dists {0 (normal -1 1)
-                1 (normal 1 1)
-                2 (normal 0 1)})
+(def obs-dists [(normal -1 1)
+                (normal 1 1)
+                (normal 0 1)])
 
 (defquery hmm 
   (predict
