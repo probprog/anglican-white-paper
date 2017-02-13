@@ -159,47 +159,45 @@ Clojure programmers only need to know how to specify the
 boundaries of Anglican programs, but can use familiar Clojure
 syntax to write probabilistic code.
 
-Anglican programs are executed by inference algorithms, which
-compute approximate answers to certain probabilistic queries, such as posterior
-inference and marginal likelihood. This execution 
-is significantly different from that of usual programs. For instance, 
-inference algorithms typically run Anglican programs multiple times, 
-often hundreds of thousands or even millions of times for a single inference
-task. Also, they make random choices, some of which do not even appear in the program
-explicitly, and these choices may affect which parts of the program code
-are executed and how often. Some inference algorithms 
+Inference algorithms execute Anglican programs while trying to
+answer probabilistic queries on those programs. This execution is 
+significantly different from the one described in the standard 
+operational semantics. These algorithms typically run Anglican programs 
+multiple times, often hundreds of thousands or even millions of times 
+for a single inference task. The algorithms may make random choices 
+that do not correspond to any statements in the program, and decide which parts 
+of the program code are executed and how often. Some inference algorithms 
 re-run the program multiple times partially, from a certain
 point on, while reusing random choices made in the previous runs as much as possible. 
-In a sense, each inference algorithm is nothing but a virtual machine for Anglican that
-executes Anglican programs according to a non-standard operational semantics. Supporting 
-a wide range of non-standard semantics of inference algorithms is the main reason that we
-developed Anglican as a language rather than as a library.
+A good high-level picture is that each inference algorithm specifies a 
+virtual machine that executes Anglican programs according to a 
+non-standard (often probabilistic) operational semantics. Supporting a wide range 
+of inference algorithms and their unusual operational semantics efficiently is the main reason 
+that we developed Anglican as a language rather than as a library.
 
-\hy{I am here.}
-
-An implementation of Anglican must therefore address three issues:
-\begin{itemize}
-    \item the Clojure syntax to introduce probabilistic Anglican
-        code inside Clojure modules;
-    \item source-to-source transformation of Anglican programs
-        into Clojure, so that probabilistic execution becomes
-        possible;
-    \item algorithms which run Clojure code, obtained by
-        transforming Anglican programs, according to the
-        probabilistic operational semantics.
-\end{itemize}
-Execution of probabilistic programs by inference algorithms is
-different from execution of deterministic programs.  A
-probabilistic program is executed multiple times, often hundreds
-of thousands or even millions of times for a single inference
-task. Random choices may affect which parts of the program code
-are executed and how often. Many inference algorithms require
-re-running the program multiple times partially, from a certain
-point on.  Different executions may employ different random
-choices. However, for efficient inference a correspondence
-between random choices in different executions should be
-maintained. These are just some of the challenges which were
-faced and solved during development of Anglican.
+%An implementation of Anglican must therefore address three issues:
+%\begin{itemize}
+%    \item the Clojure syntax to introduce probabilistic Anglican
+%        code inside Clojure modules;
+%    \item source-to-source transformation of Anglican programs
+%        into Clojure, so that probabilistic execution becomes
+%        possible;
+%    \item algorithms which run Clojure code, obtained by
+%        transforming Anglican programs, according to the
+%        probabilistic operational semantics.
+%\end{itemize}
+%Execution of probabilistic programs by inference algorithms is
+%different from execution of deterministic programs.  A
+%probabilistic program is executed multiple times, often hundreds
+%of thousands or even millions of times for a single inference
+%task. Random choices may affect which parts of the program code
+%are executed and how often. Many inference algorithms require
+%re-running the program multiple times partially, from a certain
+%point on.  Different executions may employ different random
+%choices. However, for efficient inference a correspondence
+%between random choices in different executions should be
+%maintained. These are just some of the challenges which were
+%faced and solved during development of Anglican.
 
 Comparisons of Anglican with other implementations of
 probabilistic programming languages~\cite{SGG15}\cite[pp.
