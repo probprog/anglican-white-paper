@@ -151,12 +151,30 @@ provided by Clojure, a Lisp dialect, is used both to extend
 Clojure with constructs that delimit probabilistic code, and to
 alter the operational semantics of Clojure expressions inside
 probabilistic code fragments. Anglican claims its right to count
-as a separate language because of the ubiquitous probabilistic
+as a separate language, rather than being a Clojure library, 
+because of the ubiquitous probabilistic
 execution semantics rather than a different syntax,
 which is actually an advantage rather than a drawback ---
 Clojure programmers only need to know how to specify the
 boundaries of Anglican programs, but can use familiar Clojure
 syntax to write probabilistic code.
+
+\hy{I am here.}
+
+Anglican programs are executed by inference algorithms, which
+answer probabilistic queries on these programs approximately 
+often using a large number of samples. As already mentioned,
+this execution is significantly different from that of 
+usual programs. An Anglican program is executed multiple times, often hundreds
+of thousands or even millions of times for a single inference
+task. Random choices may affect which parts of the program code
+are executed and how often. Many inference algorithms require
+re-running the program multiple times partially, from a certain
+point on.  Different executions may employ different random
+choices. However, for efficient inference a correspondence
+between random choices in different executions should be
+maintained. These are just some of the challenges which were
+faced and solved during development of Anglican.
 
 An implementation of Anglican must therefore address three issues:
 \begin{itemize}
