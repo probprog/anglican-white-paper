@@ -151,7 +151,7 @@ provided by Clojure, a Lisp dialect, is used both to extend
 Clojure with constructs that delimit probabilistic code, and to
 alter the operational semantics of Clojure expressions inside
 probabilistic code fragments. Anglican claims its right to count
-as a separate language, rather than being a Clojure library, 
+as a separate language
 because of the ubiquitous probabilistic
 execution semantics rather than a different syntax,
 which is actually an advantage rather than a drawback ---
@@ -159,22 +159,23 @@ Clojure programmers only need to know how to specify the
 boundaries of Anglican programs, but can use familiar Clojure
 syntax to write probabilistic code.
 
-\hy{I am here.}
-
 Anglican programs are executed by inference algorithms, which
-answer probabilistic queries on these programs approximately 
-often using a large number of samples. As already mentioned,
-this execution is significantly different from that of 
-usual programs. An Anglican program is executed multiple times, often hundreds
-of thousands or even millions of times for a single inference
-task. Random choices may affect which parts of the program code
-are executed and how often. Many inference algorithms require
-re-running the program multiple times partially, from a certain
-point on.  Different executions may employ different random
-choices. However, for efficient inference a correspondence
-between random choices in different executions should be
-maintained. These are just some of the challenges which were
-faced and solved during development of Anglican.
+compute approximate answers to certain probabilistic queries, such as posterior
+inference and marginal likelihood. This execution 
+is significantly different from that of usual programs. For instance, 
+inference algorithms typically run Anglican programs multiple times, 
+often hundreds of thousands or even millions of times for a single inference
+task. Also, they make random choices, some of which do not even appear in the program
+explicitly, and these choices may affect which parts of the program code
+are executed and how often. Some inference algorithms 
+re-run the program multiple times partially, from a certain
+point on, while reusing random choices made in the previous runs as much as possible. 
+In a sense, each inference algorithm is nothing but a virtual machine for Anglican that
+executes Anglican programs according to a non-standard operational semantics. Supporting 
+a wide range of non-standard semantics of inference algorithms is the main reason that we
+developed Anglican as a language rather than as a library.
+
+\hy{I am here.}
 
 An implementation of Anglican must therefore address three issues:
 \begin{itemize}
