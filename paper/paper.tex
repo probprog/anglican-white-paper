@@ -160,7 +160,7 @@ boundaries of Anglican programs, but can use familiar Clojure
 syntax to write probabilistic code.
 
 Inference algorithms execute Anglican programs while trying to
-answer probabilistic queries on those programs. This execution is 
+answer probabilistic queries on those programs. This execution is
 significantly different from the one described in the standard 
 operational semantics. These algorithms typically run Anglican programs 
 multiple times, often hundreds of thousands or even millions of times 
@@ -168,12 +168,12 @@ for a single inference task. The algorithms may make random choices
 that do not correspond to any statements in the program, and decide which parts 
 of the program code are executed and how often. Some inference algorithms 
 re-run the program multiple times partially, from a certain
-point on, while reusing random choices made in the previous runs as much as possible. 
-A good high-level picture is that each inference algorithm specifies a 
+point on, while reusing random choices made in the previous runs as much as possible. A good high-level picture is that each inference algorithm specifies a 
 virtual machine that executes Anglican programs according to a 
-non-standard (often probabilistic) operational semantics. Supporting a wide range 
-of inference algorithms and their unusual operational semantics efficiently is the main reason 
-that we developed Anglican as a language rather than as a library.
+non-standard (usually probabilistic) operational semantics. 
+Supporting a wide range of inference algorithms and their unusual semantics 
+the main reason that we developed Anglican as a language rather 
+than as a library. 
 
 %An implementation of Anglican must therefore address three issues:
 %\begin{itemize}
@@ -213,13 +213,19 @@ major contributions:
     \item Design and implementation of a probabilistic programming language
         Anglican involving tight bilateral integration with a general-purpose
         programming language.
-    \item Specification of probabilistic forms in Anglican which facilitates 
-        separation of probabilistic programs from inference algorithms.
-    \item Stateless representation of random processes, seamlessly integrated
-        into pure functional computation.
     \item Techniques for efficient and compact implementation of inference
         algorithms, such as representation of inference results as a lazy
         sequence of samples and a novel scheme for addressing of checkpoints.
+    \item Anglican's novel representation of random processes 
+            from statistics and machine learning, such as Beta-Binomial 
+            process. The representation is
+            \emph{stateless} and seamlessly integrates into pure functional 
+            computation. This contrasts with typical \emph{stateful}
+            implementations of these processes in other probabilistic 
+            programming languages.
+            These constructs allowrepresents these p
+%    \item Specification of probabilistic forms in Anglican which facilitates 
+%        separation of probabilistic programs from inference algorithms.
 \end{itemize}
 
 \section{Related Work} \label{sec:related}
