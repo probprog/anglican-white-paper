@@ -245,13 +245,13 @@ inference~\cite{WVM14,PWD+14,RNL+2016}.
 
 Probabilistic programming languages are implemented as
 interpreters~\cite{GMR+08,MSP14}, embedded
-languages~\cite{P09,SGG15,GSX+16}, compiled
-languages~\cite{MMR+07,SDT14}, as through source-to-source
+languages~\cite{P09,SGG15,GSX+16}, and compiled
+languages~\cite{MMR+07,SDT14}, and also through source-to-source
 transformation with augmentation~\cite{WSG11,GS15}. Each of
 these methods emphasizes different priorities in language
 design, such as computational efficiency, integration with an
 existing development environment, ease of implementation, or
-efficiency of inference. Anglican implemented using a
+efficiency of inference. Anglican is implemented using a
 combination of embedding and source-to-source transformational
 compilation to combine advantages of both approaches.  CPS
 transformation, employed by Anglican compiler, is also used in
@@ -260,12 +260,13 @@ probabilistic programs and inference algorithms and diversity of
 applicable inference algorithms.
 
 Probabilistic programming languages are often implemented as
-pure functional languages~\cite{GMR+08,MSP14,SGG15}. This is
+pure functional languages~\cite{GMR+08,MSP14,SGG15} in
+the sense that they do not allow mutable states. This is
 because reasoning about probabilistic programs and distributions
 defined by the programs, as well as implementation of certain
-inference algorithms~\cite{MYM+15}, is easier in pure functional
+inference algorithms~\cite{MYM+15}, is easier in such pure functional
 setting. Anglican is also implemented as a language without
-side-effects.  However, there are also languages which follow
+mutable states.  However, there are also languages which follow
 imperative paradigm and support mutable state
 directly~\cite{SDT14,GSX+16}, or through probabilistic
 primitives~\cite{GMR+08,MSP14}. Anglican introduces a functional
