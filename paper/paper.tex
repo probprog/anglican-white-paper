@@ -421,22 +421,35 @@ written in Anglican, may include probabilistic forms
 called from inside Anglican queries, just like functions locally
 defined within the same query.
 
-Operational semantics of Anglican queries is different from that
-of Clojure code, therefore queries must be called through
-inference algorithms, rather than `directly'. \iftoggle{full}{The
+%Operational semantics of Anglican queries is different from that
+%of Clojure code, therefore queries must be called through
+%inference algorithms, rather than `directly'. 
+Operational semantics of an Anglican query is different from that
+of Clojure code, and is determined by an inference algorithm. Thus,
+Anglican queries must be called through these inference algorithms, rather
+rather than `directly'. For this purpose,
+\iftoggle{full}{the
 \texttt{anglican.inference} namespace}{Anglican} declares the (ad-hoc) polymorphic
 function \texttt{infer} using Clojure's multimethod mechanism.
-This function accepts an Anglican query and
-returns a lazy sequence of weighted samples from the
-distribution defined by the query.  When inference
-is performed on an Anglican query, the query is run by a
-particular inference algorithm. Inference algorithms must
-provide an implementation for \texttt{infer}, as well as
+The function accepts and runs an Anglican query, 
+and returns a lazy sequence of weighted samples from the
+distribution defined by the query. Providing an implementation of this function
+is a responsibilit of an inference algorithm, which should also
 override the polymorphic function \texttt{checkpoint} (defined
 as a multimethod) so as to handle \texttt{sample} and
 \texttt{observe} in an algorithm-specific manner and
 to construct an appropriate result on the
 termination of a probabilistic program.
+
+%When inference
+%is performed on an Anglican query, the query is run by a
+%particular inference algorithm. Inference algorithms must
+%provide an implementation for \texttt{infer}, as well as
+%override the polymorphic function \texttt{checkpoint} (defined
+%as a multimethod) so as to handle \texttt{sample} and
+%\texttt{observe} in an algorithm-specific manner and
+%to construct an appropriate result on the
+%termination of a probabilistic program.
 
 Finally, Anglican queries use `primitive', or commonly known and
 used, distributions, to draw random samples and condition
