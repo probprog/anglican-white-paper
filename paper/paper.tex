@@ -464,42 +464,35 @@ primitive distributions.
 \section{Probabilistic Program}
 \label{sec:pp-def}
 
-\hy{Need to be revised.}
-
-Programs in Anglican define probability distributions 
-over sequences of sampled values through their executions.
-
-Imagine an interpreter of Anglican that runs the deterministic parts of a Anglican program 
-according to its standard semantics, executes its \texttt{sample} form by
-generating a random sample, and treats its $\texttt{observe}$ form by skip.
-In addition to this execution, the interpreter keeps a log that records
+Anglican programs define probability distributions 
+over sequences of annotated values, implicitly by means
+of program execution.
+Imagine an interpreter that runs the deterministic parts of a program 
+according to the standard semantics, executes the \texttt{sample} form by
+generating a random sample, and treats the $\texttt{observe}$ form by skip.
+In addition to this execution, the interpreter also keeps a log that records
 information about all the \texttt{sample} and \texttt{observe} forms encountered 
-during execution. The information kept for \texttt{sample} is a triple $(F,x,\alpha)$ of
-the following data:
-\begin{itemize}
-        \item $F$ is one of the built-in primitive probability distributions, 
-                such as the standard normal, for which we have
-                the probability density or probability mass function $p_F$.
-        \item $x$ is a value sampled from the distribution $F$.
-        \item $\alpha$ is an address that uniquely and systematically identifies the random 
-                choice made; this address is exploited in inference algorithms, as
-                explained later.
-\end{itemize}
-The information kept for \texttt{observe} is a pair $(G,y)$ where $G$
-is a primitive probability distribution as $F$ above and $y$ is an observed value.
-Thus, a log is just a sequence of triples $(F,x,\alpha)$ and pairs $(G,y)$.
+during execution. The information recorded for \texttt{sample} is 
+a triple $(F,x,\alpha)$ of (i) a primitive probability distribution $F$, 
+such as the standard normal, for which we have 
+the probability density $p_F$; (ii) a value $x$ sampled from the distribution $F$; 
+and (iii) an address $\alpha$ that uniquely and systematically identifies the random 
+choice made. The information recorded for \texttt{observe} is a pair $(G,y)$ where $G$
+is a primitive probability distribution as $F$ from above and $y$ is an 
+observed value. Thus, a log is a sequence of triples $(F,x,\alpha)$ and 
+pairs $(G,y)$.
 
-We call the triple part of a log \textit{trace}. This part records all the random 
-choices of an execution. Thus, if the trace of a log is fixed, the rest of the log 
-is decided determistically by the program. A trace induces
-a sequence of pairs $(G_j, y_j)$ of distributions and values of
-\textit{observed} random variables. We call this sequence an \textit{image} and
-denote it by $\pmb{y}$. For notational simplicity we assume that the program
-always generates the same ordered set $\pmb{z}$ of \textit{results} $z_k$.
+A \textit{trace} $\pmb{x}$ is a sequence of triples $(F,x,\alpha)$. It is feasible if
+it is precisely the triple part of the log of some execution. 
+Such a feasible trace records all the random choices made during execution,
+and uniquely determines the rest of the execution and its log, because all the non-sample
+forms of Anglican programs are deterministic. In particular, each of these feasible traces
+decides a sequence of pairs $(G_j, y_j)$ for observed values.
+We call the sequence \textit{image of $\pmb{x}$} and denote it by~$\pmb{y}$. 
 
-The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
-is defined in terms of the product of the probabilities of all random
-choices $\pmb{x}$ and the likelihood of all observations $\pmb{y}$
+A (almost surely terminating) probabilistic program defines a probability distribution 
+over feasible traces $\pmb{x}$, which has the probability density 
+$\pi(\pmb{x}) := \gamma(\pmb{x}) / Z$ where 
 \begin{align}
   \gamma(\pmb{x}) 
   &:= 
@@ -507,8 +500,10 @@ choices $\pmb{x}$ and the likelihood of all observations $\pmb{y}$
   p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j}).
   \label{eqn:p-trace}
 \end{align}
-The objective of inference in probabilistic program $\mathcal{P}$
-is to discover the distribution of $\pmb{z}$.
+for the image $\pmb{y}$ of $\pmb{x}$, and $Z$ is the normalization constant $Z := \int \gamma(\pmb{x})d(\pmb{x})$
+of $\gamma$.\footnote{The integral and the density use the default measure obtained by the standard extension of
+a $\sigma$-finite measure on finite traces where the $\sigma$-finite measure itself is defined by
+a countable sum of Lebesque and counting measures.}
 
 %\section{Probabilistic Program}
 %\label{sec:pp-def}
