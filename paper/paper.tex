@@ -464,34 +464,34 @@ primitive distributions.
 \section{Probabilistic Program}
 \label{sec:pp-def}
 
-\hy{This is a section that should explain the semantics. David's explanation
-is based on a state machine that underlies the current implementation.
-I think that the section is confusing. I will revise this section.}
+\hy{Need to be revised.}
 
-Anglican is a language for expressing probabilistic programs.
-A probabilistic program is a stateful \textit{deterministic} computation
-$\mathcal{P}$ with the following properties~\cite{TMP+15}:
+Programs in Anglican define probability distributions 
+over sequences of sampled values through their executions.
+
+Imagine an interpreter of Anglican that runs the deterministic parts of a Anglican program 
+according to its standard semantics, executes its \texttt{sample} form by
+generating a random sample, and treats its $\texttt{observe}$ form by skip.
+In addition to this execution, the interpreter keeps a log that records
+information about all the \texttt{sample} and \texttt{observe} forms encountered 
+during execution. The information kept for \texttt{sample} is a triple $(F,x,\alpha)$ of
+the following data:
 \begin{itemize}
-\item Initially, $\mathcal{P}$ expects no arguments.
-\item On every call, $\mathcal{P}$ returns either a distribution
-  and an address $(F,\alpha)$, a distribution and a value $(G,
-        y)$, or a value $z$.
-\item Upon returning $F$, $\mathcal{P}$ expects a value $x$ drawn from $F$ as
-    the argument to the next call (\texttt{sample} in Anglican).
-\item Upon returning $(G, y)$, $\mathcal{P}$ is invoked again
-    without arguments (\texttt{observe} in Anglican).
-\item Upon returning $z$, $\mathcal{P}$ terminates.
+        \item $F$ is one of the built-in primitive probability distributions, 
+                such as the standard normal, for which we have
+                the probability density or probability mass function $p_F$.
+        \item $x$ is a value sampled from the distribution $F$.
+        \item $\alpha$ is an address that uniquely and systematically identifies the random 
+                choice made; this address is exploited in inference algorithms, as
+                explained later.
 \end{itemize}
-A program is run by calling $\mathcal{P}$ repeatedly until
-termination.
+The information kept for \texttt{observe} is a pair $(G,y)$ where $G$
+is a primitive probability distribution as $F$ above and $y$ is an observed value.
+Thus, a log is just a sequence of triples $(F,x,\alpha)$ and pairs $(G,y)$.
 
-A program need not generate the same sequence of random variables in every
-execution. For this reason we assume that each random variable $x$ is assigned
-a unique label $\alpha$, which we call an address, that induces a
-correspondence between variables in different executions. Every execution
-implicitly produces a sequence of triples of distributions, values of
-\textit{latent} random variables, and addresses, $(F_i, x_i, \alpha_i)$.  We
-call this sequence a \textit{trace} and denote it by $\pmb{x}$. A trace induces
+We call the triple part of a log \textit{trace}. This part records all the random 
+choices of an execution. Thus, if the trace of a log is fixed, the rest of the log 
+is decided determistically by the program. A trace induces
 a sequence of pairs $(G_j, y_j)$ of distributions and values of
 \textit{observed} random variables. We call this sequence an \textit{image} and
 denote it by $\pmb{y}$. For notational simplicity we assume that the program
@@ -509,6 +509,51 @@ choices $\pmb{x}$ and the likelihood of all observations $\pmb{y}$
 \end{align}
 The objective of inference in probabilistic program $\mathcal{P}$
 is to discover the distribution of $\pmb{z}$.
+
+%\section{Probabilistic Program}
+%\label{sec:pp-def}
+%
+%Anglican is a language for expressing probabilistic programs.
+%A probabilistic program is a stateful \textit{deterministic} computation
+%$\mathcal{P}$ with the following properties~\cite{TMP+15}:
+%\begin{itemize}
+%\item Initially, $\mathcal{P}$ expects no arguments.
+%\item On every call, $\mathcal{P}$ returns either a distribution
+%  and an address $(F,\alpha)$, a distribution and a value $(G,
+%        y)$, or a value $z$.
+%\item Upon returning $F$, $\mathcal{P}$ expects a value $x$ drawn from $F$ as
+%    the argument to the next call (\texttt{sample} in Anglican).
+%\item Upon returning $(G, y)$, $\mathcal{P}$ is invoked again
+%    without arguments (\texttt{observe} in Anglican).
+%\item Upon returning $z$, $\mathcal{P}$ terminates.
+%\end{itemize}
+%A program is run by calling $\mathcal{P}$ repeatedly until
+%termination.
+%
+%A program need not generate the same sequence of random variables in every
+%execution. For this reason we assume that each random variable $x$ is assigned
+%a unique label $\alpha$, which we call an address, that induces a
+%correspondence between variables in different executions. Every execution
+%implicitly produces a sequence of triples of distributions, values of
+%\textit{latent} random variables, and addresses, $(F_i, x_i, \alpha_i)$.  We
+%call this sequence a \textit{trace} and denote it by $\pmb{x}$. A trace induces
+%a sequence of pairs $(G_j, y_j)$ of distributions and values of
+%\textit{observed} random variables. We call this sequence an \textit{image} and
+%denote it by $\pmb{y}$. For notational simplicity we assume that the program
+%always generates the same ordered set $\pmb{z}$ of \textit{results} $z_k$.
+%
+%The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
+%is defined in terms of the product of the probabilities of all random
+%choices $\pmb{x}$ and the likelihood of all observations $\pmb{y}$
+%\begin{align}
+%  \gamma(\pmb{x}) 
+%  &:= 
+%%  \prod_{i=1}^{\left|\pmb{x}\right|}
+%  p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j}).
+%  \label{eqn:p-trace}
+%\end{align}
+%The objective of inference in probabilistic program $\mathcal{P}$
+%is to discover the distribution of $\pmb{z}$.
 
 \section{Language}
 \label{sec:language}
