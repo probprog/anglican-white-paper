@@ -631,27 +631,50 @@ provides special forms for probabilistic inference:
 (retrieve tag)
 \end{lstlisting}
 
-\texttt{sample} and \texttt{observe} forms correspond to
-handling $(F, \alpha)$ and $(G, y)$ correspondingly in the
-definition of probabilistic program (Section~\ref{sec:pp-def}).
-Their operational semantics can be defined in terms of
-importance sampling(Equation~\ref{eqn:p-trace}): 
-\begin{itemize}
-    \item \texttt{sample} returns a value drawn from
-        the distribution.
-    \item \texttt{observe} multiplies the unnormalized
-        probability of the program trace by the probability of
-        drawing the value from the distribution.
-\end{itemize}
-However, the actual computation involved in handling of
-\texttt{sample} and \texttt{observe} depends on the inference
-algorithm. Different inference algorithms may treat
+A good way to understand the \texttt{sample} and \texttt{observe} forms
+is to consider the imaginary interpreter in Section~\ref{sec:pp-def}.
+Under this interpreter, the \texttt{sample} form draws a value $x$ from 
+its parameter distribution $F$, and 
+generates a unique address $\alpha$ for this random draw.
+Then, it appends $(F, x, \alpha)$, the record of this random
+draw, to the log of the current execution. Finally, the
+form returns $x$. The computation of the \texttt{observe} form is
+simpler. It just appends its two parameters, distribution $G$
+and observed value $v$, to the log of the current execution,
+and returns \texttt{nil}.
+
+What we have just described is idealised semantics 
+of \texttt{sample} and \texttt{observe}. The actual computation 
+involved in handling \texttt{sample} and \texttt{observe} 
+depends on the inference algorithm. Different inference algorithms may treat
 \texttt{sample} and \texttt{observe} differently as long as they
-compute the same distribution of program results.
-Denotational and operational semantics for an idealized version
-of Anglican is introduced in \cite{SYH+16}; in general though,
+compute the same distribution on traces (i.e. sequences of sampled values), 
+namely, the one in Equation~\ref{eqn:p-trace}.
+Formal semantics for an idealized version
+of Anglican or other higher-order probabilistic programming languages are introduced 
+in \cite{SYH+16,BorgstromLGS16}; in general though,
 specifying semantics of higher-order probabilistic programming
 languages is an open problem.
+
+
+%Their operational semantics can be defined in terms of
+%importance sampling(Equation~\ref{eqn:p-trace}): 
+%\begin{itemize}
+%    \item \texttt{sample} returns a value drawn from
+%        the distribution.
+%    \item \texttt{observe} multiplies the unnormalized
+%        probability of the program trace by the probability of
+%        drawing the value from the distribution.
+%\end{itemize}
+%However, the actual computation involved in handling of
+%\texttt{sample} and \texttt{observe} depends on the inference
+%algorithm. Different inference algorithms may treat
+%\texttt{sample} and \texttt{observe} differently as long as they
+%compute the same distribution of program results.
+%Denotational and operational semantics for an idealized version
+%of Anglican is introduced in \cite{SYH+16}; in general though,
+%specifying semantics of higher-order probabilistic programming
+%languages is an open problem.
 
 \texttt{sample} and \texttt{observe} may appear anywhere in the
 code of an Anglican program. To support these forms, the
