@@ -217,7 +217,7 @@ major contributions:
         algorithms, such as representation of inference results as a lazy
         sequence of samples and a novel scheme for addressing of checkpoints.
     \item Anglican's novel representation of random processes 
-            from statistics and machine learning, such as Beta-Binomial 
+            from statistics and machine learning, such as beta-Bernoulli
             process. The representation is
             \emph{stateless} and seamlessly integrates into pure functional 
             computation. This contrasts with typical \emph{stateful}
@@ -1607,8 +1607,8 @@ distribution interface with the \texttt{sample*} and \texttt{observe*} methods;
 this interface is defined using Clojure's protocol mechanism
 (\texttt{anglican.{\linebreak[0]}runtime/{\linebreak[0]}distribution}).
 The \texttt{sample*} \textit{method} returns a random sample and
-roughly corresponds to the \texttt{sample} checkpoint,
-the \texttt{observe*} \textit{method} returns the log probability
+roughly corresponds to the \texttt{sample} checkpoint.
+The \texttt{observe*} \textit{method} returns the log probability
 of the value and roughly corresponds to the \texttt{observe}
 checkpoint. The methods can be, and sometimes are called from
 handlers of the corresponding checkpoints, but do not have to
@@ -1679,17 +1679,19 @@ updated process for the next iteration. For example:
       values
       (let [dist (produce process)
             value (sample dist)]
-      (recur (absorb process value)
-             (conj values value))))))
+        (recur (absorb process value)
+               (conj values value))))))
 \end{lstlisting}
 Similarly, random processes can also be used to recursively
 observe a sequence of values:
 \begin{lstlisting}[style=default]
 (loop [process (beta-bernoulli 1.0 1.0)
        [value0 & values0] values] 
-  (let [dist (produce process)]
-    (observe dist value0)
-    (recur (absorb process value0) values0)))
+  (if (= (count values0) 0)
+    nil
+    (let [dist (produce process)]
+      (observe dist value0)
+      (recur (absorb process value0) values0))))
 \end{lstlisting}
 
 \section{Performance}
@@ -1707,7 +1709,7 @@ the famous \textit{Towers of Hanoi}:
 
 \begin{lstlisting}[style=default]
 (defn towers-of-hanoi [n from to via]
-  (when (not= n 1)
+  (when (not= n 1) ;; return nil if n = 1.
       (towers-of-hanoi (dec n) from via to)
       (towers-of-hanoi (dec n) via to from)))
 \end{lstlisting}
@@ -1731,7 +1733,7 @@ Anglican introduces, this is a good result.
 
 The other comparison must be made between Anglican and another
 probabilistic programming environment. WebPPL~\cite{GS15} is
-similar to Anglican in expressivity.  WebPPL runs on top of
+similar to Anglican in expressiveness.  WebPPL runs on top of
 \href{http://v8project.blogspot.com/}{V8}, a high performance
 JavaScript engine featuring a native compiler.
 Table~\ref{tbl:webppl} shows results for a few models from
