@@ -1300,8 +1300,8 @@ instantiations of the (ad-hoc) polymorphic function
 \texttt{infer} declared as Clojure's multimethod\iftoggle{full}{
 in the \texttt{anglican.{\linebreak[0]}inference}
 namespace}{}. The function accepts an algorithm identifier,
-a query --- the probabilistic program in which to perform the
-inference, an initial value for the query, and optional
+a query (the probabilistic program in which to perform the
+inference), an initial value for the query, and optional
 algorithm parameters.
 
 \subsection{The \texttt{infer} Function}
@@ -1362,8 +1362,10 @@ Let us illustrate this implementation step with
 the simplest inference algorithm.
 Here is an implementation of the \texttt{infer} function for the algorithm:
 \begin{lstlisting}[style=default]
-(derive ::algorithm
-        :anglican.inference/algorithm)
+;; Make ::algorithm be converted to 
+;; :anglican.inference/algorithm whenever necessary
+(derive ::algorithm :anglican.inference/algorithm)
+
 ;; invoked when algo parameter is :importance
 (defmethod infer :importance 
   [algo prog value & {}]
