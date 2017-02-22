@@ -1060,7 +1060,7 @@ The purpose of probabilistic forms \texttt{sample} and
 transfer control to the inference algorithm.  Practically, this
 is achieved by  returning a \textbf{checkpoint} instead of
 invoking a continuation in a CPS-transformed program.  
-Checkpoints are values of the
+Checkpoints are represented by values of the
 corresponding record types
 (\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} or
 \texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe})
@@ -1519,7 +1519,7 @@ sequence of checkpoint invocations:
 According to the addressing scheme, the addresses generated
 for these invocations are
 \begin{lstlisting}[style=default]
-  [C1 0][C2 0][C2 1][C1 16][C1 17][C1 18][C2 16][C3 0]
+[C1 0][C2 0][C2 1][C1 16][C1 17][C1 18][C2 16][C3 0]
 \end{lstlisting}
 If the program is run by a Metropolis-Hastings algorithm, then a
 small change usually takes place in the sequence of checkpoints
