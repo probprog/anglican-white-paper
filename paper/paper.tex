@@ -1014,10 +1014,10 @@ is a Clojure hash map:
 \begin{lstlisting}[style=default]
 (def initial-state
   "initial program state"
-  {:log-weight 0.0,
-   :result nil,
-   ::mem {},
-   ::store nil,
+  {:log-weight 0.0, ;; map :log-weight to 0.0
+   :result nil,       ;; map :result to nil
+   ::store nil,       ;; map :store to nil
+   ::mem {},          ;; map ::mem to the empty map 
    ... })
 \end{lstlisting}
 which records inference-relevant information under various keys
@@ -1059,12 +1059,12 @@ The purpose of probabilistic forms \texttt{sample} and
 \texttt{observe} is to interrupt deterministic computation and
 transfer control to the inference algorithm.  Practically, this
 is achieved by  returning a \textbf{checkpoint} instead of
-invoking a continuation in a CPS-transformed program.  In
-Clojure, checkpoints are represented by values of the
+invoking a continuation in a CPS-transformed program.  
+Checkpoints are values of the
 corresponding record types
 (\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} or
-\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe}).
-The types contain fields specific to each form, as well as the
+\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe})
+in Clojure. The types contain fields specific to each form, as well as the
 continuation; calling the continuation resumes the computation.
 \begin{lstlisting}[style=default]
 => (cps-of-expression '(sample dist) 'cont)
@@ -1130,7 +1130,7 @@ that the memoized function is called with the input; all subsequent
 calls with the input will just reuse these draws and return the same output.
 
 Memoization is often implemented on top of a mutable
-dictionary, where the key is the argument list and the value is
+dictionary, where the key is the argument  and the value is
 the returned value. However, there are no mutable data
 structures in a probabilistic program. Hence, \texttt{mem}'s
 memory is stored as a nested dictionary in the program state
@@ -1140,7 +1140,7 @@ unique automatically generated identifier. Each time a memoized
 function is called, one of two continuations is chosen,
 depending on whether the same function (a function with the same
 identifier) was previously called in the same run of the
-probabilistic program with the same arguments. If the memoized
+probabilistic program with the same argument. If the memoized
 result is available, the continuation of the memoized function
 call is immediately called with the stored result. Otherwise,
 the argument of \texttt{mem} is called with a continuation which
@@ -1164,7 +1164,7 @@ updated state:
 
 Memoized results are not shared among multiple runs of a
 probabilistic program, which is intended. Otherwise, it would be
-impossible to memoize functions with random results.
+impossible to memoize functions with random results. 
 
 \iftoggle{full}{\subsubsection{Continuations}}{\subsection{Managing stack size}}
 \label{seq:continuations}
@@ -1240,9 +1240,11 @@ current continuation and the state are passed to the called
 function. Anglican can also call Clojure functions; however,
 Clojure functions do not expect these auxiliary parameters.
 To allow the mixing of Anglican (CPS-transformed) and Clojure
-function calls in Anglican code, the Anglican compiler must be
+function calls in Anglican code, the Anglican compiler must CPS-transform
+expressions selectively~\cite{Nielsen01}. It must be
 able to recognize `primitive' (that is, implemented in Clojure
-rather than in Anglican) functions.
+rather than in Anglican) functions, and invoke
+those functions in a direct, not CPS, style. 
 
 Providing an explicit syntax for differentiating between
 Anglican and Clojure function calls would be cumbersome. Another
