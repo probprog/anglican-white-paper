@@ -14,7 +14,7 @@
 \usepackage{lmodern}
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
-     {<->sub*lmtt/m/sl}{}
+{<->sub*lmtt/m/sl}{}
 \lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{1.0}\ttfamily, columns=flexible, showstringspaces=false}
 
 \usepackage{hyperref}
@@ -488,20 +488,24 @@ The information kept for \texttt{observe} is a pair $(G,y)$ where $G$
 is a primitive probability distribution as $F$ above and $y$ is an observed value.
 Thus, a log is just a sequence of triples $(F,x,\alpha)$ and pairs $(G,y)$.
 
-We call the triple part of a log \textit{trace}. This part records all the random 
+We call the triple part of a log \textit{trace}, and denote this sequence of $(F,x,\alpha)$'s 
+by $\pmb{x}$. This part records all the random 
 choices of an execution. Thus, if the trace of a log is fixed, the rest of the log 
-is decided determistically by the program. A trace induces
+is decided determistically by the program. A trace $\pmb{x}$ induces
 a sequence of pairs $(G_j, y_j)$ of distributions and values of
-\textit{observed} random variables. We call this sequence an \textit{image} and
-denote it by $\pmb{y}$. For notational simplicity we assume that the program
-always generates the same ordered set $\pmb{z}$ of \textit{results} $z_k$.
-
-\hy{What is $\pmb{z}$? It is not explained here. I found it easier to think
-that probabilistic programs define distributions over traces. Also, $\vec{x}$ is not defined.}
+\textit{observed} random variables. We call this sequence \textit{image of $\pmb{x}$} and
+denote it by $\pmb{y}$. A subset of random choices in $\pmb{x}$ forms the result of the program.
+We denote this result (i.e. the subsequence of $\pmb{x}$ with these choices) by $\pmb{z}$. 
+%For notational simplicity we assume that the program
+%always generates the same ordered set $\pmb{z}$ of \textit{results} $z_k$.
+%
+%\hy{What is $\pmb{z}$? It is not explained here. I found it easier to think
+%that probabilistic programs define distributions over traces. Also, $\vec{x}$ is not defined.}
 
 The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
 is defined in terms of the product of the probabilities of all random
-choices $\pmb{x}$ and the likelihood of all observations $\pmb{y}$
+choices $\pmb{x}$ and the likelihood of all observations in the image $\pmb{y}$ 
+of $\pmb{x}$:
 \begin{align}
   \gamma(\pmb{x}) 
   &:= 
@@ -509,8 +513,9 @@ choices $\pmb{x}$ and the likelihood of all observations $\pmb{y}$
   p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j}).
   \label{eqn:p-trace}
 \end{align}
-The objective of inference in probabilistic program $\mathcal{P}$
-is to characterize the distribution of $\pmb{z}$.
+This density induces the distribution of the results $\pmb{z}$ of the program
+by marginalization. The objective of probabilistic inference 
+is to characterize this distribution of $\pmb{z}$.
 
 %\section{Probabilistic Program}
 %\label{sec:pp-def}
