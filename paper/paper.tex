@@ -464,7 +464,6 @@ primitive distributions.
 \section{Probabilistic Program}
 \label{sec:pp-def}
 
-\hy{Need to be revised.}
 
 Programs in Anglican define probability distributions 
 over sequences of sampled values through their executions.
@@ -496,6 +495,9 @@ a sequence of pairs $(G_j, y_j)$ of distributions and values of
 \textit{observed} random variables. We call this sequence an \textit{image} and
 denote it by $\pmb{y}$. For notational simplicity we assume that the program
 always generates the same ordered set $\pmb{z}$ of \textit{results} $z_k$.
+
+\hy{What is $\pmb{z}$? It is not explained here. I found it easier to think
+that probabilistic programs define distributions over traces.}
 
 The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
 is defined in terms of the product of the probabilities of all random
