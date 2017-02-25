@@ -620,9 +620,9 @@ functions are implemented: \texttt{map}, \texttt{reduce},
 \texttt{filter}, \texttt{some}, \texttt{repeatedly},
 \texttt{comp}, \texttt{partial}.
 
-\subsection{Probabilistic Forms}
+\subsection{Special Forms}
 
-In addition to re-implementing a subset of Clojure, Anglican
+ In addition to re-implementing a subset of Clojure, Anglican
 provides special forms for probabilistic inference:
 \begin{lstlisting}[style=default]
 (sample address? distribution)
@@ -690,22 +690,22 @@ The remaining Anglican special forms support carrying values in
 the hidden program state. \texttt{mem} implements stochastic
 function  memoization (Section~\ref{sec:mem}). \texttt{store}
 stores a value for a tag in the program state, which can be
-later retrieved by the tag using \texttt{retrieve} during the same
+later retrieved using \texttt{retrieve} during the same
 program execution.
 
 \section{Case Study}
 \label{seq:study}
 
-Before delving into implementation details, we provide a case
-study of using the Anglican language and environment. This case
-study takes a problem for which a solution is not immediately
-obvious, \textit{the Deli dilemma}, and guides through writing
-an Anglican program for the problem, executing the program, and
-post-processing results. 
+Before delving into implementation details, we discuss a case study
+of the use of the Anglican language and environment. This case study
+takes an inference problem for which a solution is not immediately
+obvious, \textit{the Deli dilemma}, and discusses how this problem
+can be solved by writing an Anglican program, executing the program,
+and post-processing results.
 
 The program presented in this section is intentionally short and
-simple. Anglican is capable of compiling and running elaborated
-programs handling large amounts of data. Advanced examples of
+simple. Anglican is capable of compiling and running elaborate
+programs and handling large amounts of data. Advanced examples of
 Anglican programs and inference can be found in literature on
 applications of probabilistic programming~\cite{PLW15, P16, MPT+16}.
 
@@ -728,20 +728,20 @@ Additionally, we know that:
     \item Depending on traffic lights, the walking time varies by about 2
         minutes.
     \item The lunch break starts at 1:00pm, and the workday ends at 6:00pm.
-    \item The waiter's odds that this is the same customer are 2 to 1.
+    \item Based on the similarity of appearance, the waiter assesses the odds that this is the same customer as 2 to 1.
 \end{itemize}
 
 \subsection{Anglican Query}
 \label{seq:deli-query}
 
-We want to formalize the dilemma in an Anglican query, based on
+We want to formalize the dilemma as an Anglican query, based on
 the knowledge we have. Let us formalize the knowledge in
 Clojure (the times are in minutes). First, we encode our prior
 information which holds true independently of the customer's
 visit:
 
 \begin{lstlisting}[style=default]
-(def mean-time-to-arrive
+(def mean-office-distance
      "average time to arrive"
      10.)
 (def sd-time-to-arrive
@@ -844,7 +844,7 @@ We are finally ready to define the query in \textbf{Anglican}.
                         dinner-delay)}))
 \end{lstlisting}
 
-Performing inference on query \texttt{deli} computes the
+Performing inference on the query \texttt{deli} computes the
 probability that the same customer visited the deli twice, as
 well as probability distributions of average arrival times for
 both cases.
