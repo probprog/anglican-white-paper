@@ -741,7 +741,7 @@ information which holds true independently of the customer's
 visit:
 
 \begin{lstlisting}[style=default]
-(def mean-office-distance
+(def mean-time-to-arrive
      "average time to arrive"
      10.)
 (def sd-time-to-arrive
@@ -976,10 +976,10 @@ inference algorithms}{}.
 \section{Macro-based Compilation}
 \label{sec:compilation}
 
-Compilation of Anglican into Clojure is built around a variant of CPS
+Anglican queries are compiled into Clojure using a variant of CPS
 transformation. In a basic CPS-transformed program, a
 continuation receives a single argument --- the computed value.
-In Anglican, there are two flows of computation going in
+In Anglican, two flows of computation are performed in
 parallel: values are computed by functional code, and,
 at the same time, the state of the probabilistic program,
 used by inference algorithms, is updated by
