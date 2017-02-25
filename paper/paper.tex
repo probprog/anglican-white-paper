@@ -1281,8 +1281,8 @@ Clojure program. However, the purpose of executing a
 probabilistic program is different from that of a `regular'
 program: instead of producing the result of a single execution,
 a probabilistic program computes, exactly or approximately, the
-distribution from which execution results are drawn.  Computing
-the distribution is facilitated by an inference algorithm.
+distribution from which execution results are drawn.  Characterising
+this distribution is done by the inference algorithm.
 
 Probabilistic programming system Anglican provides a variety of
 approximate inference algorithms. Ideally, Anglican should
@@ -1486,7 +1486,7 @@ automatic scheme is insufficient. According to the scheme:
         such as $2^4 = 16$.
 \end{itemize}
 
-Consider the following simplified Anglican query:
+\noindent Consider the following simplified Anglican query:
 
 \begin{lstlisting}[style=default]
 (defm foo []
@@ -1503,7 +1503,6 @@ Consider the following simplified Anglican query:
 (defquery baz
   (foo))
 \end{lstlisting}
-
 An execution of the query may result in the following
 sequence of checkpoint invocations:
 \begin{lstlisting}[style=default]
@@ -1567,7 +1566,7 @@ invocation which are not in support or have zero probability in
 the new invocation are simply ignored and new values are
 re-drawn.
 
-This way, each occurrence of a checkpoint has unique address,
+This way, each occurrence of a checkpoint has a unique address,
 but small disturbances --- removal or addition of a single or just
 a few checkpoints --- are unlikely to derail the entire sequence.
 The probability of derailment depends on the padding. The
