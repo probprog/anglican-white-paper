@@ -8,7 +8,7 @@
 \usepackage{amssymb}
 \usepackage{amsfonts}
 \usepackage{graphicx}
-
+%\usepackage{microtype}
 
 \usepackage{listings}
 \usepackage{lmodern}
@@ -463,7 +463,7 @@ distribution (via Clojure's protocol mechanism). The
 \texttt{defdist} macro provides a convenient syntax for defining
 primitive distributions.
 
-\section{Probabilistic Program}
+\section{Probability of a Program Execution}
 \label{sec:pp-def}
 
 Anglican programs define probability distributions 
@@ -499,7 +499,7 @@ a sequence of $(G_j, y_j)$ for observed values. We call this sequence \textit{im
 and denote it by~$\pmb{y}$. 
 
 A (almost-surely terminating) probabilistic program defines a probability distribution 
-over finite feasible traces $\pmb{x}$. The distribution has the probability density 
+over finite feasible traces $\pmb{x}$ with probability density 
 $\pi(\pmb{x}) := \gamma(\pmb{x}) / Z$ where 
 \begin{align}
   \gamma(\pmb{x}) 
@@ -509,10 +509,9 @@ $\pi(\pmb{x}) := \gamma(\pmb{x}) / Z$ where
   \quad \mbox{for the image $\pmb{y}$ of $\pmb{x}$}, 
   \label{eqn:p-trace}
 \end{align}
-and $Z$ is the normalization constant $Z := \int \gamma(\pmb{x})d(\pmb{x})$
-of $\gamma$.\footnote{The integral and the density use the default measure obtained by the standard extension of
+and $Z$ is the normalization constant $Z := \int \gamma(\pmb{x})d(\pmb{x})$. The integral and the density use the default measure obtained by the standard extension of
 a $\sigma$-finite measure on finite traces where the $\sigma$-finite measure itself is defined by
-a countable sum of Lebesque and counting measures.}
+a countable sum of Lebesque and counting measures.
 
 %\section{Probabilistic Program}
 %\label{sec:pp-def}
