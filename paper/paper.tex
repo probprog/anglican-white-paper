@@ -584,8 +584,8 @@ Within the body of \texttt{defquery} and \texttt{defm}, the
 following special forms are supported, with syntax and semantics 
 matching those of Clojure:
 \begin{lstlisting}[style=default]
-(if test then else?)
-(when test expr*)
+(if pred then else?)
+(when pred expr*)
 (cond clause*)
 (case expr clause* default?)
 (let [binding*] expr*)
