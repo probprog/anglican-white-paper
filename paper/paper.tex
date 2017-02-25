@@ -1616,7 +1616,7 @@ the \texttt{observe*} \textit{method} is called for a
 \texttt{sample} checkpoint, depending on whether the value is
 drawn or reused.
 
-Macro \texttt{defdist} should be used to define distributions.
+The macro \texttt{defdist} is used to define distributions.
 \texttt{defdist} takes care of defining a separate type
 for every distribution so that Clojure multimethods (or overloaded
 methods) can be dispatched on
@@ -1684,13 +1684,15 @@ updated process for the next iteration. For example:
 Similarly, random processes can also be used to recursively
 observe a sequence of values:
 \begin{lstlisting}[style=default]
-(loop [process (beta-bernoulli 1.0 1.0)
-       [value0 & values0] values] 
-  (if (= (count values0) 0)
-    nil
-    (let [dist (produce process)]
-      (observe dist value0)
-      (recur (absorb process value0) values0))))
+(defm observe-beta-binomial [values a b]
+  (loop [process (beta-bernoulli a b)
+         values values] 
+    (when (not-empty values)
+      (let [dist (produce process)
+            value (first values)]
+        (observe dist value)
+        (recur (absorb process value)
+               (rest values))))))
 \end{lstlisting}
 
 \section{Performance}
@@ -1717,7 +1719,7 @@ We run this program for \texttt{n} equal to 10, 15, 20, and 25. Clojure
 is consistently only twice as fast as Anglican
 (Table~\ref{tbl:hanoi}); considering the amount of overhead
 Anglican introduces, this is a good result.
-\begin{table}
+\begin{table}[!b]
     \centering
     \begin{tabular}{r|r|r|r|r}
         {\bf n}  & 10 & 15 & 20 & 25 \\ \hline
