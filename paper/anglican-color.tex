@@ -10,7 +10,7 @@
 \lstdefinelanguage{scheme}
 {sensitive, %
  alsoletter={:,-,+,*,?,/,!,>,<}, %
- morecomment=[l];, %
+ morecomment=[l]{;}, %
 }[comments]
 
 % listings definition for Anglican programming language
@@ -153,10 +153,10 @@
   % anglican special forms
   morekeywords=[8]{factor, mem, observe, predict, retrieve, sample, store}, %
   sensitive, %
-  alsoletter={:,-,+,*,?,/,!,>,<}, %
-  morecomment=[l];, %
+  alsoletter={:,-,+,*,?,/,!,>,<,.}, %
+  morecomment=[l][\color{gray}]{;}, %
   morestring=[b]", %
-  keywordsprefix=:, %
+  %keywordsprefix=:, %
 }[keywords,comments,strings]
  
 \lstset{
