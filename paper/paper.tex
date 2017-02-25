@@ -14,7 +14,7 @@
 \usepackage{lmodern}
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
-{<->sub*lmtt/m/sl}{}
+     {<->sub*lmtt/m/sl}{}
 \lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{1.0}\ttfamily, columns=flexible, showstringspaces=false}
 
 \usepackage{hyperref}
@@ -49,7 +49,7 @@
 \authorinfo{David Tolpin \and Jan-Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
 
 \newtoggle{full}
-\input{toggle-ifl}
+\input{toggle}
 
 \begin{document}
 
@@ -64,6 +64,7 @@
     CPS-based evaluation model, and functional representations for
     probabilistic paradigms, such as a distribution,
     a random process, and an inference algorithm.
+
     We show that a probabilistic functional language can be
     implemented efficiently and integrated tightly with a
     conventional functional language with only moderate
@@ -98,7 +99,6 @@ These generic techniques may be less statistically efficient
 than techniques tailored to a specific model. However,
 probabilistic programming facilitates simpler implementations of
 models making the inference inherently faster.
-\jw{How exactly does probabilistic programming make inference inherently faster?}
 
 While probabilistic programming systems shorten the iteration cycle in
 exploratory model design, they typically lack basic functionality needed for
@@ -217,7 +217,7 @@ major contributions:
         algorithms, such as representation of inference results as a lazy
         sequence of samples and a novel scheme for addressing of checkpoints.
     \item Anglican's novel representation of random processes 
-            from statistics and machine learning, such as Beta-Binomial 
+            from statistics and machine learning, such as beta-Bernoulli
             process. The representation is
             \emph{stateless} and seamlessly integrates into pure functional 
             computation. This contrasts with typical \emph{stateful}
@@ -284,31 +284,31 @@ from Anglican code and vice versa. A simple program in Anglican
 can look like the following code:
 %\begin{minipage}{\linewidth}
 \begin{lstlisting}[style=default]
-  (defquery model "model selection" [data]
-    (let [;;; Guess a distribution.
-          dist (sample (categorical
-                         [[normal 0.5]
-                          [gamma 0.5]]))
-          a (sample (gamma 1 1))
-          b (sample (gamma 1 1))
-          d (dist a b)]
+(defquery model "model selection" data
+  (let [;;; Guess a distribution.
+        dist (sample (categorical
+                       [[normal 0.5]
+                        [gamma 0.5]]))
+        a (sample (gamma 1 1))
+        b (sample (gamma 1 1))
+        d (dist a b)]
 
-      ;;; Observe samples from the distribution.
-      (loop [observations data]
-        (when (not-empty observations)
-          ;; Retrieve the first observation as `o',
-          ;; and store the rest of observations in 
-          ;; 'observations*'.
-          (let [[o & observations*] observations]
-            ;; Observe 'o' from the guessed 
-            ;; distribution 'd'.
-            (observe d o))
-          ;; Proceed to the next iteration with
-          ;; the rest of observations.
-          (recur observations*)))
+    ;;; Observe samples from the distribution.
+    (loop [observations data]
+      (when (not-empty observations)
+        ;; Retrieve the first observation as `o',
+        ;; and store the rest of observations in 
+        ;; 'observations*'.
+        (let [[o & observations*] observations]
+          ;; Observe 'o' from the guessed 
+          ;; distribution 'd'.
+          (observe d o))
+        ;; Proceed to the next iteration with
+        ;; the rest of observations.
+        (recur observations*)))
 
-      ;;; Return the distribution and parameters.
-      [d a b]))
+    ;;; Return the distribution and parameters.
+    [d a b]))
 \end{lstlisting}
 %\end{minipage}
 The query builds a model for the input $\texttt{data}$, 
@@ -464,58 +464,53 @@ primitive distributions.
 \section{Probabilistic Program}
 \label{sec:pp-def}
 
-
-Programs in Anglican define probability distributions 
-over sequences of sampled values through their executions.
-
-Imagine an interpreter of Anglican that runs the deterministic parts of a Anglican program 
-according to its standard semantics, executes its \texttt{sample} form by
-generating a random sample, and treats its $\texttt{observe}$ form by skip.
-In addition to this execution, the interpreter keeps a log that records
+Anglican programs define probability distributions 
+over sequences of values, implicitly by means of program execution.
+A good way to understand this is to imagine the following 
+interpreter of Anglican programs. Starting from a fixed initial state,
+the interpreter runs the deterministic parts of a program 
+according to the standard semantics, executes the \texttt{sample} form by
+generating a random sample, and treats the $\texttt{observe}$ form by skip.
+More importantly, the interpreter keeps a log that records
 information about all the \texttt{sample} and \texttt{observe} forms encountered 
-during execution. The information kept for \texttt{sample} is a triple $(F,x,\alpha)$ of
-the following data:
-\begin{itemize}
-        \item $F$ is one of the built-in primitive probability distributions, 
-                such as the standard normal, for which we have
-                the probability density or probability mass function $p_F$.
-        \item $x$ is a value sampled from the distribution $F$.
-        \item $\alpha$ is an address that uniquely and systematically identifies the random 
-                choice made; this address is exploited in inference algorithms, as
-                explained later.
-\end{itemize}
-The information kept for \texttt{observe} is a pair $(G,y)$ where $G$
-is a primitive probability distribution as $F$ above and $y$ is an observed value.
-Thus, a log is just a sequence of triples $(F,x,\alpha)$ and pairs $(G,y)$.
+during execution. The information recorded for \texttt{sample} is 
+a triple $(F,x,\alpha)$ of (i) a primitive probability distribution $F$, 
+such as the standard normal, for which we have 
+the probability density $p_F$; (ii) a value $x$ sampled from the distribution $F$; 
+and (iii) an address $\alpha$ that uniquely and systematically identifies the random 
+choice made. The information recorded for \texttt{observe} is a pair $(G,y)$ where $G$
+is a primitive probability distribution as $F$ from above and $y$ is an 
+observed value. Thus, a log is a sequence of triples $(F,x,\alpha)$ and 
+pairs $(G,y)$.
 
-We call the triple part of a log \textit{trace}, and denote this sequence of $(F,x,\alpha)$'s 
-by $\pmb{x}$. This part records all the random 
-choices of an execution. Thus, if the trace of a log is fixed, the rest of the log 
-is decided determistically by the program. A trace $\pmb{x}$ induces
-a sequence of pairs $(G_j, y_j)$ of distributions and values of
-\textit{observed} random variables. We call this sequence \textit{image of $\pmb{x}$} and
-denote it by $\pmb{y}$. A subset of random choices in $\pmb{x}$ forms the result of the program.
-We denote this result (i.e. the subsequence of $\pmb{x}$ with these choices) by $\pmb{z}$. 
-%For notational simplicity we assume that the program
-%always generates the same ordered set $\pmb{z}$ of \textit{results} $z_k$.
-%
-%\hy{What is $\pmb{z}$? It is not explained here. I found it easier to think
-%that probabilistic programs define distributions over traces. Also, $\vec{x}$ is not defined.}
+One important property of logs is that they are determined by 
+their projections to triples: when two logs project to the same
+sequence of triples, they must be the same. This is because
+the triples in a log contain all the information about random choices
+made during execution and all the non-sample forms in Anglican programs
+are deterministic. We define a \textit{trace} $\pmb{x}$ to be a sequence
+of triples $(F,x,\alpha)$, and say that $\pmb{x}$ is feasible if
+the trace is precisely the triple part of the log of some execution. 
+Such a feasible trace uniquely determines the rest of the execution and its log.
+In particular, it decides the pair part of the log, namely, 
+a sequence of $(G_j, y_j)$ for observed values. We call this sequence \textit{image of $\pmb{x}$} 
+and denote it by~$\pmb{y}$. 
 
-The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
-is defined in terms of the product of the probabilities of all random
-choices $\pmb{x}$ and the likelihood of all observations in the image $\pmb{y}$ 
-of $\pmb{x}$:
+A (almost-surely terminating) probabilistic program defines a probability distribution 
+over finite feasible traces $\pmb{x}$. The distribution has the probability density 
+$\pi(\pmb{x}) := \gamma(\pmb{x}) / Z$ where 
 \begin{align}
   \gamma(\pmb{x}) 
   &:= 
   \prod_{i=1}^{\left|\pmb{x}\right|}
-  p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j}).
+  p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j})
+  \quad \mbox{for the image $\pmb{y}$ of $\pmb{x}$}, 
   \label{eqn:p-trace}
 \end{align}
-This density induces the distribution of the results $\pmb{z}$ of the program
-by marginalization. The objective of probabilistic inference 
-is to characterize this distribution of $\pmb{z}$.
+and $Z$ is the normalization constant $Z := \int \gamma(\pmb{x})d(\pmb{x})$
+of $\gamma$.\footnote{The integral and the density use the default measure obtained by the standard extension of
+a $\sigma$-finite measure on finite traces where the $\sigma$-finite measure itself is defined by
+a countable sum of Lebesque and counting measures.}
 
 %\section{Probabilistic Program}
 %\label{sec:pp-def}
@@ -576,28 +571,28 @@ specified and implementation specific.}.  Anglican queries
 are defined within \texttt{defquery}. The value of the last
 expression in the query body is the result of the query.
 \begin{lstlisting}[style=default]
-  (defquery name doc-string? param? expr*)
+(defquery name doc-string? param? expr*)
 \end{lstlisting}
 Anglican functions outside of a query are defined using
 \texttt{defm} with the same syntax as Clojure \texttt{defn},
 however \texttt{name} is bound to an Anglican function.
 \begin{lstlisting}[style=default]
-  (defm name doc-string? [param*] expr*)
+(defm name doc-string? [param*] expr*)
 \end{lstlisting}
 Within the body of \texttt{defquery} and \texttt{defm}, the
 following special forms are supported, with syntax and semantics 
 matching those of Clojure:
 \begin{lstlisting}[style=default]
-  (if test then else?)
-  (when test expr*)
-  (cond clause*)
-  (case expr clause* default?)
-  (let [binding*] expr*)
-  (and expr*)
-  (or expr*)
-  (fn name? [param*] expr*)
-  (loop [binding*] expr*)
-  (recur expr*)
+(if test then else?)
+(when test expr*)
+(cond clause*)
+(case expr clause* default?)
+(let [binding*] expr*)
+(and expr*)
+(or expr*)
+(fn name? [param*] expr*)
+(loop [binding*] expr*)
+(recur expr*)
 \end{lstlisting}
 In \texttt{defquery} parameter, \texttt{let} bindings, and
 \texttt{fn} argument lists, Clojure vector destructuring is
@@ -629,34 +624,57 @@ functions are implemented: \texttt{map}, \texttt{reduce},
 In addition to re-implementing a subset of Clojure, Anglican
 provides special forms for probabilistic inference:
 \begin{lstlisting}[style=default]
-  (sample address? distribution)
-  (observe address? distribution value)
-  (mem function)
-  (store tag value)
-  (retrieve tag)
+(sample address? distribution)
+(observe address? distribution value)
+(mem function)
+(store tag value)
+(retrieve tag)
 \end{lstlisting}
 
-\texttt{sample} and \texttt{observe} forms correspond to
-handling $(F, \alpha)$ and $(G, y)$ correspondingly in the
-definition of probabilistic program (Section~\ref{sec:pp-def}).
-Their operational semantics can be defined in terms of
-importance sampling(Equation~\ref{eqn:p-trace}): 
-\begin{itemize}
-    \item \texttt{sample} returns a value drawn from
-        the distribution.
-    \item \texttt{observe} multiplies the unnormalized
-        probability of the program trace by the probability of
-        drawing the value from the distribution.
-\end{itemize}
-However, the actual computation involved in handling of
-\texttt{sample} and \texttt{observe} depends on the inference
-algorithm. Different inference algorithms may treat
+A good way to understand the \texttt{sample} and \texttt{observe} forms
+is to consider the imaginary interpreter in Section~\ref{sec:pp-def}.
+Under this interpreter, the \texttt{sample} form draws a value $x$ from 
+its parameter distribution $F$, and 
+generates a unique address $\alpha$ for this random draw.
+Then, it appends $(F, x, \alpha)$, the record of this random
+draw, to the log of the current execution. Finally, the
+form returns $x$. The computation of the \texttt{observe} form is
+simpler. It just appends its two parameters, distribution $G$
+and observed value $v$, to the log of the current execution,
+and returns \texttt{nil}.
+
+What we have just described is idealised semantics 
+of \texttt{sample} and \texttt{observe}. The actual computation 
+involved in handling \texttt{sample} and \texttt{observe} 
+depends on the inference algorithm. Different inference algorithms may treat
 \texttt{sample} and \texttt{observe} differently as long as they
-compute the same distribution of program results.
-Denotational and operational semantics for an idealized version
-of Anglican is introduced in \cite{SYH+16}; in general though,
+compute the same distribution on traces (i.e. sequences of sampled values), 
+namely, the one in Equation~\ref{eqn:p-trace}.
+Formal semantics for an idealized version
+of Anglican or other higher-order probabilistic programming languages are introduced 
+in \cite{SYH+16,BorgstromLGS16}; in general though,
 specifying semantics of higher-order probabilistic programming
 languages is an open problem.
+
+
+%Their operational semantics can be defined in terms of
+%importance sampling(Equation~\ref{eqn:p-trace}): 
+%\begin{itemize}
+%    \item \texttt{sample} returns a value drawn from
+%        the distribution.
+%    \item \texttt{observe} multiplies the unnormalized
+%        probability of the program trace by the probability of
+%        drawing the value from the distribution.
+%\end{itemize}
+%However, the actual computation involved in handling of
+%\texttt{sample} and \texttt{observe} depends on the inference
+%algorithm. Different inference algorithms may treat
+%\texttt{sample} and \texttt{observe} differently as long as they
+%compute the same distribution of program results.
+%Denotational and operational semantics for an idealized version
+%of Anglican is introduced in \cite{SYH+16}; in general though,
+%specifying semantics of higher-order probabilistic programming
+%languages is an open problem.
 
 \texttt{sample} and \texttt{observe} may appear anywhere in the
 code of an Anglican program. To support these forms, the
@@ -722,30 +740,30 @@ information which holds true independently of the customer's
 visit:
 
 \begin{lstlisting}[style=default]
-  (def mean-time-to-arrive
-       "average time to arrive"
-       10.)
-  (def sd-time-to-arrive
-       "standard deviation of arrival time"
-       3.)
-  (def time-sd
-       "walking time deviation"
-       1.)
+(def mean-time-to-arrive
+     "average time to arrive"
+     10.)
+(def sd-time-to-arrive
+     "standard deviation of arrival time"
+     3.)
+(def time-sd
+     "walking time deviation"
+     1.)
 \end{lstlisting}
 
 Then, we record our observations, based on which we want to
 solve the dilemma:
 
 \begin{lstlisting}[style=default]
-  (def lunch-delay
-       "time between lunch break and lunch order"
-       13.)
-  (def dinner-delay
-       "time between end of day and dinner order"
-       9.)
-  (def p-same
-       "prior probability of the same customer"
-       (/ 2. 3.))
+(def lunch-delay
+     "time between lunch break and lunch order"
+     13.)
+(def dinner-delay
+     "time between end of day and dinner order"
+     9.)
+(def p-same
+     "prior probability of the same customer"
+     (/ 2. 3.))
 \end{lstlisting}
 
 
@@ -755,10 +773,10 @@ distribution for representing uncertainty about average arrival
 time.
 
 \begin{lstlisting}[style=default]
-  (def time-to-arrive-prior 
-       "prior distribution of average arrival time"
-       (normal mean-time-to-arrive
-               sd-time-to-arrive))
+(def time-to-arrive-prior 
+     "prior distribution of average arrival time"
+     (normal mean-time-to-arrive
+             sd-time-to-arrive))
 \end{lstlisting}
 
 There are two possibilities: either the same customer visited
@@ -771,33 +789,33 @@ because they contain probabilistic forms \texttt{sample} and
 \texttt{observe}.
 
 \begin{lstlisting}[style=default]
-  (defm same-customer 
-    "observe the same customer twice"
-    [time-to-arrive-prior
-     lunch-delay
-     dinner-delay]
-    (let [time-to-arrive
-            (sample time-to-arrive-prior)]
-      (observe (normal time-to-arrive time-sd) 
-               lunch-delay)
-      (observe (normal time-to-arrive time-sd)
-               dinner-delay)
-      [time-to-arrive]))
+(defm same-customer 
+  "observe the same customer twice"
+  [time-to-arrive-prior
+   lunch-delay
+   dinner-delay]
+  (let [time-to-arrive
+          (sample time-to-arrive-prior)]
+    (observe (normal time-to-arrive time-sd) 
+             lunch-delay)
+    (observe (normal time-to-arrive time-sd)
+             dinner-delay)
+    [time-to-arrive]))
 
-  (defm different-customers
-    "observe different customers"
-    [time-to-arrive-prior
-     lunch-delay
-     dinner-delay]
-    (let [time-to-arrive-1
-            (sample time-to-arrive-prior)
-          time-to-arrive-2
-            (sample time-to-arrive-prior)]
-      (observe (normal time-to-arrive-1 time-sd) 
-               lunch-delay)
-      (observe (normal time-to-arrive-2 time-sd)
-               dinner-delay)
-      [time-to-arrive-1 time-to-arrive-2]))
+(defm different-customers
+  "observe different customers"
+  [time-to-arrive-prior
+   lunch-delay
+   dinner-delay]
+  (let [time-to-arrive-1
+          (sample time-to-arrive-prior)
+        time-to-arrive-2
+          (sample time-to-arrive-prior)]
+    (observe (normal time-to-arrive-1 time-sd) 
+             lunch-delay)
+    (observe (normal time-to-arrive-2 time-sd)
+             dinner-delay)
+    [time-to-arrive-1 time-to-arrive-2]))
 \end{lstlisting}
 
 Both functions have the same structure: we first `guess' the
@@ -811,18 +829,18 @@ guessed independently.
 We are finally ready to define the query in \textbf{Anglican}.
 
 \begin{lstlisting}[style=default]
-  (defquery deli [time-to-arrive-prior
-                  lunch-delay
-                  dinner-delay]
-    (let [is-same-customer (sample (flip p-same))
-          observe-customer (if is-same-customer
-                              same-customer
-                              different-customers)]
-      {:same-customer is-same-customer,
-       :times-to-arrive (observe-customer 
-                          time-to-arrive-prior
-                          lunch-delay
-                          dinner-delay)}))
+(defquery deli [time-to-arrive-prior
+                lunch-delay
+                dinner-delay]
+  (let [is-same-customer (sample (flip p-same))
+        observe-customer (if is-same-customer
+                            same-customer
+                            different-customers)]
+    {:same-customer is-same-customer,
+     :times-to-arrive (observe-customer 
+                        time-to-arrive-prior
+                        lunch-delay
+                        dinner-delay)}))
 \end{lstlisting}
 
 Performing inference on query \texttt{deli} computes the
@@ -849,7 +867,7 @@ the sequence is lazy, no inference is performed and no samples
 are generated until they are retrieved and processed.
 
 \begin{lstlisting}[style=default]
-  (def samples (doquery :lmh deli nil))
+(def samples (doquery :lmh deli nil))
 \end{lstlisting}
 
 To approximate the inferred distribution, we extract a finite
@@ -859,9 +877,9 @@ Hence, we drop initial $N$ samples ($N$ is 5000 in the code
 snippet below), and collect the next $N$ samples.
 
 \begin{lstlisting}[style=default]
-  (def N 5000)
-  (def results (map get-result
-                     (take N (drop N samples))))
+(def N 5000)
+(def results (map get-result
+                   (take N (drop N samples))))
 \end{lstlisting}
 
 Based on the collected samples we compute an approximation of
@@ -869,9 +887,9 @@ the posterior probability \texttt{p-same+} that the same
 customer visited the deli twice.
 
 \begin{lstlisting}[style=default]
-  (def p-same+ 
-       (/ (count (filter :same-customer results))
-          (double N)))
+(def p-same+ 
+     (/ (count (filter :same-customer results))
+        (double N)))
 \end{lstlisting}
 The \texttt{:same-customer} here represents a function
 that looks up the entry with the same name in a given map.
@@ -899,27 +917,27 @@ customer visiting twice (Figure~\ref{fig:dist-same}) and
 two different customers (Figure~\ref{fig:dist-diff})
 
 \begin{lstlisting}[style=default]
-  ;; single customer                      
-  (def time-to-arrive+ 
-      (map (fn [x] (first (:times-to-arrive x)))
-           (filter :same-customer results)))
-  (def mean-to-arrive+ (mean time-to-arrive+))
-  (def sd-to-arrive+ (std time-to-arrive+))
+;; single customer                      
+(def time-to-arrive+ 
+    (map (fn [x] (first (:times-to-arrive x)))
+         (filter :same-customer results)))
+(def mean-to-arrive+ (mean time-to-arrive+))
+(def sd-to-arrive+ (std time-to-arrive+))
 
-  ;; two customers
-  (def times-to-arrive+ 
-       (map :times-to-arrive 
-            (filter  
-              (fn [x] (not (:same-customer x)))
-              results)))
-  (def mean-1-to-arrive+
-       (mean (map first times-to-arrive+)))
-  (def sd-1-to-arrive+
-       (std (map first times-to-arrive+)))
-  (def mean-2-to-arrive+
-       (mean (map second times-to-arrive+)))
-  (def sd-2-to-arrive+
-       (std (map second times-to-arrive+)))
+;; two customers
+(def times-to-arrive+ 
+     (map :times-to-arrive 
+          (filter  
+            (fn [x] (not (:same-customer x)))
+            results)))
+(def mean-1-to-arrive+
+     (mean (map first times-to-arrive+)))
+(def sd-1-to-arrive+
+     (std (map first times-to-arrive+)))
+(def mean-2-to-arrive+
+     (mean (map second times-to-arrive+)))
+(def sd-2-to-arrive+
+     (std (map second times-to-arrive+)))
 \end{lstlisting}
 
 In addition to plotting the distribution histograms, we use
@@ -983,8 +1001,8 @@ CPS form. For example, the CPS transformation of constant
 \texttt{1} with continuation \texttt{cont} thus takes the
 following form:
 \begin{lstlisting}[style=default]
-  => (cps-of-expression 1 'cont)
-  (cont 1 $state)
+=> (cps-of-expression 1 'cont)
+(cont 1 $state)
 \end{lstlisting}
 
 \subsection {The State}
@@ -994,13 +1012,13 @@ The state (\texttt{\$state}) is threaded through the computation
 and contains data used by inference algorithms. \texttt{\$state}
 is a Clojure hash map:
 \begin{lstlisting}[style=default]
-  (def initial-state
-    "initial program state"
-    {:log-weight 0.0,
-     :result nil,
-     ::mem {},
-     ::store nil,
-     ... })
+(def initial-state
+  "initial program state"
+  {:log-weight 0.0, ;; map :log-weight to 0.0
+   :result nil,       ;; map :result to nil
+   ::store nil,       ;; map :store to nil
+   ::mem {},          ;; map ::mem to the empty map 
+   ... })
 \end{lstlisting}
 which records inference-relevant information under various keys
 such as $\texttt{:log-weight}$ and $\texttt{::mem}$.
@@ -1041,18 +1059,18 @@ The purpose of probabilistic forms \texttt{sample} and
 \texttt{observe} is to interrupt deterministic computation and
 transfer control to the inference algorithm.  Practically, this
 is achieved by  returning a \textbf{checkpoint} instead of
-invoking a continuation in a CPS-transformed program.  In
-Clojure, checkpoints are represented by values of the
+invoking a continuation in a CPS-transformed program.  
+Checkpoints are represented by values of the
 corresponding record types
 (\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} or
-\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe}).
-The types contain fields specific to each form, as well as the
+\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe})
+in Clojure. The types contain fields specific to each form, as well as the
 continuation; calling the continuation resumes the computation.
 \begin{lstlisting}[style=default]
-  => (cps-of-expression '(sample dist) 'cont)
-  (->sample dist cont $state)
-  => (cps-of-expression '(observe dist v) 'cont)
-  (->observe dist v cont $state)
+=> (cps-of-expression '(sample dist) 'cont)
+(->sample dist cont $state)
+=> (cps-of-expression '(observe dist v) 'cont)
+(->observe dist v cont $state)
 \end{lstlisting}
 Here \texttt{->sample} and \texttt{->observe} in the
 CPS-transformed expressions are constructors for Clojure
@@ -1095,13 +1113,13 @@ always have the same eye color. This can be achieved
 through the use of memoized functions. In Anglican, one
 might write:
 \begin{lstlisting}[style=default]
-  (let [eye-color (mem (fn [person]
-                         (sample (categorical
-                                   ['brown 0.5]
-                                   ['green 0.5]))))]
-    (if (not= (eye-color 'bill) (eye-color 'john))
-      (eye-color 'bill)
-      (eye-color 'john)))
+(let [eye-color (mem (fn [person]
+                       (sample (categorical
+                                 ['brown 0.5]
+                                 ['green 0.5]))))]
+  (if (not= (eye-color 'bill) (eye-color 'john))
+    (eye-color 'bill)
+    (eye-color 'john)))
 \end{lstlisting}
 The \texttt{mem} form converts a function to a memoized variant,
 which remembers past inputs and the corresponding outputs, and 
@@ -1112,7 +1130,7 @@ that the memoized function is called with the input; all subsequent
 calls with the input will just reuse these draws and return the same output.
 
 Memoization is often implemented on top of a mutable
-dictionary, where the key is the argument list and the value is
+dictionary, where the key is the argument  and the value is
 the returned value. However, there are no mutable data
 structures in a probabilistic program. Hence, \texttt{mem}'s
 memory is stored as a nested dictionary in the program state
@@ -1122,7 +1140,7 @@ unique automatically generated identifier. Each time a memoized
 function is called, one of two continuations is chosen,
 depending on whether the same function (a function with the same
 identifier) was previously called in the same run of the
-probabilistic program with the same arguments. If the memoized
+probabilistic program with the same argument. If the memoized
 result is available, the continuation of the memoized function
 call is immediately called with the stored result. Otherwise,
 the argument of \texttt{mem} is called with a continuation which
@@ -1130,23 +1148,23 @@ first creates an updated state with the memoized result, and
 then calls the `outer' continuation with the result and the
 updated state:
 \begin{lstlisting}[style=default]
-  => (mem-cps '(foo))
-  (let [M (gensym "M")]
-    (fn mem23623 [C $state & P]
-      (if (in-mem? $state M P)
-        ;; previously memoized result
-        (fn [] (C (get-mem $state M P) $state))
-        ;; new computation
-        (clojure.core/apply foo
-          ;; memoize result in state
-          (fn [V $state]
-            (fn [] (C V (set-mem $state M P V))))
-          $state P)))))
+=> (mem-cps '(foo))
+(let [M (gensym "M")]
+  (fn mem23623 [C $state & P]
+    (if (in-mem? $state M P)
+      ;; previously memoized result
+      (fn [] (C (get-mem $state M P) $state))
+      ;; new computation
+      (clojure.core/apply foo
+        ;; memoize result in state
+        (fn [V $state]
+          (fn [] (C V (set-mem $state M P V))))
+        $state P)))))
 \end{lstlisting}
 
 Memoized results are not shared among multiple runs of a
 probabilistic program, which is intended. Otherwise, it would be
-impossible to memoize functions with random results.
+impossible to memoize functions with random results. 
 
 \iftoggle{full}{\subsubsection{Continuations}}{\subsection{Managing stack size}}
 \label{seq:continuations}
@@ -1187,18 +1205,18 @@ computation continues, but the stack is collapsed on every
 continuation call. Function \texttt{continue} implements the
 wrapping and is invoked on every continuation call:
 \begin{lstlisting}[style=default]
-  => (continue 'cont 'value 'state)
-  (fn [] (cont value state))
+=> (continue 'cont 'value 'state)
+(fn [] (cont value state))
 \end{lstlisting}
 Correspondingly, the full, wrapped CPS form of
 \begin{lstlisting}[style=default]
-  (fn [x y] (+ x y))
+(fn [x y] (+ x y))
 \end{lstlisting}
 becomes
 \begin{lstlisting}[style=default]
-  (fn [cont $state x y]
-    (fn []
-      (cont (+ x y) $state)))
+(fn [cont $state x y]
+  (fn []
+    (cont (+ x y) $state)))
 \end{lstlisting}
 When the CPS-transformed function is called, it returns a
 \textit{thunk} (a parameterless function) which is then
@@ -1222,9 +1240,11 @@ current continuation and the state are passed to the called
 function. Anglican can also call Clojure functions; however,
 Clojure functions do not expect these auxiliary parameters.
 To allow the mixing of Anglican (CPS-transformed) and Clojure
-function calls in Anglican code, the Anglican compiler must be
+function calls in Anglican code, the Anglican compiler must CPS-transform
+expressions selectively~\cite{Nielsen01}. It must be
 able to recognize `primitive' (that is, implemented in Clojure
-rather than in Anglican) functions.
+rather than in Anglican) functions, and invoke
+those functions in a direct, not CPS, style. 
 
 Providing an explicit syntax for differentiating between
 Anglican and Clojure function calls would be cumbersome. Another
@@ -1245,8 +1265,8 @@ element from an ordered collection such as list and vector,
 but inside the let block in the
 following example, \texttt{first} is an Anglican function:
 \begin{lstlisting}[style=default]
-  (let [first (fn [[x & y]] x)]
-    (first '[1 2 3]))
+(let [first (fn [[x & y]] x)]
+  (first '[1 2 3]))
 \end{lstlisting}
 The Anglican compiler takes care of the shading by rebinding
 \texttt{*primitive-procedures*} in every lexical
@@ -1280,8 +1300,8 @@ instantiations of the (ad-hoc) polymorphic function
 \texttt{infer} declared as Clojure's multimethod\iftoggle{full}{
 in the \texttt{anglican.{\linebreak[0]}inference}
 namespace}{}. The function accepts an algorithm identifier,
-a query --- the probabilistic program in which to perform the
-inference, an initial value for the query, and optional
+a query (the probabilistic program in which to perform the
+inference), an initial value for the query, and optional
 algorithm parameters.
 
 \subsection{The \texttt{infer} Function}
@@ -1297,8 +1317,8 @@ the \texttt{defquery} form or its anonymous version \texttt{query}. For instance
 the following Clojure code invokes \texttt{infer} on an Anglican query
 defined anonymously via the \texttt{query} form:
 \begin{lstlisting}[style=default]
-  (let [x 1]
-    (infer :pgibbs (query x) nil))
+(let [x 1]
+  (infer :pgibbs (query x) nil))
 \end{lstlisting}
 A query is executed by calling the initial continuation of the
 query, which accepts a value and a state. The state is supplied
@@ -1315,10 +1335,10 @@ of this value are matched to the corresponding
 parameters of the query via the destructuring mechanism of Clojure.
 For example,
 \begin{lstlisting}[style=default]
-  (defquery my-query [mean sd]
-    (sample (normal mean sd)))
+(defquery my-query [mean sd]
+  (sample (normal mean sd)))
 
-  (def samples (infer :lmh my-query [1.0 3.0]))
+(def samples (infer :lmh my-query [1.0 3.0]))
 \end{lstlisting}
 Finally, any number of auxiliary arguments can be
 passed to \texttt{infer}.
@@ -1342,22 +1362,24 @@ Let us illustrate this implementation step with
 the simplest inference algorithm.
 Here is an implementation of the \texttt{infer} function for the algorithm:
 \begin{lstlisting}[style=default]
-  (derive ::algorithm
-          :anglican.inference/algorithm)
-  ;; invoked when algo parameter is :importance
-  (defmethod infer :importance 
-    [algo prog value & {}]
-    (letfn
-      ;; recursive function without any parameter
-      [sample-seq 
-        []
-        ;; lazy infinite sequence 
-        (lazy-seq
-          (cons
-            (:state (exec ::algorithm prog value
-                          initial-state))
-            (sample-seq))))]
-      (sample-seq)))
+;; Make ::algorithm be converted to 
+;; :anglican.inference/algorithm whenever necessary
+(derive ::algorithm :anglican.inference/algorithm)
+
+;; invoked when algo parameter is :importance
+(defmethod infer :importance 
+  [algo prog value & {}]
+  (letfn
+    ;; recursive function without any parameter
+    [sample-seq 
+      []
+      ;; lazy infinite sequence 
+      (lazy-seq
+        (cons
+          (:state (exec ::algorithm prog value
+                        initial-state))
+          (sample-seq))))]
+    (sample-seq)))
 \end{lstlisting}
 This implementation is dispatched 
 when \texttt{infer} receives \texttt{:importance} as its \texttt{algo} 
@@ -1423,10 +1445,10 @@ are first-class objects checkpoints with incompatible arguments
 can correspond to the same stack address. Consider the following
 program fragment:
 \begin{lstlisting}[style=default]
-  (let [dist (if use-gamma
-                 (gamma 2. 2.)
-                 (normal 0. 1.))]
-    (sample dist))
+(let [dist (if use-gamma
+               (gamma 2. 2.)
+               (normal 0. 1.))]
+  (sample dist))
 \end{lstlisting}
 The \texttt{sample} checkpoint has the same stack address in
 different traces. However, the random values should not be
@@ -1467,19 +1489,19 @@ automatic scheme is insufficient. According to the scheme:
 Consider the following simplified Anglican query:
 
 \begin{lstlisting}[style=default]
-  (defm foo []
-    (if (sample 'C1 (flip 0.5))
-      (foo)
-      (bar)))
+(defm foo []
+  (if (sample 'C1 (flip 0.5))
+    (foo)
+    (bar)))
 
-  (defm bar []
-    (case (sample 'C2 (uniform-discrete 0 3))
-      0 (bar)
-      1 (foo)
-      2 (sample 'C3 (normal 0. 1.))))
+(defm bar []
+  (case (sample 'C2 (uniform-discrete 0 3))
+    0 (bar)
+    1 (foo)
+    2 (sample 'C3 (normal 0. 1.))))
 
-  (defquery baz
-    (foo))
+(defquery baz
+  (foo))
 \end{lstlisting}
 
 An execution of the query may result in the following
@@ -1585,8 +1607,8 @@ distribution interface with the \texttt{sample*} and \texttt{observe*} methods;
 this interface is defined using Clojure's protocol mechanism
 (\texttt{anglican.{\linebreak[0]}runtime/{\linebreak[0]}distribution}).
 The \texttt{sample*} \textit{method} returns a random sample and
-roughly corresponds to the \texttt{sample} checkpoint,
-the \texttt{observe*} \textit{method} returns the log probability
+roughly corresponds to the \texttt{sample} checkpoint.
+The \texttt{observe*} \textit{method} returns the log probability
 of the value and roughly corresponds to the \texttt{observe}
 checkpoint. The methods can be, and sometimes are called from
 handlers of the corresponding checkpoints, but do not have to
@@ -1603,15 +1625,15 @@ distribution types when needed, e.g. for custom proposal distributions
 used in an inference algorithm. The
 Bernoulli distribution could be defined as follows:
 \begin{lstlisting}[style=default]
-  (defdist bernoulli
-    "Bernoulli distribution"
-    [p]
-    (sample* [this] (if (< (rand) p) 1 0))
-    (observe* [this value]
-      (Math/log (case value
-                  1 p
-                  0 (- 1. p)
-                  0.))))
+(defdist bernoulli
+  "Bernoulli distribution"
+  [p]
+  (sample* [this] (if (< (rand) p) 1 0))
+  (observe* [this value]
+    (Math/log (case value
+                1 p
+                0 (- 1. p)
+                0.))))
 \end{lstlisting}
 
 In addition to distributions, Anglican provides \textit{random processes},
@@ -1633,14 +1655,14 @@ variable and returns an updated random process.
 each random variable is distributed according to a Bernoulli distribution with
 an unknown parameter that is drawn from a beta distribution:
 \begin{lstlisting}[style=default]
-  (defproc beta-bernoulli
-    "beta-Bernoulli process"
-    [a b]
-    (produce [this] (bernoulli (/ a (+ a b))))
-    (absorb [this x]
-      (case x
-        0 (beta-bernoulli a (inc b))
-        1 (beta-bernoulli (inc a) b))))
+(defproc beta-bernoulli
+  "beta-Bernoulli process"
+  [a b]
+  (produce [this] (bernoulli (/ a (+ a b))))
+  (absorb [this x]
+    (case x
+      0 (beta-bernoulli a (inc b))
+      1 (beta-bernoulli (inc a) b))))
 \end{lstlisting}
 Unlike typical implementations of exchangeable random processes,
 Anglican's random processes do not have mutable state. The
@@ -1650,24 +1672,26 @@ forms in Anglican. A sequence of random values can be generated
 using a recursive loop in which \texttt{absorb} returns the
 updated process for the next iteration. For example:
 \begin{lstlisting}[style=default]
-  (defm sample-beta-binomial [n a b]
-    (loop [process (beta-bernoulli a b)
-           values []]
-      (if (= (count values) n)
-        values
-        (let [dist (produce process)
-              value (sample dist)]
+(defm sample-beta-binomial [n a b]
+  (loop [process (beta-bernoulli a b)
+         values []]
+    (if (= (count values) n)
+      values
+      (let [dist (produce process)
+            value (sample dist)]
         (recur (absorb process value)
                (conj values value))))))
 \end{lstlisting}
 Similarly, random processes can also be used to recursively
 observe a sequence of values:
 \begin{lstlisting}[style=default]
-  (loop [process (beta-bernoulli 1.0 1.0)
-         [value0 & values0] values] 
+(loop [process (beta-bernoulli 1.0 1.0)
+       [value0 & values0] values] 
+  (if (= (count values0) 0)
+    nil
     (let [dist (produce process)]
       (observe dist value0)
-      (recur (absorb process value0) values0)))
+      (recur (absorb process value0) values0))))
 \end{lstlisting}
 
 \section{Performance}
@@ -1684,10 +1708,10 @@ programs which involve many function calls. One such example is
 the famous \textit{Towers of Hanoi}:
 
 \begin{lstlisting}[style=default]
-  (defn towers-of-hanoi [n from to via]
-    (when (not= n 1)
-        (towers-of-hanoi (dec n) from via to)
-        (towers-of-hanoi (dec n) via to from)))
+(defn towers-of-hanoi [n from to via]
+  (when (not= n 1) ;; return nil if n = 1.
+      (towers-of-hanoi (dec n) from via to)
+      (towers-of-hanoi (dec n) via to from)))
 \end{lstlisting}
 
 We run this program for \texttt{n} equal to 10, 15, 20, and 25. Clojure
@@ -1709,7 +1733,7 @@ Anglican introduces, this is a good result.
 
 The other comparison must be made between Anglican and another
 probabilistic programming environment. WebPPL~\cite{GS15} is
-similar to Anglican in expressivity.  WebPPL runs on top of
+similar to Anglican in expressiveness.  WebPPL runs on top of
 \href{http://v8project.blogspot.com/}{V8}, a high performance
 JavaScript engine featuring a native compiler.
 Table~\ref{tbl:webppl} shows results for a few models from
@@ -1794,6 +1818,8 @@ Sub Award number 61160290-111668. Yang was supported by Institute for
 Information \& communications Technology Promotion (IITP) grant funded 
 by the Korea government (MSIP) (No.R0190-16-2011, Development of 
 Vulnerability Discovery Technologies for IoT Software Security).
+
+
 
 \bibliographystyle{abbrvnat}
 \bibliography{refs}
