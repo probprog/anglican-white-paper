@@ -49,7 +49,7 @@
 \authorinfo{David Tolpin \and Jan-Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
 
 \newtoggle{full}
-\input{toggle}
+\input{toggle-ifl }
 
 \begin{document}
 
@@ -99,6 +99,7 @@ These generic techniques may be less statistically efficient
 than techniques tailored to a specific model. However,
 probabilistic programming facilitates simpler implementations of
 models making the inference inherently faster.
+\jw{I'm not sure I understand how PP facilitates simpler implmenetations that make inference inherently faster.}
 
 While probabilistic programming systems shorten the iteration cycle in
 exploratory model design, they typically lack basic functionality needed for
@@ -296,20 +297,19 @@ can look like the following code:
     ;;; Observe samples from the distribution.
     (loop [observations data]
       (when (not-empty observations)
-        ;; Retrieve the first observation as `o',
-        ;; and store the rest of observations in 
-        ;; 'observations*'.
-        (let [[o & observations*] observations]
+        ;; Retrieve the first observation as `o'
+        (let [o (first observations)]
           ;; Observe 'o' from the guessed 
           ;; distribution 'd'.
           (observe d o))
         ;; Proceed to the next iteration with
         ;; the rest of observations.
-        (recur observations*)))
+        (recur (rest observations))))
 
     ;;; Return the distribution and parameters.
     [d a b]))
 \end{lstlisting}
+
 %\end{minipage}
 The query builds a model for the input $\texttt{data}$, 
 a sequence of data points.
@@ -321,48 +321,43 @@ using the $\texttt{sample}$ forms, the query
 first defines a so called prior distribution on these three variables,
 and then it adjusts this prior distribution based on observations in
 $\texttt{data}$ using the \texttt{observe} form.
-Samples from this adapted distribution (also called posterior distribution)
+Samples from this conditioned distribution (also called posterior distribution)
 can be obtained by running the query under one of Anglican's
 inference algorithms.
 
-Internally, an Anglican query is represented by a computation in
-\textit{continuation passing style} (CPS)~\cite{AJ89}, and inference algorithms
-exploit the CPS structure of the code to intercept probabilistic
-operations in an algorithm-specific way\footnote{\cite{GS15}
-also describe a CPS-based implementation of a probabilistic
-programming language.}. Among the available
-inference algorithms there are Particle Cascade~\cite{PWD+14},
-Lightweight Metropolis-Hastings~\cite{WSG11}, Iterative Conditional
-Sequential Monte-Carlo (Particle Gibbs)~\cite{WVM14}, and others.
-Inference on Anglican queries generates a lazy sequence of
-samples, which can be processed asynchronously in Clojure
-code for analysis, integration, and decision making.
+Clojure (and Anglican) programs run on the JVM and are able to make
+use of a wide range of Java libraries for data processing,
+networking, presentation, and imaging. Conversely, Anglican queries
+can be called from Java and other JVM languages. Programs involving
+Anglican queries can be deployed as JVM \textit{jars}, and run without modification on any platform for which the JVM is available.
 
-Clojure (and Anglican) runs on the JVM and gets access to a wide choice of Java
-libraries for data processing, networking, presentation, and imaging.
-Conversely, Anglican queries can be called from Java and other JVM languages.
-Programs involving Anglican queries can be deployed as JVM
-\textit{jars}, and run without modification on any platform for
-which JVM is available.
+A probabilistic program, or query, mostly runs deterministic code,
+except for \texttt{sample} and \texttt{observe} forms, which are
+probabilistic in nature. For this reason, Anglican can be mostly implemented as a regular programming language, except for the handling of these two special forms, which we refer to as checkpoints. Internally, an Anglican query is represented by a
+computation in \textit{continuation passing style} (CPS)~\cite{AJ89}.
+Inference algorithms exploit the CPS structure of the code to
+evaluate \texttt{sample} and \texttt{observe} checkpoints in an
+algorithm-specific manner\footnote{\cite{GS15} also describe a
+CPS-based implementation of a probabilistic programming language.}.
+The available inference algorithms include the Particle
+Cascade~\cite{PWD+14}, Lightweight Metropolis-Hastings~\cite{WSG11},
+Iterative Conditional Sequential Monte-Carlo (Particle Gibbs)
+\cite{WVM14}, and others. Inference on Anglican queries generates a
+lazy sequence of samples, which can be processed asynchronously in
+Clojure for analysis, integration, and decision making.
 
-A probabilistic program, or query, mostly runs deterministic
-code, except for certain checkpoints, in which probabilities are
-involved, and normal, linear execution of the program is
-disrupted.
-\iftoggle{full}{%
-In Anglican and similar languages there are two types
-of such checkpoints:
+% \iftoggle{full}{%
+% In Anglican and similar languages there are two types
+% of such checkpoints:
 
-\begin{itemize}
-    \item drawing a value from a random source (\texttt{sample});
-    \item conditioning a computed value on a random source
-        (\texttt{observe}).
-\end{itemize}
+% \begin{itemize}
+%     \item drawing a value from a random source (\texttt{sample});
+%     \item conditioning a computed value on a random source
+%         (\texttt{observe}).
+% \end{itemize}
 
-}{%
-}%
-Anglican can be mostly implemented as a regular programming
-language, except for the handling of these checkpoints.
+% }{%
+% }%
 \iftoggle{full}{%
 Depending on the \textit{inference algorithm}, \texttt{sample}
 and \texttt{observe} may result in implicit input/output
