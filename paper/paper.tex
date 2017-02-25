@@ -595,7 +595,7 @@ matching those of Clojure:
 (loop [binding*] expr*)
 (recur expr*)
 \end{lstlisting}
-In \texttt{defquery} parameter, \texttt{let} bindings, and
+In \texttt{defquery} parameter lists, \texttt{let} bindings, and
 \texttt{fn} argument lists, Clojure vector destructuring is
 supported. Literals for atomic types and compound literals for
 vectors, hash maps, and sets are supported just like in Clojure.
@@ -604,9 +604,9 @@ Clojure provides special forms \texttt{loop} and \texttt{recur}
 for writing tail-recursive programs.  Anglican programs are
 CPS-converted and do not use the stack; recursive calls
 in Anglican cannot lead to stack overflow.  However,
-\texttt{loop}/\texttt{recur} is provided in Anglican for
+\texttt{loop} and \texttt{recur} are provided in Anglican for
 convenience as a way to express loops. Unlike in Clojure though,
-\texttt{recur} supported only inside a \texttt{loop}.
+\texttt{recur} is supported only inside a \texttt{loop}.
 
 \subsection{Core Library}
 \label{sec:core}
