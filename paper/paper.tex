@@ -333,18 +333,30 @@ Anglican queries can be deployed as JVM \textit{jars}, and run without modificat
 
 A probabilistic program, or query, mostly runs deterministic code,
 except for \texttt{sample} and \texttt{observe} forms, which are
-probabilistic in nature. For this reason, Anglican can be mostly implemented as a regular programming language, except for the handling of these two special forms, which we refer to as checkpoints. Internally, an Anglican query is represented by a
-computation in \textit{continuation passing style} (CPS)~\cite{AJ89}.
-Inference algorithms exploit the CPS structure of the code to
-evaluate \texttt{sample} and \texttt{observe} checkpoints in an
-algorithm-specific manner\footnote{\cite{GS15} also describe a
+probabilistic in nature. For this reason, Anglican can be implemented
+as a regular programming language, except for the handling of these
+two special forms, which we refer to as checkpoints. At these
+checkpoints, Anglican programs must allow the inference algorithm to
+step in, recording information and affecting control flow. This can
+be implemented through coroutines/cooperative multitasking, and
+parallel execution/preemptive multitasking, as well as through
+explicit maintenance of program continuations at checkpoints.
+Anglican follows the latter option.
+
+Internally, an Anglican query is represented by a computation in
+\textit{continuation passing style} (CPS) \cite{AJ89}. The Anglican 
+`compiler'\iftoggle{full}{, represented by a set of functions in the
+\texttt{anglican.trap} namespace,}{} accepts a Clojure subset and 
+transforms it into a variant of CPS representation, which allows 
+inference algorithms to intervene in the execution flow at 
+probabilistic checkpoints \footnote{\cite{GS15} also describe a
 CPS-based implementation of a probabilistic programming language.}.
-The available inference algorithms include the Particle
-Cascade~\cite{PWD+14}, Lightweight Metropolis-Hastings~\cite{WSG11},
-Iterative Conditional Sequential Monte-Carlo (Particle Gibbs)
-\cite{WVM14}, and others. Inference on Anglican queries generates a
-lazy sequence of samples, which can be processed asynchronously in
-Clojure for analysis, integration, and decision making.
+The available inference algorithms include the Particle Cascade
+\cite{PWD+14}, Lightweight Metropolis-Hastings \cite{WSG11}, Iterative Conditional Sequential Monte-Carlo (Particle Gibbs)
+\cite{WVM14}, and others. Inference on Anglican queries generates a lazy sequence of samples, which can be processed asynchronously in Clojure for analysis, integration, and decision making.
+
+% Inference algorithms exploit the CPS structure of the code to
+% evaluate \texttt{sample} and \texttt{observe} checkpoints in an algorithm-specific manner
 
 % \iftoggle{full}{%
 % In Anglican and similar languages there are two types
@@ -375,13 +387,13 @@ rejection of a sample.
 
 }{%
 }%
-Because of the checkpoints, Anglican programs must allow the
-inference algorithm to step in, recording information and
-affecting control flow. This can be implemented through
-coroutines/cooperative multitasking, and parallel execution/preemptive
-multitasking, as well as through explicit
-maintenance of program continuations at checkpoints. Anglican
-follows the latter option.
+% Because of the checkpoints, Anglican programs must allow the
+% inference algorithm to step in, recording information and
+% affecting control flow. This can be implemented through
+% coroutines/cooperative multitasking, and parallel execution/preemptive
+% multitasking, as well as through explicit
+% maintenance of program continuations at checkpoints. Anglican
+% follows the latter option.
 \iftoggle{full}{%
 Clojure is a functional language, and continuation-passing style
 (CPS) transformation is a well-developed technique in the area
@@ -394,11 +406,6 @@ computation with access to continuations in probabilistic
 checkpoints. 
 }{%
 }%
-The Anglican `compiler'\iftoggle{full}{, represented by a set of
-functions in the \texttt{anglican.trap} namespace,}{} accepts a
-Clojure subset and transforms it into a variant of CPS
-representation, which allows inference algorithms to intervene
-in the execution flow at probabilistic checkpoints.
 
 Anglican is intended to co-exist with Clojure and be a part of
 the source of a Clojure program. To facilitate this, Anglican
@@ -407,7 +414,7 @@ programs, or queries, are wrapped by macros\iftoggle{full}{ (defined in the
 transformations and define Clojure values suitable for passing
 as arguments to inference algorithms (\texttt{defquery},
 \texttt{query}). In addition to defining entire queries,
-Anglican promotes modularization of inference algorithms through
+Anglican promotes modularization of probabilistic models through
 the definitions of \textit{probabilistic functions} using
 \texttt{defm} (Anglican counterpart of Clojure \texttt{defn}).
 Probabilistic functions are
