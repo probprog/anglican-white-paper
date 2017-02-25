@@ -1684,7 +1684,7 @@ updated process for the next iteration. For example:
 Similarly, random processes can also be used to recursively
 observe a sequence of values:
 \begin{lstlisting}[style=default]
-(defm observe-beta-binomial [values a b]
+(defm observe-beta-bernoulli [values a b]
   (loop [process (beta-bernoulli a b)
          values values] 
     (when (not-empty values)
