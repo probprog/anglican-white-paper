@@ -1017,22 +1017,21 @@ is a Clojure hash map:
   "initial program state"
   {:log-weight 0.0, ;; map :log-weight to 0.0
    :result nil,       ;; map :result to nil
-   ::store nil,       ;; map :store to nil
+   ::store nil,       ;; map ::store to nil
    ::mem {},          ;; map ::mem to the empty map 
    ... })
 \end{lstlisting}
-which records inference-relevant information under various keys
-such as $\texttt{:log-weight}$ and $\texttt{::mem}$.
-The full list of map entries depends on the inference
-algorithm. Except for transformation of
-the \texttt{mem} form (which converts a function to one with memoization), 
-CPS transformation routines
-are not aware of contents of \texttt{\$state}, do not access or
-modify it directly, but rather just thread the state unmodified
-through the computation. Algorithm-specific handlers of
-checkpoints corresponding to the probabilistic forms
-(\texttt{sample}, \texttt{observe}) modify the
-state and reinject a new state into the computation.
+which records inference-relevant information under various keys such
+as $\texttt{:log-weight}$ and $\texttt{::mem}$. The full list of map
+entries depends on the inference algorithm. CPS transformation
+routines are not aware of the contents of \texttt{\$state} and do not
+access or modify it directly. Rather, they just thread the state
+unmodified through the computation. The sole exception is the
+transformation of  the \texttt{mem} form (which converts a function
+to one with memoization). Algorithm-specific handlers of checkpoints
+corresponding to the probabilistic forms (\texttt{sample},
+\texttt{observe}) modify the state and insert an updated state into
+the computation.
 
 \iftoggle{full}{%
 \input{expression-kinds.tex}
