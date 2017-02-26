@@ -21,7 +21,7 @@
 \iftoggle{full}{
 \lstdefinestyle{default}{language=Anglican,basicstyle=\ttfamily\small, columns=flexible, showstringspaces=false}
 }{
-\lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{0.85}\ttfamily\small, columns=flexible, showstringspaces=false}
+\lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{0.8}\ttfamily\small, columns=flexible, showstringspaces=false}
 }
 
 \input{anglican-color}
@@ -772,9 +772,10 @@ using an inference algorithm. Function
 by the \texttt{anglican.core} namespace}{} accepts the inference
 algorithm, the query, and optional parameters, and returns a
 lazy sequence of samples. We use here the inference algorithm
-called Lightweight Metropolis-Hastings (LMH). \iftoggle{full}{The algorithm is
+called Lightweight Metropolis-Hastings (LMH). The algorithm is
 somewhat slow to converge but can be used with any Anglican
-query, and should be robust enough for our simple problem.}{}
+query, and should be robust enough for our simple problem.
+
 We bind the results of \texttt{doquery} to variable
 \texttt{samples}, to analyse the results later. However, since
 the sequence is lazy, no inference is performed and no samples
@@ -785,10 +786,10 @@ are generated until they are retrieved and processed.
 \end{lstlisting}
 
 To approximate the inferred distribution, we extract a finite
-subsequence of samples. \iftoggle{full}{Many algorithms use an initial
+subsequence of samples. Many algorithms use an initial
 subsequence of samples to converge to the target distribution.
 Hence, we drop initial $N$ samples ($N$ is 5000 in the code
-snippet below), and collect the next $N$ samples.}{}
+snippet below), and collect the next $N$ samples.
 
 \begin{lstlisting}[style=default]
 (def N 5000)
@@ -828,9 +829,32 @@ distributions, and plot distribution histograms for the same
 customer visiting twice (Figure~\ref{fig:dist-same}) and
 two different customers (Figure~\ref{fig:dist-diff}).
 
-\iftoggle{full}{%
-\input{case-study-mean-std}
-}{}%
+\begin{lstlisting}[style=default]
+;; single customer                      
+(def time-to-arrive+ 
+    (map (fn [x] (first (:times-to-arrive x)))
+         (filter :same-customer results)))
+(def mean-to-arrive+ (mean time-to-arrive+))
+(def sd-to-arrive+ (std time-to-arrive+))
+
+;; two customers
+(def times-to-arrive+ 
+  (map :times-to-arrive 
+    (filter (fn [x] (not (:same-customer x))) results)))
+(def mean-1-to-arrive+ (mean (map first times-to-arrive+)))
+(def sd-1-to-arrive+ (std (map first times-to-arrive+)))
+(def mean-2-to-arrive+ (mean (map second times-to-arrive+)))
+(def sd-2-to-arrive+ (std (map second times-to-arrive+)))
+\end{lstlisting}
+
+In addition to plotting the distribution histograms, we use
+functions \texttt{mean}, \texttt{std} provided
+in the \texttt{anglican.{\linebreak[0]}stat} namespace
+along with other useful statistical functions to compute
+summary statistics. This is another illustration of advantage of
+tight integration between Clojure and Anglican --- probabilistic
+models are expressed in Anglican. However, processing of data
+and results can rely on the full power of Clojure.
 
 \begin{figure}
     \centering
@@ -850,12 +874,10 @@ two different customers (Figure~\ref{fig:dist-diff}).
 \input{case-study-bbvb}
 }{}%
 
-\iftoggle{full}{
 This completes the case study, where we showed a probabilistic
 programming solution of a problem, implemented and analysed in
-Anglican and Clojure, using two different
-inference algorithms
-}{}.
+Anglican and Clojure\iftoggle{full}{, using two different
+inference algorithms}{}.
 
 \section{Macro-based Compilation}
 \label{sec:compilation}
