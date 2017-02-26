@@ -226,8 +226,6 @@ major contributions:
             computation. This contrasts with typical \emph{stateful}
             implementations of these processes in other probabilistic 
             programming languages.
-%    \item Specification of probabilistic forms in Anglican which facilitates 
-%        separation of probabilistic programs from inference algorithms.
 \end{itemize}
 
 \section{Related Work} \label{sec:related}
@@ -357,21 +355,6 @@ The available inference algorithms include the Particle Cascade
 \cite{PWD+14}, Lightweight Metropolis-Hastings \cite{WSG11}, Iterative Conditional Sequential Monte-Carlo (Particle Gibbs)
 \cite{WVM14}, and others. Inference on Anglican queries generates a lazy sequence of samples, which can be processed asynchronously in Clojure for analysis, integration, and decision making.
 
-% Inference algorithms exploit the CPS structure of the code to
-% evaluate \texttt{sample} and \texttt{observe} checkpoints in an algorithm-specific manner
-
-% \iftoggle{full}{%
-% In Anglican and similar languages there are two types
-% of such checkpoints:
-
-% \begin{itemize}
-%     \item drawing a value from a random source (\texttt{sample});
-%     \item conditioning a computed value on a random source
-%         (\texttt{observe}).
-% \end{itemize}
-
-% }{%
-% }%
 \iftoggle{full}{%
 Depending on the \textit{inference algorithm}, \texttt{sample}
 and \texttt{observe} may result in implicit input/output
@@ -386,16 +369,9 @@ statement which `reads' values from a random source,
 and a non-deterministic control statement
 (with delayed effect), eventually affecting acceptance or
 rejection of a sample.
-
 }{%
 }%
-% Because of the checkpoints, Anglican programs must allow the
-% inference algorithm to step in, recording information and
-% affecting control flow. This can be implemented through
-% coroutines/cooperative multitasking, and parallel execution/preemptive
-% multitasking, as well as through explicit
-% maintenance of program continuations at checkpoints. Anglican
-% follows the latter option.
+
 \iftoggle{full}{%
 Clojure is a functional language, and continuation-passing style
 (CPS) transformation is a well-developed technique in the area
@@ -425,9 +401,6 @@ written in Anglican, may include probabilistic forms
 called from inside Anglican queries, just like functions locally
 defined within the same query.
 
-%Operational semantics of Anglican queries is different from that
-%of Clojure code, therefore queries must be called through
-%inference algorithms, rather than `directly'. 
 The operational semantics of an Anglican query are different from those
 of Clojure code, and are determined by an inference algorithm. Thus,
 Anglican queries must be called through these inference algorithms, rather
@@ -444,16 +417,6 @@ as a multimethod) so as to handle \texttt{sample} and
 \texttt{observe} in an algorithm-specific manner and
 to construct an appropriate result on the
 termination of a probabilistic program.
-
-%When inference
-%is performed on an Anglican query, the query is run by a
-%particular inference algorithm. Inference algorithms must
-%provide an implementation for \texttt{infer}, as well as
-%override the polymorphic function \texttt{checkpoint} (defined
-%as a multimethod) so as to handle \texttt{sample} and
-%\texttt{observe} in an algorithm-specific manner and
-%to construct an appropriate result on the
-%termination of a probabilistic program.
 
 Finally, Anglican queries use `primitive', or commonly known and
 used, distributions, to draw random samples and condition
@@ -514,51 +477,6 @@ $\pi(\pmb{x}) := \gamma(\pmb{x}) / Z$ where
 and $Z$ is the normalization constant $Z := \int \gamma(\pmb{x})d(\pmb{x})$. The integral and the density use the default measure obtained by the standard extension of
 a $\sigma$-finite measure on finite traces where the $\sigma$-finite measure itself is defined by
 a countable sum of Lebesgue and counting measures.
-
-%\section{Probabilistic Program}
-%\label{sec:pp-def}
-%
-%Anglican is a language for expressing probabilistic programs.
-%A probabilistic program is a stateful \textit{deterministic} computation
-%$\mathcal{P}$ with the following properties~\cite{TMP+15}:
-%\begin{itemize}
-%\item Initially, $\mathcal{P}$ expects no arguments.
-%\item On every call, $\mathcal{P}$ returns either a distribution
-%  and an address $(F,\alpha)$, a distribution and a value $(G,
-%        y)$, or a value $z$.
-%\item Upon returning $F$, $\mathcal{P}$ expects a value $x$ drawn from $F$ as
-%    the argument to the next call (\texttt{sample} in Anglican).
-%\item Upon returning $(G, y)$, $\mathcal{P}$ is invoked again
-%    without arguments (\texttt{observe} in Anglican).
-%\item Upon returning $z$, $\mathcal{P}$ terminates.
-%\end{itemize}
-%A program is run by calling $\mathcal{P}$ repeatedly until
-%termination.
-%
-%A program need not generate the same sequence of random variables in every
-%execution. For this reason we assume that each random variable $x$ is assigned
-%a unique label $\alpha$, which we call an address, that induces a
-%correspondence between variables in different executions. Every execution
-%implicitly produces a sequence of triples of distributions, values of
-%\textit{latent} random variables, and addresses, $(F_i, x_i, \alpha_i)$.  We
-%call this sequence a \textit{trace} and denote it by $\pmb{x}$. A trace induces
-%a sequence of pairs $(G_j, y_j)$ of distributions and values of
-%\textit{observed} random variables. We call this sequence an \textit{image} and
-%denote it by $\pmb{y}$. For notational simplicity we assume that the program
-%always generates the same ordered set $\pmb{z}$ of \textit{results} $z_k$.
-%
-%The target density $\pi(\vec{x}) := \gamma(\vec{x}) / Z$ of a program
-%is defined in terms of the product of the probabilities of all random
-%choices $\pmb{x}$ and the likelihood of all observations $\pmb{y}$
-%\begin{align}
-%  \gamma(\pmb{x}) 
-%  &:= 
-%%  \prod_{i=1}^{\left|\pmb{x}\right|}
-%  p_{F_i}(x_i) \prod_{j=1}^{\left|\pmb{y}\right|}p_{G_j}(y_{j}).
-%  \label{eqn:p-trace}
-%\end{align}
-%The objective of inference in probabilistic program $\mathcal{P}$
-%is to discover the distribution of $\pmb{z}$.
 
 \section{Language}
 \label{sec:language}
@@ -1392,9 +1310,6 @@ executing the program \texttt{prog} using \texttt{exec}
 and retrieving the final inference state of the execution 
 using \texttt{:state}. For checkpoint handlers, importance sampling simply
 relies on their default implementations.
-%\texttt{anglican.importance/{\linebreak[0]}infer} just calls
-%\texttt{anglican.inference/{\linebreak[0]}exec} and relies on default
-%implementations of checkpoint handlers. 
 
 Typically, an inference
 algorithm has its own implementations of
