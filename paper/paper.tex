@@ -1,23 +1,20 @@
-\documentclass[preprint]{sigplanconf}
+\documentclass[sigconf]{acmart}
+
+\setcopyright{rightsretained}
 
 \usepackage{siunitx}
 \usepackage[color]{changebar}
 \usepackage{enumitem}
 \usepackage[lighttt]{lmodern}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsfonts}
 \usepackage{graphicx}
-%\usepackage{microtype}
 
 \usepackage{listings}
-\usepackage{lmodern}
+
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
      {<->sub*lmtt/m/sl}{}
-\lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{1.0}\ttfamily, columns=flexible, showstringspaces=false}
+\lstdefinestyle{default}{language=Anglican,basicstyle=\ttfamily, columns=flexible, showstringspaces=false}
 
-\usepackage{hyperref}
 \usepackage{url}
 \usepackage{etoolbox}
 
@@ -45,15 +42,31 @@
 % ...
 % \cbend
 
-\title{Design and Implementation of Probabilistic Programming Language Anglican}
-\authorinfo{David Tolpin \and Jan-Willem van de Meent \and Hongseok Yang \and Frank Wood}{University of Oxford}{dtolpin@robots.ox.ac.uk \and jwvdm@robots.ox.ac.uk \and hongseok.yang@cs.ox.ac.uk \and fwood@robots.ox.ac.uk}
-
 \newtoggle{full}
 \input{toggle}
 
-\begin{document}
+\acmConference[IFL'16]{Implementation and Application of Functional Programming Languages}{August 2016}{Leuven, Belgium}
+\acmYear{2016}
+\copyrightyear{2017}
 
-\maketitle
+\begin{document}
+\title{Design and Implementation of Probabilistic Programming Language Anglican}
+
+\author{David Tolpin}
+\affiliation{\institution{University of Oxford}}
+\email{dtolpin@robots.ox.ac.uk}
+
+\author{Jan-Willem van de Meent}
+\affiliation{\institution{University of Oxford}}
+\email{jwvdm@robots.ox.ac.uk}
+
+\author{Hongseok Yang}
+\affiliation{\institution{University of Oxford}}
+\email{hongseok.yang@cs.ox.ac.uk}
+
+\author{Frank Wood}
+\affiliation{\institution{University of Oxford}}
+\email{fwood@cs.ox.ac.uk}
 
 \begin{abstract}
     Anglican is a probabilistic programming system designed to interoperate
@@ -72,6 +85,8 @@
     probabilistic modelling concepts are mapped naturally
     to the functional foundation.
 \end{abstract}
+
+\maketitle
 
 \section{Introduction}
 \label{sec:intro}
@@ -577,26 +592,6 @@ in \cite{SYH+16,BorgstromLGS16}; in general though,
 specifying semantics of higher-order probabilistic programming
 languages is an open problem.
 
-
-%Their operational semantics can be defined in terms of
-%importance sampling(Equation~\ref{eqn:p-trace}): 
-%\begin{itemize}
-%    \item \texttt{sample} returns a value drawn from
-%        the distribution.
-%    \item \texttt{observe} multiplies the unnormalized
-%        probability of the program trace by the probability of
-%        drawing the value from the distribution.
-%\end{itemize}
-%However, the actual computation involved in handling of
-%\texttt{sample} and \texttt{observe} depends on the inference
-%algorithm. Different inference algorithms may treat
-%\texttt{sample} and \texttt{observe} differently as long as they
-%compute the same distribution of program results.
-%Denotational and operational semantics for an idealized version
-%of Anglican is introduced in \cite{SYH+16}; in general though,
-%specifying semantics of higher-order probabilistic programming
-%languages is an open problem.
-
 \texttt{sample} and \texttt{observe} may appear anywhere in the
 code of an Anglican program. To support these forms, the
 inference engine must be able to intervene into execution of the
@@ -872,14 +867,14 @@ and results can rely on the full power of Clojure.
 
 \begin{figure}
     \centering
-    \includegraphics[trim={12pt 0 0 0},scale=0.65]{same-customer-time.pdf}
+    \includegraphics[trim={12pt 0 0 0},scale=0.6]{same-customer-time.pdf}
     \caption{Arrival time distribution for a single customer.}
     \label{fig:dist-same}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[trim={12pt 0 0 0},scale=0.65]{different-customers-times.pdf}
+    \includegraphics[trim={12pt 0 0 0},scale=0.6]{different-customers-times.pdf}
     \caption{Arrival time distributions for two customers.}
     \label{fig:dist-diff}
 \end{figure}
@@ -1302,7 +1297,7 @@ Here is an implementation of the \texttt{infer} function for the algorithm:
     (sample-seq)))
 \end{lstlisting}
 This implementation is dispatched 
-when \texttt{infer} receives \texttt{:importance} as its \texttt{algo} 
+when \texttt{infer} receives {\tt :im\-por\-tan\-ce} as its \texttt{algo} 
 parameter. (Anglican includes multiple implementations of \texttt{infer}
 for different inference algorithms.) Once dispatched, it lazily 
 constructs an infinite sequence of inference states by repeatedly 
@@ -1728,7 +1723,7 @@ efficiency and expressive power of Anglican owe to adherence to
 the functional approach as much as to rich inference
 opportunities of the Anglican environment.
 
-\acks
+\section*{Acknowledgements}
 
 This work was partially supported under DARPA PPAML through the
 U.S. AFRL under Cooperative Agreement number FA8750- 14-2-0006,
@@ -1737,7 +1732,7 @@ Information \& communications Technology Promotion (IITP) grant funded
 by the Korea government (MSIP) (No.R0190-16-2011, Development of 
 Vulnerability Discovery Technologies for IoT Software Security).
 
-\bibliographystyle{abbrvnat}
+\bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}
 
 \end{document}
