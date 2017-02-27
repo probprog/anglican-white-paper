@@ -12,6 +12,11 @@ PDFLATEX=pdflatex -shell-escape
 	$(PDFLATEX) ${basename $<}
 	$(PDFLATEX) ${basename $<}
 
+arxiv: arxiv.zip
+
+arxiv.zip: full paper.bbl
+	zip $@ anglican-color.tex case-study-bbvb.tex code-explosion.tex different-customers-times.pdf expression-kinds.tex number-of-customers.pdf paper.tex same-customer-time.pdf toggle.tex sigplanconf.cls paper.bbl
+
 paper.pdf: paper.tex \
 	toggle.tex \
 	anglican-color.tex \
