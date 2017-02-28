@@ -1,10 +1,13 @@
+We thank the reviews for in-depth reviews. For convenience, here is a
+brief description of how we addressed the reviewers' recommendations:
+
 1) Add a clear and concise statement of the contributions up front.
 
 Added a bullet list of contributions to the end of introduction.
 
 2) The treatment of related work must be significantly improved.
 
-Added section 2. Related work.
+Added section 2: Related work.
 
 3) A clear and concise overview of the constructs of the language has
 to be added, along with a good characterisation of at least the
@@ -14,12 +17,13 @@ as possible.
 Rewrote section 5. Language, with the syntax of Clojure forms
 supported, core library support, and section 5.3 on
 probabilistic forms, with details on their syntax and semantics, 
-related to section 4, the definition of probabilistic program.
+related to (new) section 4: Probability of a problem execution.
 
 4) Clarify why the language constructs justify building a new language
 instead of making a library.
 
-Added a clarification at the end of subsection 5.3.
+Added a general clarification at the end of section 3, design outline, 
+and an additional explanation at the end of subsection 5.3.
 
 5) Clearly bring out the central ideas and techniques of implementing
 the core constructs "sample" and "observe" as independently as
@@ -59,7 +63,7 @@ indeed a contribution of the paper:
 > similar languages can learn a lot from your work, and it would be
 > great if that is made as easy as possible!
 
-Added addressing of checkpoints to the list of contribution in
+Added addressing of checkpoints to the list of contributions in
 the beginning of the paper. In subsection 8.3, Addressing of
 checkpoint, changed the language 'uses a different scheme' to
 'introduces a new scheme'.
@@ -74,11 +78,11 @@ from benchmarking.
 
 Added section 10 Performance, with performance comparison
 between Anglican and Clojure, as well as between Anglican and
-other probabilistic programming environment, with numbers.
+other probabilistic programming environments, with quantitative evaluation 
+on a set of probabilistic models.
 
 10) If more space needs to be saved, remove the two paragraphs starting
 "There are several ways to build a programming language..."
 
 Removed the aforementioned paragraphs as well as other content
 which is either too specific or trivial for the audience of IFL.
-
