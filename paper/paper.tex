@@ -950,14 +950,14 @@ CPS-transformed expressions are constructors for Clojure
 records, and they take values of their fields as arguments.
 Calling the continuation resumes the computation.
 
-Upon encountering a checkpoint, the inference algorithm computes
-the updated program state and the value to be passed to the
-continuation.  How the state is updated, the number of times the
-continuation is called, and the value passed to the continuation
-of \texttt{sample} depend on the inference algorithm executing
-the program.  Section~\ref{sec:inference} provides more detail
-on internals of inference algorithms and their interaction with
-probabilistic programs.
+Upon encountering a \texttt{sample} or \texttt{observe} record, the
+inference algorithm computes the updated program state and the value
+to be passed to the continuation.  How the state is updated, the
+number of times the continuation is called, and the value passed to
+the continuation of \texttt{sample} depend on the inference algorithm
+executing the program.  Section~\ref{sec:inference} provides more
+detail on internals of inference algorithms and their interaction
+with probabilistic programs.
 
 \iftoggle{full}{%
 \smallskip
@@ -1467,9 +1467,9 @@ distribution interface with the \texttt{sample*} and \texttt{observe*} methods;
 this interface is defined using Clojure's protocol mechanism
 (\texttt{anglican.{\linebreak[0]}runtime/{\linebreak[0]}distribution}).
 The \texttt{sample*} \textit{method} returns a random sample and
-roughly corresponds to the \texttt{sample} checkpoint.
+roughly corresponds to the default implementation of the \texttt{sample} checkpoint.
 The \texttt{observe*} \textit{method} returns the log probability
-of the value and roughly corresponds to the \texttt{observe}
+of the value, which roughly corresponds to the default implementation of the \texttt{observe}
 checkpoint. The methods can be, and sometimes are called from
 handlers of the corresponding checkpoints, but do not have to
 be. For example, in LMH either the \texttt{sample*} or
