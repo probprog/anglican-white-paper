@@ -13,7 +13,7 @@
 
 
 \newtoggle{full}
-\input{toggle}
+\input{toggle-ifl}
 
 \ttfamily
 \DeclareFontShape{OT1}{lmtt}{m}{it}
@@ -363,17 +363,14 @@ networking, presentation, and imaging. Conversely, Anglican queries
 can be called from Java and other JVM languages. Programs involving
 Anglican queries can be deployed as JVM \textit{jars}, and run without modification on any platform for which the JVM is available.
 
-A probabilistic program, or query, mostly runs deterministic code,
-except for \texttt{sample} and \texttt{observe} forms, which are
-probabilistic in nature. For this reason, Anglican can be implemented
-as a regular programming language, except for the handling of these
-two special forms, which we refer to as checkpoints. At these
-checkpoints, Anglican programs must allow the inference algorithm to
-step in, recording information and affecting control flow. This can
-be implemented through coroutines/cooperative multitasking, and
-parallel execution/preemptive multitasking, as well as through
-explicit maintenance of program continuations at checkpoints.
-Anglican follows the latter option.
+A probabilistic program, or query, mostly runs deterministic code.
+Aside from the special forms \texttt{sample} and \texttt{observe},
+which are probabilistic in nature, Anglican can be implemented as a
+regular programming language. At \texttt{sample} and
+\texttt{observe} forms, normal deterministic execution is 
+interrupted and Anglican programs must allow the inference algorithm
+to step in, recording information and affecting control flow. We refer these points in the execution as checkpoints. Handling of 
+checkpoints can be implemented through coroutines/cooperative multitasking, and parallel execution/preemptive multitasking, as well as through explicit maintenance of program continuations. Anglican follows the latter option. 
 
 Internally, an Anglican query is represented by a computation in
 \textit{continuation passing style} (CPS) \cite{AJ89}. The Anglican 
@@ -940,23 +937,18 @@ programming language.
 The purpose of probabilistic forms \texttt{sample} and
 \texttt{observe} is to interrupt deterministic computation and
 transfer control to the inference algorithm.  Practically, this
-is achieved by  returning a \textbf{checkpoint} instead of
-invoking a continuation in a CPS-transformed program.  
-Checkpoints are represented by values of the
-corresponding record types
-(\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} or
-\texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe})
-in Clojure. The types contain fields specific to each form, as well as the
-continuation; calling the continuation resumes the computation.
+is achieved by returning a record that represents the state of program execution at the checkpoint, rather than invoking a continuation. The Clojure record used to interrupt execution at 
+\texttt{sample} and \texttt{observe} forms are \texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} and \texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe} respectively. These records contain a unique identifier (which we will discuss in detail in section \ref{sec:addressing}), the arguments to the special form, the continuation, and the state.
 \begin{lstlisting}[style=default]
 => (cps-of-expression '(sample dist) 'cont)
-(->sample dist cont $state)
+(->sample 'S1 dist cont $state)
 => (cps-of-expression '(observe dist v) 'cont)
-(->observe dist v cont $state)
+(->observe 'O1 dist v cont $state)
 \end{lstlisting}
 Here \texttt{->sample} and \texttt{->observe} in the
 CPS-transformed expressions are constructors for Clojure
 records, and they take values of their fields as arguments.
+Calling the continuation resumes the computation.
 
 Upon encountering a checkpoint, the inference algorithm computes
 the updated program state and the value to be passed to the
