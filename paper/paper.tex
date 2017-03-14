@@ -21,7 +21,7 @@
 \iftoggle{full}{
 \lstdefinestyle{default}{language=Anglican,basicstyle=\ttfamily\small, columns=flexible, showstringspaces=false}
 }{
-\lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{0.85}\ttfamily\small, columns=flexible, showstringspaces=false}
+\lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{0.842}\ttfamily\small, columns=flexible, showstringspaces=false}
 }
 
 \input{anglican-color}
@@ -831,14 +831,14 @@ two different customers (Figure~\ref{fig:dist-diff}).
 
 \begin{figure}
     \centering
-    \includegraphics[trim={12pt 0 0 0},scale=0.6]{same-customer-time.pdf}
+    \includegraphics[trim={6pt 12pt 0 12pt},scale=0.6]{same-customer-time.pdf}
     \caption{Arrival time distribution for a single customer.}
     \label{fig:dist-same}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[trim={12pt 0 0 0},scale=0.6]{different-customers-times.pdf}
+    \includegraphics[trim={6pt 12pt 0 12pt},clip,scale=0.6]{different-customers-times.pdf}
     \caption{Arrival time distributions for two customers.}
     \label{fig:dist-diff}
 \end{figure}
@@ -1238,8 +1238,7 @@ Here is an implementation of the \texttt{infer} function for the algorithm:
 (derive ::algorithm :anglican.inference/algorithm)
 
 ;; invoked when algo parameter is :importance
-(defmethod infer :importance 
-  [algo prog value & {}]
+(defmethod infer :importance [algo prog value & {}]
   (letfn
     ;; recursive function without any parameter
     [sample-seq []
@@ -1489,9 +1488,8 @@ Bernoulli distribution could be defined as follows:
   (sample* [this] (if (< (rand) p) 1 0))
   (observe* [this value]
     (Math/log (case value
-                1 p
-                0 (- 1. p)
-                0.))))
+                   1 p
+                   0 (- 1. p)))))
 \end{lstlisting}
 
 In addition to distributions, Anglican provides \textit{random processes},
@@ -1517,8 +1515,8 @@ an unknown parameter that is drawn from a beta distribution:
   (produce [this] (bernoulli (/ a (+ a b))))
   (absorb [this x]
     (case x
-      0 (beta-bernoulli a (inc b))
-      1 (beta-bernoulli (inc a) b))))
+        0 (beta-bernoulli a (inc b))
+        1 (beta-bernoulli (inc a) b))))
 \end{lstlisting}
 Unlike typical implementations of exchangeable random processes,
 Anglican's random processes do not have mutable state. The
