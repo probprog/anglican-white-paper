@@ -27,6 +27,12 @@ ifl:
 toggle.tex: toggle-ifl.tex
 	cp $< $@
 
+acmzip: acm.zip 
+	
+acm.zip: ifl paper.pdf paper.bbl paper.aux
+	zip $@ acmart.cls anglican-color.tex different-customers-times.pdf paper.tex refs.bib same-customer-time.pdf toggle.tex paper.bbl paper.aux paper.out paper.pdf
+
+
 clean:
 	rm -f *.aux *.log *.bbl *.blg 
 
