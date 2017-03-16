@@ -940,10 +940,10 @@ transfer control to the inference algorithm.  Practically, this
 is achieved by returning a record that represents the state of program execution at the checkpoint, rather than invoking a continuation. The Clojure record used to interrupt execution at 
 \texttt{sample} and \texttt{observe} forms are \texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} and \texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe} respectively. These records contain a unique identifier (which we will discuss in detail in section \ref{sec:addressing}), the arguments to the special form, the continuation, and the state.
 \begin{lstlisting}[style=default]
-=> (cps-of-expression '(sample dist) cont)
-(->sample 'S1 dist cont $state)
-=> (cps-of-expression '(observe dist v) cont)
-(->observe 'O1 dist v cont $state)
+=> (cps-of-expression '(sample dist) 'cont)
+(->sample S1 dist cont $state)
+=> (cps-of-expression '(observe dist v) 'cont)
+(->observe O1 dist v cont $state)
 \end{lstlisting}
 Here \texttt{->sample} and \texttt{->observe} in the
 CPS-transformed expressions are constructors for Clojure
