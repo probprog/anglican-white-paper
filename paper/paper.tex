@@ -1,7 +1,5 @@
 \documentclass[sigconf]{acmart}
 
-\setcopyright{acmlicensed}
-
 \usepackage{siunitx}
 \usepackage[color]{changebar}
 \usepackage[lighttt]{lmodern}
@@ -13,14 +11,16 @@
 \newtoggle{full}
 \input{toggle}
 
+\setcopyright{acmlicensed}
+
 \ttfamily
-\DeclareFontShape{OT1}{lmtt}{m}{it}
+\DeclareFontShape{T1}{lmtt}{m}{it}
      {<->sub*lmtt/m/sl}{}
-\iftoggle{full}{
+\iftoggle{full}{%
 \lstdefinestyle{default}{language=Anglican,basicstyle=\ttfamily\small, columns=flexible, showstringspaces=false}
-}{
+}{%
 \lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{0.839}\ttfamily\small, columns=flexible, showstringspaces=false}
-}
+}%
 
 \input{anglican-color}
 
@@ -45,10 +45,6 @@
 % \cbstart
 % ...
 % \cbend
-
-\acmConference[IFL 2016]{Implementation and Application of Functional Programming Languages}{August 2016}{Leuven, Belgium}
-\acmYear{2016}
-\copyrightyear{2017}
 
 \begin{document}
 \title{Design and Implementation of Probabilistic Programming Language Anglican}
@@ -108,7 +104,6 @@
 \ccsdesc[300]{Software and its engineering~Specialized application languages}
 
 \copyrightyear{2016}
-\setcopyright{acmlicensed}
 \acmConference[IFL 2016]{Implementation and Application of Functional Programming Languages}{August 2016}{Leuven, Belgium}
 \acmISBN{978-1-4503-4767-9/16/08}
 \acmPrice{15.00}
