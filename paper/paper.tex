@@ -21,7 +21,7 @@
 \iftoggle{full}{
 \lstdefinestyle{default}{language=Anglican,basicstyle=\ttfamily\small, columns=flexible, showstringspaces=false}
 }{
-\lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{0.842}\ttfamily\small, columns=flexible, showstringspaces=false}
+\lstdefinestyle{default}{language=Anglican,basicstyle=\linespread{0.839}\ttfamily\small, columns=flexible, showstringspaces=false}
 }
 
 \input{anglican-color}
@@ -48,7 +48,7 @@
 % ...
 % \cbend
 
-\acmConference[IFL'16]{Implementation and Application of Functional Programming Languages}{August 2016}{Leuven, Belgium}
+\acmConference[IFL 2016]{Implementation and Application of Functional Programming Languages}{August 2016}{Leuven, Belgium}
 \acmYear{2016}
 \copyrightyear{2017}
 
@@ -109,6 +109,12 @@
 \ccsdesc[300]{Software and its engineering~Functional languages}
 \ccsdesc[300]{Software and its engineering~Specialized application languages}
 
+\copyrightyear{2016}
+\setcopyright{acmlicensed}
+\acmConference[IFL 2016]{Implementation and Application of Functional Programming Languages}{August 2016}{Leuven, Belgium}
+\acmISBN{978-1-4503-4767-9/16/08}
+\acmPrice{15.00}
+\acmDOI{http://dx.doi.org/10.1145/3064899.3064910}
 
 \maketitle
 
@@ -941,9 +947,9 @@ is achieved by returning a record that represents the state of program execution
 \texttt{sample} and \texttt{observe} forms are \texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}sample} and \texttt{anglican.{\linebreak[0]}trap.{\linebreak[0]}observe} respectively. These records contain a unique identifier (which we will discuss in detail in section \ref{sec:addressing}), the arguments to the special form, the continuation, and the state.
 \begin{lstlisting}[style=default]
 => (cps-of-expression '(sample dist) 'cont)
-(->sample S1 dist cont $state)
+(->sample 'S1 dist cont $state)
 => (cps-of-expression '(observe dist v) 'cont)
-(->observe O1 dist v cont $state)
+(->observe 'O1 dist v cont $state)
 \end{lstlisting}
 Here \texttt{->sample} and \texttt{->observe} in the
 CPS-transformed expressions are constructors for Clojure
